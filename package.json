@@ -1,6 +1,6 @@
 {
   "name": "@lobehub/a2ui",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A2UI cards drawn with @lobehub/ui: LobeHub's component catalog, server-side validation, text fallback and the React renderer",
   "keywords": [
     "a2ui",
