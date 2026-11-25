@@ -61,8 +61,11 @@ describe('SurfaceView', () => {
     expect(screen.getByText('Best match')).toBeTruthy();
     expect(screen.getByText('¥440')).toBeTruthy();
     // Before it is measured the strip takes one row; metricLayout.test.ts covers the wrapping.
-    const strip = document.querySelector<HTMLElement>('[style*="--a2ui-metric-columns"]');
-    expect(strip?.style.getPropertyValue('--a2ui-metric-columns')).toBe('1');
+    const grid = document.querySelector<HTMLElement>('.lobe-dashboard-metric-strip__grid');
+    expect(grid?.style.getPropertyValue('--metric-columns')).toBe('1');
+    expect(document.querySelector('.lobe-dashboard-metric-strip')?.getAttribute('data-size')).toBe(
+      'small',
+    );
 
     fireEvent.click(screen.getByText('Book it'));
     await vi.waitFor(() =>

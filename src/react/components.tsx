@@ -29,7 +29,7 @@ import {
   TextArea,
 } from '@lobehub/ui';
 import { type MetricItem, MetricStrip, Surface } from '@lobehub/ui/dashboard';
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
 import type { ITEM_STATUSES } from '../catalog';
@@ -99,75 +99,6 @@ const styles = createStaticStyles(({ css, cssVar: token }) => ({
     flex: none;
     width: 52px;
     padding-block-start: 2px;
-  `,
-}));
-
-/**
- * Metrics in an A2UI card. A card sits in a chat column (about 320–680px), where MetricStrip's
- * dashboard grid (`minmax(180px, 1fr)` columns, 16/20px cells, heading-size figures) wraps four
- * figures onto two rows. Peer figures read as one row, so inside a card the strip keeps one
- * column per figure and a compact cell. MetricStrip has no slot props for these parts, so the
- * rules target its stable BEM classes.
- */
-const fallback = createStaticStyles(({ css }) => ({
-  metrics: css`
-    container-type: inline-size;
-
-    .lobe-dashboard-metric-strip__grid,
-    .lobe-dashboard-metric-strip[data-variant='split'] {
-      grid-template-columns: repeat(var(--a2ui-metric-columns, 4), minmax(0, 1fr));
-    }
-
-    .lobe-dashboard-metric-strip__cell {
-      gap: 2px;
-      padding-block: 10px;
-      padding-inline: 12px;
-    }
-
-    .lobe-dashboard-metric-strip__head {
-      height: auto;
-    }
-
-    .lobe-dashboard-metric-strip__label {
-      font-size: 12px;
-    }
-
-    .lobe-dashboard-metric-strip__value {
-      font-size: 18px;
-      line-height: 1.4;
-    }
-
-    .lobe-dashboard-metric-strip__foot {
-      flex-wrap: nowrap;
-      gap: 4px;
-      min-width: 0;
-      font-size: 12px;
-    }
-
-    /* A change reads on one line; what does not fit is cut, never stacked under the figure. */
-    .lobe-dashboard-metric-strip__delta,
-    .lobe-dashboard-metric-strip__hint {
-      overflow: hidden;
-      min-width: 0;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    /* A narrow column (a phone, a side panel) tightens before it has to wrap. */
-    @container (max-width: 480px) {
-      .lobe-dashboard-metric-strip__cell {
-        padding-inline: 8px;
-      }
-
-      .lobe-dashboard-metric-strip__value {
-        font-size: 15px;
-      }
-
-      .lobe-dashboard-metric-strip__label,
-      .lobe-dashboard-metric-strip__foot {
-        font-size: 11px;
-      }
-    }
   `,
 }));
 
@@ -270,12 +201,10 @@ const MetricsView = createComponentImplementation(MetricsApi, ({ props }) => {
   const items = Array.isArray(props.items) ? (props.items as MetricInput[]) : [];
   // Peers share one row while each cell stays readable, then wrap into balanced rows.
   return (
-    <div
-      className={fallback.metrics}
-      ref={setStrip}
-      style={{ '--a2ui-metric-columns': metricColumns(items.length, width) } as CSSProperties}
-    >
+    <div ref={setStrip}>
       <MetricStrip
+        columns={metricColumns(items.length, width)}
+        size="small"
         variant={props.variant ?? 'joined'}
         items={items.map((item) => ({
           delta: item.delta ? (
