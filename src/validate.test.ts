@@ -1,6 +1,16 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { A2UI_CATALOG_ID } from './catalog';
+import {
+  A2UI_BASIC_COMPONENT_NAMES,
+  A2UI_CATALOG_DOCUMENT,
+  A2UI_CATALOG_ID,
+  A2UI_COMPONENT_NAMES,
+  A2UI_FUNCTION_NAMES,
+  BASIC_CATALOG_DOCUMENT,
+} from './catalog';
 import { surfaceToText } from './fallback';
 import { validateSurface } from './validate';
 
@@ -165,5 +175,203 @@ describe('Chart', () => {
   it('refuses a chart with more rows than a picture can carry', () => {
     const result = chart(Array.from({ length: 201 }, (_, hour) => ({ hour, p95: 1 })));
     expect(!result.ok && result.errors[0]).toMatch(/at most 200 rows/);
+  });
+});
+
+describe('official A2UI basic catalog', () => {
+  const dir = join(__dirname, '../test/fixtures/official-examples');
+  const examples = readdirSync(dir).map((file) => ({
+    file,
+    ...(JSON.parse(readFileSync(join(dir, file), 'utf8')) as { messages: unknown[] }),
+  }));
+
+  it('ships the basic catalog verbatim and keeps every official component, prop and function', () => {
+    expect(BASIC_CATALOG_DOCUMENT.catalogId).toBe(
+      'https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json',
+    );
+    const propsOf = (schema: unknown): Set<string> => {
+      const found = new Set<string>();
+      const walk = (node: any) => {
+        if (!node || typeof node !== 'object') return;
+        if (node.properties) for (const key of Object.keys(node.properties)) found.add(key);
+        for (const key of ['allOf', 'oneOf', 'anyOf'])
+          for (const item of node[key] ?? []) walk(item);
+      };
+      walk(schema);
+      return found;
+    };
+    for (const [name, schema] of Object.entries(BASIC_CATALOG_DOCUMENT.components)) {
+      expect(A2UI_COMPONENT_NAMES.has(name)).toBe(true);
+      const merged = propsOf(A2UI_CATALOG_DOCUMENT.components[name]);
+      for (const prop of propsOf(schema)) expect(merged.has(prop), `${name}.${prop}`).toBe(true);
+    }
+    expect([...A2UI_FUNCTION_NAMES].sort()).toEqual(
+      Object.keys(BASIC_CATALOG_DOCUMENT.functions!).sort(),
+    );
+    expect(A2UI_BASIC_COMPONENT_NAMES).toHaveLength(18);
+  });
+
+  it.each(examples.map((example) => [example.file, example]))(
+    'accepts the official example %s',
+    (_, example) => {
+      const result = validateSurface(example.messages);
+      expect(result.ok ? [] : result.errors).toEqual([]);
+      expect(result.ok && surfaceToText(result.record).length).toBeGreaterThan(0);
+    },
+  );
+});
+
+describe('LobeHub extensions and safety', () => {
+  const surface = (components: Record<string, unknown>[], value?: Record<string, unknown>) =>
+    validateSurface([
+      { updateComponents: { components, surfaceId: 's' }, version: '1.0' },
+      ...(value ? [{ updateDataModel: { path: '/', surfaceId: 's', value }, version: '1.0' }] : []),
+    ]);
+
+  it('accepts any root and reads extensions back as text', () => {
+    const result = surface([
+      { children: ['t', 'kv', 'steps', 'p'], component: 'Column', id: 'root' },
+      {
+        columns: [
+          { key: 'plan', label: 'Plan' },
+          { align: 'end', key: 'price', label: 'Price' },
+        ],
+        component: 'Table',
+        id: 't',
+        rows: [{ plan: 'Pro', price: 19 }],
+      },
+      { component: 'KeyValue', id: 'kv', items: [{ label: 'Seats', value: '20' }] },
+      {
+        component: 'Steps',
+        id: 'steps',
+        items: [{ meta: '09:00', status: 'done', title: 'Ship' }],
+      },
+      { caption: '7 / 10 GB', component: 'Progress', id: 'p', label: 'Storage', value: 70 },
+    ]);
+    expect(result.ok ? [] : result.errors).toEqual([]);
+    expect(result.ok && surfaceToText(result.record)).toBe(
+      'Pro, 19 · Seats: 20 · 09:00 Ship · Storage 7 / 10 GB',
+    );
+  });
+
+  it('checks extension props against the catalog schema', () => {
+    const bogus = surface([
+      { component: 'Metrics', id: 'root', items: [{ bogus: 1, label: 'a', value: '1' }] },
+    ]);
+    expect(!bogus.ok && bogus.errors.join()).toMatch(/Unrecognized key\(s\) in object: 'bogus'/);
+    const wide = surface([
+      {
+        columns: Array.from({ length: 9 }, (_, i) => ({ key: `k${i}`, label: `K${i}` })),
+        component: 'Table',
+        id: 'root',
+        rows: [],
+      },
+    ]);
+    expect(wide.ok).toBe(false);
+    const grid = surface([{ children: ['a'], columns: 6, component: 'Grid', id: 'root' }]);
+    expect(grid.ok).toBe(false);
+    const chart = surface([{ component: 'Chart', data: [], id: 'root', index: 'x', type: 'pie' }]);
+    expect(chart.ok).toBe(false);
+  });
+
+  it('caps bound lists like literal ones', () => {
+    const result = surface(
+      [
+        {
+          columns: [{ key: 'n', label: 'N' }],
+          component: 'Table',
+          id: 'root',
+          rows: { '@path': '/rows' },
+        },
+      ],
+      { rows: Array.from({ length: 51 }, (_, n) => ({ n })) },
+    );
+    expect(!result.ok && result.errors).toContain('Table root: at most 50 rows');
+  });
+
+  it('keeps media and links on https, bound data included', () => {
+    const image = surface([{ component: 'Image', id: 'root', url: 'http://x.com/a.png' }]);
+    expect(!image.ok && image.errors).toContain('Image root: url must be https');
+    const video = surface(
+      [
+        {
+          component: 'Video',
+          id: 'root',
+          posterUrl: { '@path': '/p' },
+          url: 'https://x.com/v.mp4',
+        },
+      ],
+      { p: 'javascript:alert(1)' },
+    );
+    expect(!video.ok && video.errors).toContain('Video root: posterUrl must be https');
+    const audio = surface([
+      { component: 'AudioPlayer', id: 'root', url: 'data:audio/mp3;base64,AA' },
+    ]);
+    expect(audio.ok).toBe(false);
+    const link = surface([
+      {
+        action: { functionCall: { args: { url: 'http://x.com' }, call: 'openUrl' } },
+        child: 'l',
+        component: 'Button',
+        id: 'root',
+      },
+      { component: 'Text', id: 'l', text: 'Open' },
+    ]);
+    expect(!link.ok && link.errors).toContain('Button root: openUrl needs an https url');
+  });
+
+  it('checks icon names in every set and suggests close ones', () => {
+    const ok = surface([
+      { children: ['a', 'b', 'c', 'd', 'e'], component: 'Row', id: 'root' },
+      { component: 'Icon', id: 'a', name: 'home' },
+      { component: 'Icon', id: 'b', name: 'trending-up', set: 'lucide' },
+      { component: 'Icon', id: 'c', name: 'TrendingUp', set: 'lucide' },
+      { component: 'Icon', id: 'd', name: 'github', set: 'simple' },
+      {
+        color: 'brand',
+        component: 'Icon',
+        id: 'e',
+        name: 'openai',
+        set: 'lobehub',
+        variant: 'avatar',
+      },
+    ]);
+    expect(ok.ok ? [] : ok.errors).toEqual([]);
+
+    const unknown = surface([
+      { component: 'Icon', id: 'root', name: 'trending-upp', set: 'lucide' },
+    ]);
+    expect(!unknown.ok && unknown.errors[0]).toMatch(
+      /No lucide icon named "trending-upp"\. Did you mean: .*trending-up/,
+    );
+    const basic = surface([{ component: 'Icon', id: 'root', name: 'rocket' }]);
+    expect(!basic.ok && basic.errors[0]).toMatch(/not a basic icon name/);
+    const brand = surface([{ component: 'Icon', id: 'root', name: 'nosuchbrand', set: 'simple' }]);
+    expect(brand.ok).toBe(false);
+    const svg = surface([
+      { component: 'Icon', id: 'root', name: { svgPath: 'M0 0"/><script>alert(1)</script>' } },
+    ]);
+    expect(!svg.ok && svg.errors).toContain('Icon root: svgPath is not path data');
+  });
+
+  it('splits a createSurface that carries its components and data model inline', () => {
+    const result = validateSurface([
+      {
+        createSurface: {
+          catalogId: 'x',
+          components: [{ component: 'Text', id: 'root', text: { '@path': '/t' } }],
+          dataModel: { t: 'Hello' },
+          surfaceId: 'inline',
+        },
+        version: '1.0',
+      },
+    ]);
+    expect(result.ok ? [] : result.errors).toEqual([]);
+    expect(result.ok && result.record.operations.map((op) => Object.keys(op).sort())).toEqual([
+      ['createSurface', 'version'],
+      ['updateComponents', 'version'],
+      ['updateDataModel', 'version'],
+    ]);
+    expect(result.ok && surfaceToText(result.record)).toBe('Hello');
   });
 });

@@ -2,11 +2,12 @@ import { A2uiSurface } from '@a2ui/react';
 import { MessageProcessor } from '@a2ui/web_core';
 import { Catalog } from '@a2ui/web_core/v1_0';
 import { createStaticStyles, cx, Text } from '@lobehub/ui';
+import { Surface } from '@lobehub/ui/dashboard';
 import { memo, useEffect, useMemo } from 'react';
 
 import { A2UI_CATALOG_ID, A2UI_VERSION } from '../catalog';
 import type { A2uiActionPayload, A2uiSurfaceRecord, A2uiSurfaceState } from '../types';
-import { LOBE_COMPONENTS } from './components';
+import { createLobeFunctions, LOBE_COMPONENTS } from './components';
 
 let lobeCatalog: Catalog<never> | undefined;
 const getLobeCatalog = () =>
@@ -14,7 +15,20 @@ const getLobeCatalog = () =>
     A2UI_CATALOG_ID,
     A2UI_VERSION,
     LOBE_COMPONENTS as never,
+    createLobeFunctions() as never,
   ) as Catalog<never>);
+
+/** The root component's name: a Card root is the card itself; any other root gets one. */
+const rootComponentOf = (record: A2uiSurfaceRecord) => {
+  for (const operation of record.operations) {
+    const update = operation.updateComponents as { components?: unknown[] } | undefined;
+    const root = update?.components?.find(
+      (component) => (component as { id?: unknown })?.id === 'root',
+    ) as { component?: unknown } | undefined;
+    if (root) return root.component;
+  }
+  return undefined;
+};
 
 const styles = createStaticStyles(({ css }) => ({
   root: css`
@@ -67,10 +81,15 @@ export const SurfaceView = memo<SurfaceViewProps>(({ record, state, onAction }) 
       aria-disabled={submitted || undefined}
       className={cx(styles.root, submitted && styles.submitted)}
     >
-      <A2uiSurface surface={surface as never} />
+      {rootComponentOf(record) === 'Card' ? (
+        <A2uiSurface surface={surface as never} />
+      ) : (
+        <Surface padded>
+          <A2uiSurface surface={surface as never} />
+        </Surface>
+      )}
     </div>
   );
 });
 
 SurfaceView.displayName = 'A2uiSurfaceView';
-

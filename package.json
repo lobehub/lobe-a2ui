@@ -1,7 +1,7 @@
 {
   "name": "@lobehub/a2ui",
   "version": "1.0.1",
-  "description": "A2UI cards drawn with @lobehub/ui: LobeHub's component catalog, server-side validation, text fallback and the React renderer",
+  "description": "A2UI surfaces drawn with @lobehub/ui: the official A2UI basic catalog plus LobeHub's extensions, schema validation, the A2UI prompt, text fallback and the React renderer",
   "keywords": [
     "a2ui",
     "agent-ui",
@@ -73,11 +73,13 @@
   "dependencies": {
     "@a2ui/react": "0.16.1",
     "@a2ui/web_core": "0.16.1",
+    "@icons-pack/react-simple-icons": "^13.16.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@lobehub/charts": "^6.0.1",
+    "@lobehub/icons": "^6.20.0",
     "@lobehub/lint": "^2.1.6",
     "@lobehub/ui": "^6.21.0",
     "@testing-library/react": "^16.3.3",
@@ -90,6 +92,7 @@
     "happy-dom": "^20.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "lucide-react": "^1.79.0",
     "motion": "^14.14.0",
     "prettier": "^3.9.10",
     "react": "^19.3.0",
@@ -103,7 +106,9 @@
   },
   "peerDependencies": {
     "@lobehub/charts": "^6.0.0",
+    "@lobehub/icons": "^6.0.0",
     "@lobehub/ui": "^6.21.0",
+    "lucide-react": "^1.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

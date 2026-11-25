@@ -1,29 +1,20 @@
 import { MessageProcessor } from '@a2ui/web_core';
-import { Catalog } from '@a2ui/web_core/v1_0';
 
-import {
-  A2UI_CATALOG_ID,
-  A2UI_COMPONENT_APIS,
-  A2UI_COMPONENT_NAMES,
-  A2UI_VERSION,
-} from './catalog';
-import { surfaceText, surfaceTitle } from './fallback';
+import { A2UI_CATALOG_ID, A2UI_COMPONENT_NAMES, A2UI_LIST_LIMITS, A2UI_VERSION } from './catalog';
+import { dataModelOf, resolve, surfaceText, surfaceTitle } from './fallback';
+import { iconError } from './icons';
+import { getSchemaCatalog } from './schemaCatalog';
 import type { A2uiOperation, A2uiSurfaceRecord } from './types';
+import { isHttpsUrl } from './url';
+
+export { getSchemaCatalog } from './schemaCatalog';
+export { isHttpsUrl } from './url';
 
 /** Bounds on one surface, so a runaway generation can't flood a message. */
 export const A2UI_LIMITS = { bytes: 64 * 1024, components: 200, operations: 50 } as const;
-/** Rows one chart may carry; more is a table, not a picture. */
-const CHART_ROWS = 200;
 
 /** A2UI 1.0 as CopilotKit 1.83 and some models spell it. Read as the same version. */
 const LEGACY_VERSIONS = new Set(['v1.0', 'v1', '1']);
-
-let schemaCatalog: Catalog<never> | undefined;
-/** The catalog with schemas only: enough to validate on the server, where nothing renders. */
-export const getSchemaCatalog = () =>
-  (schemaCatalog ??= new Catalog(A2UI_CATALOG_ID, A2UI_VERSION, [
-    ...A2UI_COMPONENT_APIS,
-  ] as never) as Catalog<never>);
 
 export type ValidateSurfaceResult =
   { errors: string[]; ok: false } | { ok: true; record: A2uiSurfaceRecord };
@@ -40,12 +31,16 @@ const parseOperations = (raw: unknown): unknown => {
   }
 };
 
-/** Every operation in the current version, on this catalog, for one surface. */
+/**
+ * Every operation in the current version, on this catalog, for one surface. A `createSurface`
+ * that carries its components and data model inline (A2UI 1.0 allows both) is split into the
+ * `updateComponents` and `updateDataModel` messages it stands for.
+ */
 export const normalizeOperations = (
   operations: A2uiOperation[],
   surfaceId: string,
 ): A2uiOperation[] => {
-  const normalized = operations.map((operation) => {
+  const normalized = operations.flatMap((operation): A2uiOperation[] => {
     const version = operation.version;
     const next: A2uiOperation = {
       ...operation,
@@ -54,9 +49,19 @@ export const normalizeOperations = (
           ? A2UI_VERSION
           : version,
     };
-    if (isRecord(next.createSurface))
-      next.createSurface = { ...next.createSurface, catalogId: A2UI_CATALOG_ID, surfaceId };
-    return next;
+    if (!isRecord(next.createSurface)) return [next];
+    const { components, dataModel, ...create } = next.createSurface;
+    const split: A2uiOperation[] = [
+      { ...next, createSurface: { ...create, catalogId: A2UI_CATALOG_ID, surfaceId } },
+    ];
+    if (Array.isArray(components))
+      split.push({ updateComponents: { components, surfaceId }, version: next.version });
+    if (dataModel !== undefined)
+      split.push({
+        updateDataModel: { path: '/', surfaceId, value: dataModel },
+        version: next.version,
+      });
+    return split;
   });
   // A model often starts at updateComponents; the surface it means is implied.
   if (!normalized.some((operation) => isRecord(operation.createSurface)))
@@ -85,10 +90,65 @@ const surfaceIdsOf = (operations: A2uiOperation[]) =>
     ),
   );
 
+const MEDIA_PROPS: Record<string, string[]> = {
+  AudioPlayer: ['url'],
+  Image: ['url'],
+  Video: ['url', 'posterUrl'],
+};
+/** SVG path data: commands, numbers and separators, nothing that could carry markup. */
+const SVG_PATH = /^[\d\s+,.ACEHLMQSTVZ-]*$/i;
+
+/** Every `openUrl` call in a value, however deeply it sits in actions and checks. */
+const openUrlCalls = (value: unknown, found: Record<string, unknown>[] = []) => {
+  if (Array.isArray(value)) for (const item of value) openUrlCalls(item, found);
+  else if (isRecord(value)) {
+    if (value['@call'] === 'openUrl' || value.call === 'openUrl') found.push(value);
+    for (const item of Object.values(value)) openUrlCalls(item, found);
+  }
+  return found;
+};
+
+/** Checks the schema can't make: bound data sizes, https-only media and links, icon names. */
+const safetyErrors = (component: Record<string, unknown>, model: Record<string, unknown>) => {
+  const errors: string[] = [];
+  const name = String(component.component);
+  const label = `${name} ${String(component.id)}`;
+
+  for (const [key, max] of Object.entries(A2UI_LIST_LIMITS[name] ?? {})) {
+    const value = resolve(component[key], model);
+    if (Array.isArray(value) && value.length > max)
+      errors.push(`${label}: at most ${max} ${key === 'data' ? 'rows' : key}`);
+  }
+
+  for (const key of MEDIA_PROPS[name] ?? []) {
+    if (component[key] === undefined) continue;
+    const value = resolve(component[key], model);
+    // A value bound to data that isn't there yet renders nothing; only a present one is checked.
+    if (value !== undefined && !isHttpsUrl(value)) errors.push(`${label}: ${key} must be https`);
+  }
+
+  for (const call of openUrlCalls(component)) {
+    const args = isRecord(call.args) ? call.args : {};
+    const url = isRecord(args.url) ? undefined : args.url;
+    if (url !== undefined && !isHttpsUrl(url)) errors.push(`${label}: openUrl needs an https url`);
+  }
+
+  if (name === 'Icon') {
+    const iconName = resolve(component.name, model);
+    if (isRecord(component.name) && typeof component.name.svgPath === 'string') {
+      if (!SVG_PATH.test(component.name.svgPath)) errors.push(`${label}: svgPath is not path data`);
+    } else if (typeof iconName === 'string') {
+      const error = iconError(component.set as string | undefined, iconName);
+      if (error) errors.push(`${label}: ${error}`);
+    }
+  }
+  return errors;
+};
+
 /**
- * Checks what an Agent drew before it is stored. Returns the record to store, or the errors to hand
- * back to the Agent so it can fix its call. Accepts operations as an array or a JSON string, since
- * models send both.
+ * Checks what an Agent drew before it is stored: the A2UI message and component schemas of the
+ * merged catalog, then the safety limits. Returns the record to store, or the errors to hand back
+ * to the Agent so it can fix its call. Accepts operations as an array or a JSON string.
  */
 export const validateSurface = (raw: unknown): ValidateSurfaceResult => {
   const parsed = parseOperations(raw);
@@ -111,27 +171,23 @@ export const validateSurface = (raw: unknown): ValidateSurfaceResult => {
 
   const errors: string[] = [];
   const components = componentsOf(operations);
+  const model = dataModelOf(operations);
   if (components.length === 0) errors.push('No components: send updateComponents with a root');
   if (components.length > A2UI_LIMITS.components)
     errors.push(`At most ${A2UI_LIMITS.components} components per surface`);
   for (const component of components) {
     const name = component.component;
-    if (typeof name !== 'string' || !A2UI_COMPONENT_NAMES.has(name))
+    if (typeof name !== 'string' || !A2UI_COMPONENT_NAMES.has(name)) {
       errors.push(
         `Unknown component "${String(name)}" (${String(component.id)}). Use one of: ${[...A2UI_COMPONENT_NAMES].join(', ')}`,
       );
-    if (name === 'Chart' && Array.isArray(component.data) && component.data.length > CHART_ROWS)
-      errors.push(`Chart ${String(component.id)}: at most ${CHART_ROWS} rows`);
-    if (
-      name === 'Image' &&
-      typeof component.url === 'string' &&
-      !component.url.startsWith('https://')
-    )
-      errors.push(`Image ${String(component.id)}: url must be https`);
+      continue;
+    }
+    errors.push(...safetyErrors(component, model));
   }
   if (components.length > 0 && !components.some((component) => component.id === 'root'))
     errors.push('One component must have id "root"');
-  if (errors.length > 0) return { errors, ok: false };
+  if (errors.length > 0) return { errors: [...new Set(errors)], ok: false };
 
   const processor = new MessageProcessor([getSchemaCatalog()] as never, undefined, {
     outboundListener: (message: unknown) => {
@@ -143,8 +199,7 @@ export const validateSurface = (raw: unknown): ValidateSurfaceResult => {
   try {
     processor.processMessages(operations as never);
   } catch (error) {
-    const message = (error as Error).message;
-    if (!errors.includes(message)) errors.push(message);
+    errors.push((error as Error).message);
   }
   if (errors.length > 0) return { errors: [...new Set(errors)], ok: false };
 

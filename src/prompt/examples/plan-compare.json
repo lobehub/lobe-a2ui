@@ -1,0 +1,126 @@
+{
+  "name": "Plan Comparison",
+  "description": "Options compared across attributes: a Table carries the comparison, a Grid of small Cards gives each option's reasoning, and lucide icons mark pros and cons.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "plan-compare",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "plan-compare",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "title": "Pro is the better fit for 14 seats",
+            "badge": "pick",
+            "child": "body"
+          },
+          {
+            "id": "pick",
+            "component": "Tag",
+            "text": "Pick Pro",
+            "color": "success"
+          },
+          {
+            "id": "body",
+            "component": "Column",
+            "children": ["table", "reasons"]
+          },
+          {
+            "id": "table",
+            "component": "Table",
+            "columns": [
+              {
+                "key": "plan",
+                "label": "Plan"
+              },
+              {
+                "key": "seats",
+                "label": "Seats",
+                "align": "end"
+              },
+              {
+                "key": "storage",
+                "label": "Storage",
+                "align": "end"
+              },
+              {
+                "key": "price",
+                "label": "Price / mo",
+                "align": "end"
+              }
+            ],
+            "rows": [
+              {
+                "plan": "Basic",
+                "seats": 3,
+                "storage": "50 GB",
+                "price": "$9"
+              },
+              {
+                "plan": "Pro",
+                "seats": 20,
+                "storage": "1 TB",
+                "price": "$19"
+              },
+              {
+                "plan": "Team",
+                "seats": 100,
+                "storage": "5 TB",
+                "price": "$79"
+              }
+            ],
+            "caption": "Billed yearly"
+          },
+          {
+            "id": "reasons",
+            "component": "Grid",
+            "columns": 2,
+            "children": ["pros", "cons"]
+          },
+          {
+            "id": "pros",
+            "component": "Card",
+            "title": "Why Pro",
+            "child": "prosText"
+          },
+          {
+            "id": "prosText",
+            "component": "Text",
+            "text": "- Fits all 14 seats\n- A year of storage headroom"
+          },
+          {
+            "id": "cons",
+            "component": "Card",
+            "title": "Watch out",
+            "child": "consRow"
+          },
+          {
+            "id": "consRow",
+            "component": "Row",
+            "align": "center",
+            "children": ["consIcon", "consText"]
+          },
+          {
+            "id": "consIcon",
+            "component": "Icon",
+            "set": "lucide",
+            "name": "shield-alert",
+            "color": "warning"
+          },
+          {
+            "id": "consText",
+            "component": "Text",
+            "text": "SSO only on Team. Revisit at 20 seats."
+          }
+        ]
+      }
+    }
+  ]
+}

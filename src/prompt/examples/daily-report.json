@@ -1,0 +1,134 @@
+{
+  "name": "Daily Report",
+  "description": "A daily service report: verdict in the Card header, headline figures, a trend, and what needs a person. No buttons: the card is the answer.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "daily-report",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "daily-report",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "title": "API health: degraded since 14:00",
+            "description": "Nov 25 · 3,214 requests",
+            "badge": "status",
+            "child": "body"
+          },
+          {
+            "id": "status",
+            "component": "Tag",
+            "text": "Degraded",
+            "color": "warning"
+          },
+          {
+            "id": "body",
+            "component": "Column",
+            "children": ["figures", "latency", "incident", "followups"]
+          },
+          {
+            "id": "figures",
+            "component": "Metrics",
+            "items": {
+              "@path": "/metrics"
+            }
+          },
+          {
+            "id": "latency",
+            "component": "Chart",
+            "type": "line",
+            "title": "P95 latency by hour",
+            "data": {
+              "@path": "/latency"
+            },
+            "index": "hour",
+            "categories": ["p95"],
+            "unit": "s"
+          },
+          {
+            "id": "incident",
+            "component": "Callout",
+            "level": "warning",
+            "title": "Provider timeouts after the 14:00 deploy",
+            "body": "Rollback is staged; error rate is still 3x the baseline."
+          },
+          {
+            "id": "followups",
+            "component": "Items",
+            "title": "Follow-ups",
+            "items": [
+              {
+                "status": "human",
+                "title": "Approve the rollback",
+                "detail": "Waiting on on-call"
+              },
+              {
+                "status": "watch",
+                "title": "Queue depth",
+                "detail": "Back under 1k"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "daily-report",
+        "path": "/",
+        "value": {
+          "metrics": [
+            {
+              "label": "Error rate",
+              "value": "2.4%",
+              "delta": "+1.6pt",
+              "tone": "bad"
+            },
+            {
+              "label": "P95",
+              "value": "1.8s",
+              "delta": "+0.7s",
+              "tone": "bad"
+            },
+            {
+              "label": "Requests",
+              "value": "3,214",
+              "delta": "+4%",
+              "tone": "neutral"
+            }
+          ],
+          "latency": [
+            {
+              "hour": "12",
+              "p95": 1.0
+            },
+            {
+              "hour": "13",
+              "p95": 1.1
+            },
+            {
+              "hour": "14",
+              "p95": 2.3
+            },
+            {
+              "hour": "15",
+              "p95": 2.0
+            },
+            {
+              "hour": "16",
+              "p95": 1.8
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

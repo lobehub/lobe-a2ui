@@ -1,4 +1,4 @@
-export { LOBE_COMPONENTS } from './components';
+export { A2uiIcon, type A2uiIconProps, createLobeFunctions, LOBE_COMPONENTS } from './components';
 export {
   type A2uiHost,
   A2uiHostProvider,
