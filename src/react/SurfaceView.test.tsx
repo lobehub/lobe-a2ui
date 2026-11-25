@@ -13,7 +13,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { A2UI_PROMPT_EXAMPLES } from '../prompt';
 import { validateSurface } from '../validate';
 import { A2uiIcon } from './components';
-import { SurfaceView } from './SurfaceView';
+import { A2uiHostProvider, resolveA2uiLocale } from './host';
+import { SurfaceList, SurfaceView } from './SurfaceView';
 
 afterEach(cleanup);
 
@@ -163,5 +164,86 @@ describe('text safety', () => {
     await vi.waitFor(() => expect(container.textContent).toContain('Hi'));
     expect(container.querySelector('img')).toBeNull();
     expect(container.querySelector('script')).toBeNull();
+  });
+});
+
+describe('host', () => {
+  const items = () => {
+    const result = validateSurface([
+      {
+        updateComponents: {
+          components: [
+            { children: ['items', 'go'], component: 'Column', id: 'root' },
+            {
+              component: 'Items',
+              id: 'items',
+              items: [{ status: 'human', title: 'Approve' }],
+              title: 'Todo',
+            },
+            { action: { event: { name: 'ok' } }, child: 'goL', component: 'Button', id: 'go' },
+            { component: 'Text', id: 'goL', text: 'Approve now' },
+          ],
+          surfaceId: 'todo',
+        },
+        version: '1.0',
+      },
+    ]);
+    if (!result.ok) throw new Error(result.errors.join());
+    return result.record;
+  };
+
+  it('shows built-in labels in the host locale, with overrides', async () => {
+    const { unmount } = render(
+      <A2uiHostProvider value={{ canAct: false, locale: 'zh-TW', sendAction: vi.fn() }}>
+        <SurfaceList surfaces={[items()]} />
+      </A2uiHostProvider>,
+      { wrapper },
+    );
+    expect(await screen.findByText('需人工')).toBeTruthy();
+    unmount();
+    render(
+      <A2uiHostProvider
+        value={{ canAct: false, labels: { status: { human: 'You' } }, sendAction: vi.fn() }}
+      >
+        <SurfaceList surfaces={[items()]} />
+      </A2uiHostProvider>,
+      { wrapper },
+    );
+    expect(await screen.findByText('You')).toBeTruthy();
+  });
+
+  it('sends actions through the host and turns the surface read-only once accepted', async () => {
+    const sendAction = vi.fn(async () => true);
+    const { container } = render(
+      <A2uiHostProvider value={{ canAct: true, sendAction }}>
+        <SurfaceList surfaces={[items()]} />
+      </A2uiHostProvider>,
+      { wrapper },
+    );
+    fireEvent.click(await screen.findByText('Approve now'));
+    await vi.waitFor(() => expect(sendAction).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(container.querySelector('[aria-disabled="true"]')).toBeTruthy());
+    fireEvent.click(screen.getByText('Approve now'));
+    expect(sendAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts read-only when the stored record says it was submitted', async () => {
+    const sendAction = vi.fn(async () => true);
+    const { container } = render(
+      <A2uiHostProvider value={{ canAct: true, sendAction }}>
+        <SurfaceList surfaces={[{ ...items(), state: { status: 'submitted' } }]} />
+      </A2uiHostProvider>,
+      { wrapper },
+    );
+    await vi.waitFor(() => expect(container.querySelector('[aria-disabled="true"]')).toBeTruthy());
+  });
+});
+
+describe('locale', () => {
+  it('resolves language tags to built-in labels', () => {
+    expect(resolveA2uiLocale('zh-CN')).toBe('zh-CN');
+    expect(resolveA2uiLocale('zh_HK')).toBe('zh-CN');
+    expect(resolveA2uiLocale('fr-FR')).toBe('en-US');
+    expect(resolveA2uiLocale(undefined)).toBe('en-US');
   });
 });

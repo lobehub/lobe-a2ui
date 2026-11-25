@@ -2,6 +2,7 @@ import { Button, Checkbox, Flexbox, Input, RadioGroup, Slider, Text, TextArea } 
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 
+import { useA2uiLabels } from '../host';
 import { define, styles } from './shared';
 
 const Label = ({ children }: { children: ReactNode }) =>
@@ -84,6 +85,7 @@ type Option = { label: unknown; value: string };
  */
 export const ChoicePickerView = define('ChoicePicker', ({ props }) => {
   const [query, setQuery] = useState('');
+  const labels = useA2uiLabels();
   const selected = Array.isArray(props.value) ? (props.value as string[]) : [];
   const single = (props.variant ?? 'mutuallyExclusive') === 'mutuallyExclusive';
   const options = ((Array.isArray(props.options) ? props.options : []) as Option[]).filter(
@@ -150,7 +152,7 @@ export const ChoicePickerView = define('ChoicePicker', ({ props }) => {
       {props.filterable ? (
         <Input
           allowClear
-          placeholder="Filter"
+          placeholder={labels.filter}
           size="small"
           value={query}
           onChange={(event) => setQuery(event.target.value)}

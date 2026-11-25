@@ -46,14 +46,33 @@ export const A2UI_PROMPT_MESSAGES = [
 export const A2UI_SCHEMA_BLOCK_START = '---BEGIN A2UI JSON SCHEMA---';
 export const A2UI_SCHEMA_BLOCK_END = '---END A2UI JSON SCHEMA---';
 
-/** The official workflow rules, for delivery through a tool argument instead of tags. */
-export const A2UI_WORKFLOW_RULES = `The generated UI MUST follow these rules:
-- Send the UI as the \`operations\` argument of the renderUI tool: a JSON array of A2UI messages, each following the provided A2UI JSON SCHEMA. One call draws one surface; every message names the same surfaceId.
+/**
+ * How the host receives a surface: a tool whose `operations` argument carries the messages (the
+ * default, `renderUI`), or a command that takes them as a JSON array.
+ */
+export type A2uiDelivery = { command: string } | { tool: string };
+
+export const A2UI_DEFAULT_DELIVERY: A2uiDelivery = { tool: 'renderUI' };
+
+const sendText = (delivery: A2uiDelivery) =>
+  'tool' in delivery
+    ? `the \`operations\` argument of the ${delivery.tool} tool`
+    : `a JSON array passed to \`${delivery.command}\``;
+const drawText = (delivery: A2uiDelivery) =>
+  'tool' in delivery ? `call ${delivery.tool}` : `run \`${delivery.command}\``;
+
+/** The official workflow rules, for delivery through a tool argument or a command, not tags. */
+export const a2uiWorkflowRules = (
+  delivery: A2uiDelivery = A2UI_DEFAULT_DELIVERY,
+) => `The generated UI MUST follow these rules:
+- Send the UI as ${sendText(delivery)}: a JSON array of A2UI messages, each following the provided A2UI JSON SCHEMA. One call draws one surface; every message names the same surfaceId.
 - Use "${A2UI_CATALOG_ID}" as the createSurface catalogId.
 - Top-Down Component Ordering: Within the \`components\` list of a message:
     - The 'root' component MUST be the FIRST element.
     - Parent components MUST appear before their child components.
     This specific ordering allows the streaming parser to yield and render the UI incrementally as it arrives.`;
+
+export const A2UI_WORKFLOW_RULES = a2uiWorkflowRules();
 
 const DEFS_REF = '#/$defs/';
 
@@ -165,6 +184,8 @@ export const A2UI_LAYOUT_GUIDANCE = `### Designing the surface
 export interface BuildA2uiPromptOptions {
   /** Components to describe; defaults to the whole catalog. */
   components?: readonly string[];
+  /** How the host receives a surface. Defaults to the `renderUI` tool. */
+  delivery?: A2uiDelivery;
   /** Few-shot examples; `false` for none. Defaults to `A2UI_PROMPT_EXAMPLES`. */
   examples?: A2uiPromptExample[] | false;
   /** Text after the examples. Defaults to `A2UI_LAYOUT_GUIDANCE`; hosts usually append their own rules. */
@@ -196,7 +217,7 @@ export const buildA2uiPrompt = (options: BuildA2uiPromptOptions = {}): string =>
     examples.length > 0
       ? [
           '### Examples',
-          'Each is the renderUI `operations` for a differently shaped surface. Learn the vocabulary from them; never copy their layout.',
+          'Each is the messages array for a differently shaped surface. Learn the vocabulary from them; never copy their layout.',
           ...examples.map(
             (example, index) =>
               `Example ${index + 1}: ${example.name}${example.description ? ` — ${example.description}` : ''}\n${compact(onCatalog(example.messages))}`,
@@ -204,7 +225,56 @@ export const buildA2uiPrompt = (options: BuildA2uiPromptOptions = {}): string =>
         ].join('\n\n')
       : '';
 
-  return [A2UI_WORKFLOW_RULES, schema, exampleBlock, options.guidance ?? A2UI_LAYOUT_GUIDANCE]
+  return [
+    a2uiWorkflowRules(options.delivery),
+    schema,
+    exampleBlock,
+    options.guidance ?? A2UI_LAYOUT_GUIDANCE,
+  ]
     .filter(Boolean)
     .join('\n\n');
 };
+
+/**
+ * When a card helps and the product rules every LobeHub host shares: display-first, no filler
+ * buttons, how actions come back, honesty about figures.
+ */
+export const a2uiProductRules = (
+  delivery: A2uiDelivery = A2UI_DEFAULT_DELIVERY,
+) => `You can answer with a card instead of, or next to, text: ${drawText(delivery)} with A2UI 1.0 messages for one surface. It renders in the conversation, in the product's own design, for everyone in it.
+
+WHEN A CARD HELPS
+- Display (the common case): information a person takes in at a glance: reports, digests, status reviews, metrics, trends, rankings, comparisons, schedules, plans, profiles, recipes, incident summaries. Here the card is the answer.
+- Input: asking for several inputs at once (choices, numbers, dates, short text). A single yes/no question is plain text.
+- Not for prose, explanations, or anything a few sentences answer. Never wrap ordinary text in a card.
+- One card per answer. Put a sentence of text before it only if it adds something; for a report, the card alone is usually enough.
+
+PRODUCT RULES
+- Design each card for its content. Two different requests should rarely produce the same structure; choose components by the shape of the information, not a habit.
+- A display card needs no buttons. Add a Button only for a real next step the person would take right now and that you can carry out when they click it; never add "OK", "Got it", "Details" or "Let me know" buttons. Links to full reports belong in Text as markdown links.
+- At most one primary Button per card; put buttons in a Row with justify "end" at the bottom.
+- When the person clicks a button, you receive its event name and its context as their next message. To send what they filled in, bind it in the context: "action": {"event": {"name": "submit", "context": {"prefs": {"@path": "/prefs"}}}}.
+- Show only figures you were given or measured. If something is an estimate or an example, say so on the card.`;
+
+export interface BuildA2uiSystemPromptOptions extends BuildA2uiPromptOptions {
+  /** Product rules before the A2UI prompt; `false` to leave them out. Defaults to `a2uiProductRules`. */
+  productRules?: string | false;
+}
+
+/**
+ * The complete system prompt a LobeHub host gives an Agent that draws cards: the product rules,
+ * then the generated A2UI prompt (rules, schema, examples, layout guidance), in one block.
+ */
+export const buildA2uiSystemPrompt = (options: BuildA2uiSystemPromptOptions = {}): string => {
+  const rules =
+    options.productRules === false
+      ? ''
+      : (options.productRules ?? a2uiProductRules(options.delivery));
+  return ['<a2ui_guide>', rules, buildA2uiPrompt(options), '</a2ui_guide>']
+    .filter(Boolean)
+    .join('\n\n');
+};
+
+let systemPrompt: string | undefined;
+/** `buildA2uiSystemPrompt()` with the defaults (the `renderUI` tool), built once. */
+export const getA2uiSystemPrompt = () => (systemPrompt ??= buildA2uiSystemPrompt());

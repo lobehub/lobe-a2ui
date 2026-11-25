@@ -89,33 +89,44 @@ plus `size`, `color` (`brand` uses the brand's colour) and, for `lobehub`, `vari
 
 On top of the schema: at most 50 operations, 200 components and 64 KB per surface; bound lists capped like literal ones (Chart 200 rows, Table 50, …); media (`Image`, `Video`, `AudioPlayer`) and `openUrl` must be https, checked again at render for bound data; `svgPath` must be path data; HTML in text isn't rendered.
 
-## Prompt
+## What a host wires
 
-`buildA2uiPrompt()` ports the official Direct JSON prompt generator (google/A2UI `python/a2ui_agent/src/a2ui/inference_formats/direct_json`): the workflow rules (delivery through the `renderUI` tool's `operations` argument instead of `<a2ui-json>` tags), then one schema block with the agent-to-renderer schema pruned to `createSurface` / `updateComponents` / `updateDataModel`, the common types the catalog and those messages use, and the merged catalog schema, then seven examples of differently shaped surfaces (four official, three LobeHub), then layout guidance. Options prune components, replace the examples or the guidance.
+A host keeps only what is its own: where an action goes, whether this person may act, and the reader's language. Everything else comes from the package, so a prompt, catalog, validation or rendering change needs only a dependency bump.
+
+| Need               | Export                                                                                                                                                |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| System prompt      | `getA2uiSystemPrompt()` (product rules + generated A2UI prompt, for the `renderUI` tool); `buildA2uiSystemPrompt({ delivery, components, examples })` |
+| Prompt pieces      | `buildA2uiPrompt`, `a2uiProductRules(delivery)`, `a2uiWorkflowRules(delivery)`, `A2UI_LAYOUT_GUIDANCE`, `A2UI_PROMPT_EXAMPLES`                        |
+| Tool contract      | `A2UI_TOOL_IDENTIFIER` (`lobe-a2ui`), `A2UI_TOOL_NAME` (`renderUI`), `A2UI_TOOL_DESCRIPTION`, `A2UI_TOOL_PARAMETERS`, `A2UI_TOOL_META`                |
+| Running the tool   | `runA2uiTool({ operations })` → `{ success, content, state: { surface } }` or `{ success: false, content, error }`; `validateSurface` underneath      |
+| Stored surfaces    | `A2uiSurfaceRecord` (with optional `state`), `toSurfaceRecords`, `isA2uiToolResult`, `surfacesFromToolResults`, `surfacesToText`, `surfaceToText`     |
+| Actions            | `actionToMessage`, `parseActionMessage`                                                                                                               |
+| Drawing (`/react`) | `A2uiHostProvider` with `{ canAct, sendAction, locale, labels? }`; `SurfaceList` / `HostedSurface` (submission state handled); `SurfaceView` (bare)   |
+
+`delivery` words the prompt for a tool (`{ tool: 'renderUI' }`, the default) or a command (`{ command: 'lh card render' }`). Built-in labels ship in en-US and zh-CN (others fall back to English) and are picked by `locale`, which also formats numbers and dates.
 
 ```ts
-import { buildA2uiPrompt } from '@lobehub/a2ui';
-
-const systemRole = `${whenToDrawACard}\n\n${buildA2uiPrompt()}`;
-```
-
-## Usage
-
-```ts
-import { validateSurface } from '@lobehub/a2ui';
-
-const result = validateSurface(operations); // from the Agent's tool call
-if (!result.ok) return result.errors; // hand back to the Agent to fix
-store(result.record); // A2uiSurfaceRecord
+// Tool manifest and runtime
+import {
+  A2UI_TOOL_DESCRIPTION,
+  A2UI_TOOL_NAME,
+  A2UI_TOOL_PARAMETERS,
+  getA2uiSystemPrompt,
+  runA2uiTool,
+} from '@lobehub/a2ui';
 ```
 
 ```tsx
-import { A2uiHostProvider, SurfaceView } from '@lobehub/a2ui/react';
+import { A2uiHostProvider, SurfaceList } from '@lobehub/a2ui/react';
 
-<A2uiHostProvider value={{ canAct: true, sendAction, statusLabels }}>
-  <SurfaceView record={record} onAction={(action) => sendAction(action, record)} />
+<A2uiHostProvider value={{ canAct, locale, sendAction }}>
+  <SurfaceList surfaces={surfaces} />
 </A2uiHostProvider>;
 ```
+
+## Prompt
+
+`buildA2uiPrompt()` ports the official Direct JSON prompt generator (google/A2UI `python/a2ui_agent/src/a2ui/inference_formats/direct_json`): the workflow rules (delivery through the tool's `operations` argument or a command instead of `<a2ui-json>` tags), then one schema block with the agent-to-renderer schema pruned to `createSurface` / `updateComponents` / `updateDataModel`, the common types the catalog and those messages use, and the merged catalog schema, then seven examples of differently shaped surfaces (four official, three LobeHub), then layout guidance. `buildA2uiSystemPrompt()` puts LobeHub's product rules (when a card helps, no filler buttons, actions, honesty) in front.
 
 `@lobehub/ui`, `@lobehub/charts`, `@lobehub/icons`, `lucide-react`, `react` and `react-dom` are peer dependencies.
 

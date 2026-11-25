@@ -12,6 +12,8 @@ export interface A2uiSurfaceRecord {
   catalogId: string;
   fallback: string;
   operations: A2uiOperation[];
+  /** Set once a person acted on it, where the host stores that with the record; read-only then. */
+  state?: A2uiSurfaceState;
   surfaceId: string;
   title?: string;
   version: string;

@@ -9,6 +9,8 @@ export {
   normalizeIconName,
 } from './icons';
 export * from './prompt';
+export * from './records';
+export * from './tool';
 export type * from './types';
 export type { ValidateSurfaceResult } from './validate';
 export {
