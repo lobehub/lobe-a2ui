@@ -1,6 +1,6 @@
 {
   "name": "@lobehub/a2ui",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A2UI surfaces drawn with @lobehub/ui: the official A2UI basic catalog plus LobeHub's extensions, schema validation, the A2UI prompt, text fallback and the React renderer",
   "keywords": [
     "a2ui",

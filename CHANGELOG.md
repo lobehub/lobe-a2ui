@@ -2,6 +2,12 @@
 
 # Changelog
 
+# [1.1.0](https://github.com/lobehub/lobe-a2ui/compare/v1.0.1...v1.1.0) (2026-11-26)
+
+### ✨ Features
+
+- Follow the official A2UI model: basic catalog, neutral extensions, examples library and processor, closes [#2](https://github.com/lobehub/lobe-a2ui/issues/2) ([03e42e7](https://github.com/lobehub/lobe-a2ui/commit/03e42e7))
+
 ## [1.0.1](https://github.com/lobehub/lobe-a2ui/compare/v1.0.0...v1.0.1) (2026-11-25)
 
 ### ♻ Code Refactoring
