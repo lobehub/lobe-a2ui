@@ -16,6 +16,7 @@ export {
   normalizeIconName,
   parseIconName,
 } from './icons';
+export { hasLegacyComponents, upgradeLegacyOperations } from './legacy';
 export * from './processor';
 export * from './prompt';
 export * from './records';
@@ -29,4 +30,3 @@ export {
   normalizeOperations,
   validateSurface,
 } from './validate';
-export { hasLegacyComponents, upgradeLegacyOperations } from './legacy';
