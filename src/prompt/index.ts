@@ -3,6 +3,7 @@ import { A2UI_EXAMPLES } from '../examples';
 import type { A2uiExample } from '../examples/types';
 import agentToRenderer from '../schema/agent_to_renderer.json';
 import commonTypes from '../schema/common_types.json';
+import { catalogIndex } from './progressive';
 
 /**
  * The A2UI prompt, ported from the official Direct JSON prompt generator
@@ -258,3 +259,132 @@ export const a2uiProductRules = (delivery: A2uiDelivery = A2UI_DEFAULT_DELIVERY)
   `You can answer with a card instead of, or next to, text: ${drawText(delivery)} with A2UI messages for one surface. Use one for information a person takes in at a glance, or to ask for several inputs at once; not for prose a few sentences answer.
 - A display card needs no buttons: add one only for a real next step you can carry out when it is clicked.
 - Show only figures you were given or measured; say so on the card when something is an estimate or an example.`;
+
+/** How the model reads a component's full schema and examples: a tool, or a command. */
+export type A2uiDocsAccess = { command: string } | { tool: string };
+
+export const A2UI_DEFAULT_DOCS_ACCESS: A2uiDocsAccess = { tool: 'readCardDocs' };
+
+const docsText = (access: A2uiDocsAccess) =>
+  'tool' in access
+    ? `call ${access.tool} with the component names`
+    : `run \`${access.command} <Name,Name>\``;
+
+/** The examples the progressive prompt always shows: one official card, one with extensions. */
+export const A2UI_INDEX_EXAMPLE_IDS = ['stats-card', 'weekly-trend'] as const;
+
+const exampleBlock = (examples: readonly A2uiPromptExample[]) =>
+  examples.length > 0
+    ? [
+        '### Examples:',
+        ...examples.map(
+          (example, index) =>
+            `Example ${index + 1}: ${example.name}${example.description ? ` — ${example.description}` : ''}\n${compact(onCatalog(example.messages))}`,
+        ),
+      ].join('\n\n')
+    : '';
+
+export interface BuildA2uiIndexPromptOptions {
+  catalog?: CatalogDocument;
+  delivery?: A2uiDelivery;
+  /** How the model reads full component docs. Defaults to the `readCardDocs` tool. */
+  docs?: A2uiDocsAccess;
+  /** Examples shown up front. Defaults to `A2UI_INDEX_EXAMPLE_IDS`. */
+  examples?: A2uiPromptExample[] | false;
+}
+
+/**
+ * The progressive prompt: the workflow rules, one line per component and function derived from
+ * the catalog schema, and two short examples. The full schema and examples of a component are
+ * read on demand (`buildA2uiDocs`), so the always-on prompt stays well under the official one.
+ */
+export const buildA2uiIndexPrompt = (options: BuildA2uiIndexPromptOptions = {}): string => {
+  const catalog = options.catalog ?? A2UI_CATALOG_DOCUMENT;
+  const examples =
+    options.examples === false
+      ? []
+      : (options.examples ?? loadExamples(undefined, A2UI_INDEX_EXAMPLE_IDS));
+  const docs = options.docs ?? A2UI_DEFAULT_DOCS_ACCESS;
+  return [
+    // No schema block here: messages follow the format below, and full schemas come on demand.
+    a2uiWorkflowRules(options.delivery).replace(
+      'each following the provided A2UI JSON SCHEMA',
+      'in the A2UI 1.0 format below',
+    ),
+    `- Messages are createSurface {surfaceId, catalogId}, updateComponents {surfaceId, components}, and optionally updateDataModel {surfaceId, path?, value}; each also has "version": "1.0". A component is {"id", "component": Name, ...props}; exactly one has id "root". A prop shown as \`{@path}\` or a dynamic type may bind to the data model with {"@path": "/key"}.
+- The lines below are an index. Before using a component whose props you are unsure of, ${docsText(docs)} to read its full schema and examples. An invalid card comes back with the errors and the schemas of the components involved.`,
+    catalogIndex(catalog),
+    exampleBlock(examples),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+};
+
+const componentsOfExample = (example: A2uiExample) =>
+  new Set(
+    example.messages.flatMap((message) => {
+      const update = (message.updateComponents ?? message.createSurface) as
+        | { components?: { component?: unknown }[] }
+        | undefined;
+      return (update?.components ?? []).map((component) => String(component.component));
+    }),
+  );
+
+export interface BuildA2uiDocsOptions {
+  catalog?: CatalogDocument;
+  /** Examples to choose from; defaults to every example. */
+  examples?: readonly A2uiExample[];
+  /** At most this many examples, the smallest that use the asked components. Default 2. */
+  maxExamples?: number;
+}
+
+/**
+ * The full docs of some components and functions: their catalog schema (with the common types
+ * they use) and the smallest examples that use them. Unknown names are listed, not thrown.
+ */
+export const buildA2uiDocs = (
+  names: readonly string[],
+  options: BuildA2uiDocsOptions = {},
+): string => {
+  const base = options.catalog ?? A2UI_CATALOG_DOCUMENT;
+  const wanted = [...new Set(names.map((name) => name.trim()).filter(Boolean))];
+  const components = wanted.filter((name) => name in base.components);
+  const functions = wanted.filter((name) => name in (base.functions ?? {}));
+  const unknown = wanted.filter((name) => !components.includes(name) && !functions.includes(name));
+
+  const catalog = pruneCatalogFunctions(pruneCatalogComponents(base, components), functions);
+  const common = pruneCommonTypesSchema(commonTypes as Json, catalog);
+  const max = options.maxExamples ?? 2;
+  const pool = [...(options.examples ?? loadExamples())].sort(
+    (a, b) => compact(a.messages).length - compact(b.messages).length,
+  );
+  const chosen: A2uiExample[] = [];
+  for (const name of components) {
+    if (chosen.length >= max) break;
+    if (chosen.some((example) => componentsOfExample(example).has(name))) continue;
+    const example = pool.find((candidate) => componentsOfExample(candidate).has(name));
+    if (example) chosen.push(example);
+  }
+
+  return [
+    unknown.length > 0
+      ? `Not in the catalog: ${unknown.join(', ')}. Pick names from the component and function index.`
+      : '',
+    components.length + functions.length > 0
+      ? [
+          A2UI_SCHEMA_BLOCK_START,
+          `### Common Types Schema:\n${compact(common)}`,
+          `### Catalog Schema (${[...components, ...functions].join(', ')}):\n${compact({
+            components: catalog.components,
+            functions: catalog.functions,
+            ...(catalog.$defs?.Weight ? { $defs: { Weight: catalog.$defs.Weight } } : {}),
+          })}`,
+          A2UI_SCHEMA_BLOCK_END,
+        ].join('\n\n')
+      : '',
+    exampleBlock(chosen),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+};
+export { catalogIndex, componentSignature, functionSignature } from './progressive';
