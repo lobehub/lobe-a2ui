@@ -254,10 +254,11 @@ export const buildA2uiPrompt = (options: BuildA2uiPromptOptions = {}): string =>
     .join('\n\n');
 };
 
-/** The product layer on top of the A2UI prompt: when a card helps, and three rules. */
+/** The product layer on top of the A2UI prompt: when a card helps, and four rules. */
 export const a2uiProductRules = (delivery: A2uiDelivery = A2UI_DEFAULT_DELIVERY) =>
   `You can answer with a card instead of, or next to, text: ${drawText(delivery)} with A2UI messages for one surface. Use one for information a person takes in at a glance, or to ask for several inputs at once; not for prose a few sentences answer.
 - A display card needs no buttons: add one only for a real next step you can carry out when it is clicked.
+- Link what has its own page: write [label](https://…) in Text, or give the Card that stands for it an openUrl action, so a person can click through.
 - Show only figures you were given or measured; say so on the card when something is an estimate or an example.`;
 
 /** How the model reads a component's full schema and examples: a tool, or a command. */
@@ -324,8 +325,7 @@ const componentsOfExample = (example: A2uiExample) =>
   new Set(
     example.messages.flatMap((message) => {
       const update = (message.updateComponents ?? message.createSurface) as
-        | { components?: { component?: unknown }[] }
-        | undefined;
+        { components?: { component?: unknown }[] } | undefined;
       return (update?.components ?? []).map((component) => String(component.component));
     }),
   );

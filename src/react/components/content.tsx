@@ -39,9 +39,10 @@ const STEP_STATUSES = ['current', 'done', 'error', 'todo'] as const;
 const HEADING = /^(#{1,6})\s+(\S[^\n]*)$/;
 const HEADING_SIZE = [24, 20, 18, 16, 14, 14];
 
-const INLINE = /(`[^`\n]+`|\*\*[^*\n]+\*\*)/g;
+const INLINE = /(`[^`\n]+`|\*\*[^*\n]+\*\*|\[[^\]\n]+\]\(https:\/\/[^\s)]+\))/g;
+const LINK = /^\[([^\]\n]+)\]\((https:\/\/[^\s)]+)\)$/;
 
-/** A caption's inline Markdown: `code` and **bold**; anything else stays as written. */
+/** A caption's inline Markdown: `code`, **bold** and https [links](https://…); anything else stays as written. */
 const inline = (text: string): ReactNode[] => {
   let at = 0;
   return text.split(INLINE).map((part) => {
@@ -53,6 +54,19 @@ const inline = (text: string): ReactNode[] => {
         <code className={styles.code} key={key}>
           {part.slice(1, -1)}
         </code>
+      );
+    const link = LINK.exec(part);
+    if (link)
+      return (
+        <a
+          className={styles.link}
+          href={link[2]}
+          key={key}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {link[1]}
+        </a>
       );
     if (part.length > 4 && part.startsWith('**') && part.endsWith('**'))
       return (

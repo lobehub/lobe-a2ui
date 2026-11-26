@@ -1,5 +1,6 @@
-import { Accordion, Divider, Flexbox, Grid, Modal, Tabs, Text } from '@lobehub/ui';
+import { Accordion, cx, Divider, Flexbox, Grid, Modal, Tabs, Text } from '@lobehub/ui';
 import { Surface } from '@lobehub/ui/dashboard';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import { useState } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
@@ -13,16 +14,66 @@ import {
   useCardDepth,
 } from './shared';
 
+/** Controls inside a clickable card keep their own click: a link opens once, not twice. */
+const INNER_CONTROL = 'a, button, input, textarea, select, [role="button"]';
+
+/**
+ * A Card with an action is one target: the whole card is a button, with a fill on hover and a
+ * focus ring from the keyboard. A link or button inside it still does its own thing.
+ */
+const Clickable = ({
+  children,
+  onActivate,
+  tile,
+}: {
+  children: ReactNode;
+  onActivate: () => void;
+  tile: boolean;
+}) => (
+  <div
+    className={cx(styles.clickable, tile && styles.tile)}
+    role="button"
+    tabIndex={0}
+    onClick={(event: MouseEvent<HTMLDivElement>) => {
+      const hit = (event.target as HTMLElement).closest(INNER_CONTROL);
+      if (hit && hit !== event.currentTarget) return;
+      onActivate();
+    }}
+    onKeyDown={(event: KeyboardEvent) => {
+      if (event.target !== event.currentTarget) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onActivate();
+      }
+    }}
+  >
+    {children}
+  </div>
+);
+
 /**
  * A Card as the root is the surface's card: a @lobehub/ui Surface with a padded body. Inside
  * another card it is a filled tile with no border, so a grid of cards reads as groups in one card
- * rather than boxes in a box.
+ * rather than boxes in a box. With an action, either one is clickable as a whole.
  */
 export const CardView = define('Card', ({ props, buildChild }) => {
   const depth = useCardDepth();
   const child = <CardDepthContext value={depth + 1}>{buildChild(props.child)}</CardDepthContext>;
-  return depth === 0 ? (
-    <Surface padded>{child}</Surface>
+  const action = typeof props.action === 'function' ? (props.action as () => void) : undefined;
+  if (depth === 0) {
+    const card = <Surface padded>{child}</Surface>;
+    return action ? (
+      <Clickable tile={false} onActivate={action}>
+        {card}
+      </Clickable>
+    ) : (
+      card
+    );
+  }
+  return action ? (
+    <Clickable tile onActivate={action}>
+      {child}
+    </Clickable>
   ) : (
     <div className={styles.tile}>{child}</div>
   );

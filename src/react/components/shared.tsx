@@ -127,6 +127,32 @@ export const styles = createStaticStyles(({ css, cssVar: token }) => ({
     border-radius: ${token.borderRadiusLG};
     background: ${token.colorFillTertiary};
   `,
+  clickable: css`
+    cursor: pointer;
+    position: relative;
+    border-radius: ${token.borderRadiusLG};
+    transition: background 150ms ${token.motionEaseOut};
+
+    &:hover {
+      background: ${token.colorFillSecondary};
+    }
+
+    &:focus-visible {
+      outline: 2px solid ${token.colorPrimaryBorder};
+      outline-offset: 2px;
+    }
+  `,
+  link: css`
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: ${token.colorBorder};
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: ${token.colorText};
+      text-decoration-color: currentColor;
+    }
+  `,
   code: css`
     padding-block: 1px;
     padding-inline: 4px;

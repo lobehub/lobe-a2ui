@@ -179,6 +179,84 @@ describe('text safety', () => {
   });
 });
 
+describe('clicking through', () => {
+  const open = (url: string) => ({ functionCall: { args: { url }, call: 'openUrl' } });
+  const linked = () => {
+    const result = validateSurface([
+      {
+        updateComponents: {
+          components: [
+            { child: 'grid', component: 'Card', id: 'root' },
+            { children: ['pr', 'note'], component: 'Grid', id: 'grid' },
+            {
+              action: open('https://github.com/o/r/pull/1'),
+              child: 'prBody',
+              component: 'Card',
+              id: 'pr',
+            },
+            { children: ['prTitle', 'prLink'], component: 'Column', id: 'prBody' },
+            { component: 'Text', id: 'prTitle', text: 'PR #1' },
+            {
+              component: 'Text',
+              id: 'prLink',
+              text: 'on [the branch](https://github.com/o/r/tree/b) since `11-20`',
+              variant: 'caption',
+            },
+            { child: 'noteBody', component: 'Card', id: 'note' },
+            { component: 'Text', id: 'noteBody', text: 'Plain tile' },
+          ],
+          surfaceId: 'links',
+        },
+        version: '1.0',
+      },
+    ]);
+    if (!result.ok) throw new Error(result.errors.join());
+    return result.record;
+  };
+
+  it('opens a Card with an action from a click or the keyboard, and only that card', async () => {
+    const opened = vi.spyOn(globalThis, 'open').mockReturnValue(null);
+    render(<SurfaceView record={linked()} />, { wrapper });
+    const card = await screen.findByRole('button');
+    fireEvent.click(screen.getByText('PR #1'));
+    fireEvent.keyDown(card, { key: 'Enter' });
+    expect(opened.mock.calls.map(([url]) => url)).toEqual([
+      'https://github.com/o/r/pull/1',
+      'https://github.com/o/r/pull/1',
+    ]);
+    // A card without an action stays a plain tile.
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    opened.mockRestore();
+  });
+
+  it('draws https links in captions, which open on their own and not the card', async () => {
+    const opened = vi.spyOn(globalThis, 'open').mockReturnValue(null);
+    render(<SurfaceView record={linked()} />, { wrapper });
+    const link = await screen.findByRole('link', { name: 'the branch' });
+    expect(link.getAttribute('href')).toBe('https://github.com/o/r/tree/b');
+    expect(link.getAttribute('target')).toBe('_blank');
+    fireEvent.click(link);
+    expect(opened).not.toHaveBeenCalled();
+    opened.mockRestore();
+  });
+
+  it('rejects a Card action that opens a non-https url', () => {
+    const result = validateSurface([
+      {
+        updateComponents: {
+          components: [
+            { action: open('http://x.com'), child: 't', component: 'Card', id: 'root' },
+            { component: 'Text', id: 't', text: 'x' },
+          ],
+          surfaceId: 'bad',
+        },
+        version: '1.0',
+      },
+    ]);
+    expect(!result.ok && result.errors).toContain('Card root: openUrl needs an https url');
+  });
+});
+
 describe('host', () => {
   const form = () => {
     const result = validateSurface([

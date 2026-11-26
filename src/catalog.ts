@@ -10,9 +10,9 @@ export { A2UI_CATALOG_ID, A2UI_LIST_LIMITS, A2UI_VERSION } from './constants';
  * `schema/basic_catalog.json` is google/A2UI `catalogs/basic/v1/catalog.json` verbatim: every
  * component, prop and function. `schema/lobehub_catalog.json` adds neutral building blocks
  * (Chart, Metrics, Statistic, Table, KeyValue, Progress, Steps, Tag, Callout, Avatar, Code,
- * Collapse, Grid) whose every word comes from the Agent, and lets Icon names reach the Lucide,
- * Simple Icons and LobeHub Icons sets (`lucide:rocket`, `simple:github`, `lobehub:OpenAI`). Validation, the renderer and the
- * prompt all read the merged document, so they can't drift apart.
+ * Collapse, Grid) whose every word comes from the Agent, lets Icon names reach a bundled Lucide
+ * set (`lucide:rocket`), and lets a Card take an action so the whole card is clickable. Validation,
+ * the renderer and the prompt all read the merged document, so they can't drift apart.
  */
 export type CatalogDocument = {
   $defs?: Record<string, unknown>;
@@ -99,4 +99,3 @@ const propertyOf = (component: string, ...path: string[]): Schema | undefined =>
   }, LOBEHUB_CATALOG_DOCUMENT.components[component] as Schema);
 
 export const CHART_TYPES = propertyOf('Chart', 'type')!.enum as readonly string[];
-
