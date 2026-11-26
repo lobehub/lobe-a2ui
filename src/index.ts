@@ -1,4 +1,10 @@
-export { actionToMessage, parseActionMessage } from './action';
+export {
+  type ActionField,
+  actionFields,
+  actionToMessage,
+  parseActionMessage,
+  readActionMessage,
+} from './action';
 export * from './catalog';
 export { surfaceText, surfaceTitle, surfaceToText } from './fallback';
 export {
