@@ -18,7 +18,7 @@ import {
 import { cssVar, Flexbox, Text } from '@lobehub/ui';
 import type { ReactNode } from 'react';
 
-import { A2UI_LIST_LIMITS } from '../../catalog';
+import { A2UI_LIST_LIMITS } from '../../constants';
 import { useA2uiHost } from '../host';
 import { define, rowsOf } from './shared';
 

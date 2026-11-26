@@ -2,7 +2,7 @@ import { Accordion, Divider, Flexbox, Grid, Modal, Tabs, Text } from '@lobehub/u
 import { Surface } from '@lobehub/ui/dashboard';
 import { useState } from 'react';
 
-import { A2UI_LIST_LIMITS } from '../../catalog';
+import { A2UI_LIST_LIMITS } from '../../constants';
 import { ALIGN, childrenOf, define, JUSTIFY, styles } from './shared';
 
 /**

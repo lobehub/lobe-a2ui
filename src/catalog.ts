@@ -1,6 +1,8 @@
 import basicCatalog from './schema/basic_catalog.json';
 import lobehubCatalog from './schema/lobehub_catalog.json';
 
+export { A2UI_CATALOG_ID, A2UI_LIST_LIMITS, A2UI_VERSION } from './constants';
+
 /**
  * LobeHub's A2UI catalog: the official A2UI 1.0 basic catalog, unchanged, plus a small extension
  * catalog in the same format for what the basic catalog can't draw.
@@ -27,9 +29,7 @@ export type CatalogDocument = {
 export const BASIC_CATALOG_DOCUMENT = basicCatalog as unknown as CatalogDocument;
 export const LOBEHUB_CATALOG_DOCUMENT = lobehubCatalog as unknown as CatalogDocument;
 
-export const A2UI_CATALOG_ID = LOBEHUB_CATALOG_DOCUMENT.catalogId;
 export const A2UI_BASIC_CATALOG_ID = BASIC_CATALOG_DOCUMENT.catalogId;
-export const A2UI_VERSION = '1.0';
 
 /**
  * One catalog document from a base and extensions on top: an extension's component replaces the
@@ -100,15 +100,3 @@ const propertyOf = (component: string, ...path: string[]): Schema | undefined =>
 
 export const CHART_TYPES = propertyOf('Chart', 'type')!.enum as readonly string[];
 
-/**
- * Entries a bound list may carry. Literal lists are capped by the schema's `maxItems`; data the
- * list binds to with `{"@path": ...}` is checked against the same numbers.
- */
-export const A2UI_LIST_LIMITS: Record<string, Record<string, number>> = {
-  Chart: { data: 200 },
-  Grid: { children: 12 },
-  KeyValue: { items: 30 },
-  Metrics: { items: 8 },
-  Steps: { items: 20 },
-  Table: { rows: 50 },
-};

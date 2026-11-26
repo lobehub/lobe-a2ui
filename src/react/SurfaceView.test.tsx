@@ -125,19 +125,25 @@ describe('every component', () => {
     },
   );
 
-  it('lazy-loads icons from each set', async () => {
+  it('draws icons from each set as SVG files on the CDN, bundling none', () => {
     const { container } = render(
       <>
         <A2uiIcon name="home" />
         <A2uiIcon name="lucide:trending-up" />
         <A2uiIcon name="simple:github" />
-        <A2uiIcon name="lobehub:openai" />
+        <A2uiIcon name="lobehub:OpenAI" />
       </>,
       { wrapper },
     );
-    await vi.waitFor(() => expect(container.querySelectorAll('svg').length).toBe(4), {
-      timeout: 5000,
-    });
+    const masks = [...container.querySelectorAll<HTMLElement>('[role="img"]')].map(
+      (icon) => icon.style.mask || icon.style.webkitMask,
+    );
+    expect(masks[0]).toMatch(/lucide-static[@/][\d.]+\/(files\/)?icons\/house\.svg/);
+    expect(masks[1]).toMatch(/lucide-static[@/][\d.]+\/(files\/)?icons\/trending-up\.svg/);
+    expect(masks[2]).toMatch(/simple-icons[@/][\d.]+\/(files\/)?icons\/github\.svg/);
+    expect(container.querySelector('img')?.getAttribute('src')).toMatch(
+      /@lobehub\/icons-static-svg[@/][\d.]+\/(files\/)?icons\/openai-color\.svg/,
+    );
   });
 });
 

@@ -17,7 +17,7 @@ import {
 import { type MetricItem, MetricStrip } from '@lobehub/ui/dashboard';
 import { useEffect, useState } from 'react';
 
-import { A2UI_LIST_LIMITS } from '../../catalog';
+import { A2UI_LIST_LIMITS } from '../../constants';
 import { useA2uiLabels } from '../host';
 import { metricColumns } from '../metricLayout';
 import { A2uiIcon } from './icon';

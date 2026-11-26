@@ -5,7 +5,7 @@ import { createStaticStyles, cx, Flexbox, Text } from '@lobehub/ui';
 import { Surface } from '@lobehub/ui/dashboard';
 import { memo, useEffect, useMemo, useState } from 'react';
 
-import { A2UI_CATALOG_ID, A2UI_VERSION } from '../catalog';
+import { A2UI_CATALOG_ID, A2UI_VERSION } from '../constants';
 import type { A2uiActionPayload, A2uiSurfaceRecord, A2uiSurfaceState } from '../types';
 import { createLobeFunctions, LOBE_COMPONENTS } from './components';
 import { useA2uiHost } from './host';
