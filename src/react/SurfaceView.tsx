@@ -1,20 +1,44 @@
 import { A2uiSurface } from '@a2ui/react';
 import { MessageProcessor } from '@a2ui/web_core';
 import { Catalog } from '@a2ui/web_core/v1_0';
-import { createStaticStyles, cx, Text } from '@lobehub/ui';
-import { memo, useEffect, useMemo } from 'react';
+import { createStaticStyles, cx, Flexbox, Text } from '@lobehub/ui';
+import { Surface } from '@lobehub/ui/dashboard';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 import { A2UI_CATALOG_ID, A2UI_VERSION } from '../catalog';
 import type { A2uiActionPayload, A2uiSurfaceRecord, A2uiSurfaceState } from '../types';
-import { LOBE_COMPONENTS } from './components';
+import { createLobeFunctions, LOBE_COMPONENTS } from './components';
+import { useA2uiHost } from './host';
 
-let lobeCatalog: Catalog<never> | undefined;
-const getLobeCatalog = () =>
-  (lobeCatalog ??= new Catalog(
-    A2UI_CATALOG_ID,
-    A2UI_VERSION,
-    LOBE_COMPONENTS as never,
-  ) as Catalog<never>);
+/** One rendering catalog per locale: formatNumber, formatDate and the rest read it. */
+const lobeCatalogs = new Map<string, Catalog<never>>();
+const getLobeCatalog = (locale: string | undefined) => {
+  const key = locale ?? '';
+  let catalog = lobeCatalogs.get(key);
+  if (!catalog)
+    lobeCatalogs.set(
+      key,
+      (catalog = new Catalog(
+        A2UI_CATALOG_ID,
+        A2UI_VERSION,
+        LOBE_COMPONENTS as never,
+        createLobeFunctions(locale) as never,
+      ) as Catalog<never>),
+    );
+  return catalog;
+};
+
+/** The root component's name: a Card root is the card itself; any other root gets one. */
+const rootComponentOf = (record: A2uiSurfaceRecord) => {
+  for (const operation of record.operations) {
+    const update = operation.updateComponents as { components?: unknown[] } | undefined;
+    const root = update?.components?.find(
+      (component) => (component as { id?: unknown })?.id === 'root',
+    ) as { component?: unknown } | undefined;
+    if (root) return root.component;
+  }
+  return undefined;
+};
 
 const styles = createStaticStyles(({ css }) => ({
   root: css`
@@ -40,21 +64,22 @@ export interface SurfaceViewProps {
  * conversation never share data models, and a record that fails to replay falls back to its text.
  */
 export const SurfaceView = memo<SurfaceViewProps>(({ record, state, onAction }) => {
+  const locale = useA2uiHost()?.locale;
   const processor = useMemo(() => {
-    const next = new MessageProcessor([getLobeCatalog()] as never);
+    const next = new MessageProcessor([getLobeCatalog(locale)] as never);
     try {
       next.processMessages(record.operations as never);
     } catch {
       return null;
     }
     return next;
-  }, [record]);
+  }, [record, locale]);
   const surface = processor?.model.surfacesMap.get(record.surfaceId) ?? null;
 
   useEffect(() => {
     if (!processor || !onAction) return;
     const subscription = processor.model.onAction.subscribe((action) =>
-      onAction({ context: action.context, name: action.name, surfaceId: action.surfaceId }),
+      onAction(action as A2uiActionPayload),
     );
     return () => subscription.unsubscribe();
   }, [processor, onAction]);
@@ -67,10 +92,54 @@ export const SurfaceView = memo<SurfaceViewProps>(({ record, state, onAction }) 
       aria-disabled={submitted || undefined}
       className={cx(styles.root, submitted && styles.submitted)}
     >
-      <A2uiSurface surface={surface as never} />
+      {rootComponentOf(record) === 'Card' ? (
+        <A2uiSurface surface={surface as never} />
+      ) : (
+        <Surface padded>
+          <A2uiSurface surface={surface as never} />
+        </Surface>
+      )}
     </div>
   );
 });
 
 SurfaceView.displayName = 'A2uiSurfaceView';
 
+/**
+ * One stored surface wired to the enclosing host: its actions go to `host.sendAction`, and once
+ * one is accepted (or the record says it was submitted) the surface turns read-only. Hosts render
+ * this instead of handling submission themselves.
+ */
+export const HostedSurface = memo<{ record: A2uiSurfaceRecord }>(({ record }) => {
+  const host = useA2uiHost();
+  const [local, setLocal] = useState<A2uiSurfaceState>();
+  const state = local ?? record.state;
+  const open = state?.status !== 'submitted';
+  const onAction = useMemo(
+    () =>
+      host?.canAct && open
+        ? async (action: A2uiActionPayload) => {
+            if (await host.sendAction(action, record))
+              setLocal({ action, status: 'submitted', submittedAt: new Date().toISOString() });
+          }
+        : undefined,
+    [host, open, record],
+  );
+  return <SurfaceView record={record} state={state} onAction={onAction} />;
+});
+
+HostedSurface.displayName = 'A2uiHostedSurface';
+
+/** A message's or a step's surfaces, in order, each wired to the enclosing host. */
+export const SurfaceList = memo<{ gap?: number; surfaces: readonly A2uiSurfaceRecord[] }>(
+  ({ surfaces, gap = 8 }) =>
+    surfaces.length === 0 ? null : (
+      <Flexbox gap={gap}>
+        {surfaces.map((surface) => (
+          <HostedSurface key={surface.surfaceId} record={surface} />
+        ))}
+      </Flexbox>
+    ),
+);
+
+SurfaceList.displayName = 'A2uiSurfaceList';

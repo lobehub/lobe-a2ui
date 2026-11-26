@@ -9,8 +9,8 @@ const HEADING = /^#{1,6}\s+/;
 const clean = (text: string) =>
   text.replace(HEADING, '').replaceAll(/[*_`]/g, '').replaceAll(/\s+/g, ' ').trim();
 
-/** The data model the operations build, so `{ "@path": ... }` values can be read back. */
-const dataModelOf = (operations: A2uiOperation[]) => {
+/** @internal The data model the operations build, so `{ "@path": ... }` values can be read back. */
+export const dataModelOf = (operations: A2uiOperation[]) => {
   let model: Record<string, unknown> = {};
   for (const operation of operations) {
     const update = operation.updateDataModel;
@@ -31,7 +31,7 @@ const dataModelOf = (operations: A2uiOperation[]) => {
   return model;
 };
 
-const resolve = (value: unknown, model: Record<string, unknown>): unknown => {
+export const resolve = (value: unknown, model: Record<string, unknown>): unknown => {
   if (!isRecord(value)) return value;
   const path = value['@path'] ?? value.path;
   if (typeof path !== 'string') return undefined;
@@ -63,8 +63,12 @@ const shownOrder = (operations: A2uiOperation[]): Component[] => {
     if (!component) return;
     seen.add(id);
     ordered.push(component);
-    for (const key of ['badge', 'child'] as const) visit(component[key]);
+    for (const key of ['badge', 'child', 'trigger', 'content'] as const) visit(component[key]);
     if (Array.isArray(component.children)) component.children.forEach(visit);
+    // A template list draws its template once per item; its words are read once.
+    else if (isRecord(component.children)) visit(component.children.componentId);
+    if (Array.isArray(component.tabs))
+      for (const tab of component.tabs) if (isRecord(tab)) visit(tab.child);
   };
   visit('root');
   return ordered;
@@ -85,23 +89,76 @@ const strings = (component: Component, model: Record<string, unknown>): string[]
     case 'Card': {
       return [...text(component.title), ...text(component.description)];
     }
-    case 'Callout': {
-      return [...text(component.title), ...text(component.body)];
-    }
     case 'Metrics': {
       return list(component.items).map((item) =>
         [item.label, item.value, item.delta].filter((part) => part !== undefined).join(' '),
       );
     }
-    case 'Items': {
+    case 'Callout': {
+      return [...text(component.title), ...text(component.body)];
+    }
+    case 'Table': {
+      const keys = list(component.columns)
+        .map((column) => column.key)
+        .filter((key): key is string => typeof key === 'string');
       return [
         ...text(component.title),
-        ...list(component.items).map((item) => clean(String(item.title ?? ''))),
+        ...list(component.rows).map((row) =>
+          keys
+            .flatMap((key) => text(row[key]))
+            .filter(Boolean)
+            .join(', '),
+        ),
       ];
+    }
+    case 'KeyValue': {
+      return [
+        ...text(component.title),
+        ...list(component.items).map((item) =>
+          [...text(item.label), ...text(item.value)].join(': '),
+        ),
+      ];
+    }
+    case 'Progress': {
+      const value = Number(resolve(component.value, model));
+      const max = Number(resolve(component.max, model) ?? 100) || 100;
+      const amount = text(component.caption)[0] ?? `${Math.round((value / max) * 100)}%`;
+      return [[...text(component.label), amount].join(' ')];
+    }
+    case 'Steps': {
+      // A step's time or date leads it: "09:00 Arrive".
+      return [
+        ...text(component.title),
+        ...list(component.items).map((item) => [...text(item.meta), ...text(item.title)].join(' ')),
+      ];
+    }
+    case 'Statistic': {
+      return [
+        [
+          ...text(component.label),
+          [component.prefix, component.value, component.suffix]
+            .map((part) => text(part)[0] ?? '')
+            .join(''),
+        ]
+          .filter(Boolean)
+          .join(' '),
+      ];
+    }
+    case 'Collapse': {
+      return [...text(component.title)];
+    }
+    case 'Tabs': {
+      return list(component.tabs).flatMap((tab) => text(tab.title));
+    }
+    case 'Image':
+    case 'AudioPlayer': {
+      return [...text(component.description)];
+    }
+    case 'ChoicePicker': {
+      return [...text(component.label), ...list(component.options).flatMap((o) => text(o.label))];
     }
     case 'Text':
     case 'Tag':
-    case 'Bars':
     case 'Chart': {
       return [...text(component.text), ...text(component.title)];
     }

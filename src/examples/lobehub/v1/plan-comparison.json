@@ -1,0 +1,150 @@
+{
+  "name": "Plan Comparison",
+  "description": "Options compared across attributes: a Table carries the comparison, and a Grid of two Cards gives the reasoning with Lucide icons.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "plan-comparison",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "plan-comparison",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "body"
+          },
+          {
+            "id": "body",
+            "component": "Column",
+            "children": ["title", "table", "reasons"]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "#### Pro fits a 14-person team best"
+          },
+          {
+            "id": "table",
+            "component": "Table",
+            "columns": [
+              {
+                "key": "plan",
+                "label": "Plan"
+              },
+              {
+                "key": "seats",
+                "label": "Seats",
+                "align": "end"
+              },
+              {
+                "key": "storage",
+                "label": "Storage",
+                "align": "end"
+              },
+              {
+                "key": "price",
+                "label": "Price / mo",
+                "align": "end"
+              }
+            ],
+            "rows": [
+              {
+                "plan": "Basic",
+                "seats": 3,
+                "storage": "50 GB",
+                "price": "$9"
+              },
+              {
+                "plan": "Pro",
+                "seats": 20,
+                "storage": "1 TB",
+                "price": "$19"
+              },
+              {
+                "plan": "Team",
+                "seats": 100,
+                "storage": "5 TB",
+                "price": "$79"
+              }
+            ],
+            "caption": "Billed yearly"
+          },
+          {
+            "id": "reasons",
+            "component": "Grid",
+            "columns": 2,
+            "children": ["pros", "cons"]
+          },
+          {
+            "id": "pros",
+            "component": "Card",
+            "child": "prosBody"
+          },
+          {
+            "id": "prosBody",
+            "component": "Column",
+            "children": ["prosHead", "prosText"]
+          },
+          {
+            "id": "prosHead",
+            "component": "Row",
+            "children": ["prosIcon", "prosTitle"],
+            "align": "center"
+          },
+          {
+            "id": "prosIcon",
+            "component": "Icon",
+            "name": "lucide:circle-check"
+          },
+          {
+            "id": "prosTitle",
+            "component": "Text",
+            "text": "**Why Pro**"
+          },
+          {
+            "id": "prosText",
+            "component": "Text",
+            "text": "- Fits all 14 seats\n- A year of storage headroom"
+          },
+          {
+            "id": "cons",
+            "component": "Card",
+            "child": "consBody"
+          },
+          {
+            "id": "consBody",
+            "component": "Column",
+            "children": ["consHead", "consText"]
+          },
+          {
+            "id": "consHead",
+            "component": "Row",
+            "children": ["consIcon", "consTitle"],
+            "align": "center"
+          },
+          {
+            "id": "consIcon",
+            "component": "Icon",
+            "name": "lucide:shield-alert"
+          },
+          {
+            "id": "consTitle",
+            "component": "Text",
+            "text": "**Watch out**"
+          },
+          {
+            "id": "consText",
+            "component": "Text",
+            "text": "SSO is only on Team. Revisit at 20 seats."
+          }
+        ]
+      }
+    }
+  ]
+}

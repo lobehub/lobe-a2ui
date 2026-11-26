@@ -1,0 +1,96 @@
+{
+  "name": "Weekly Trend",
+  "description": "A single trend answer: one big Statistic, an area Chart of two series and a line of context.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "weekly-trend",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "weekly-trend",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "body"
+          },
+          {
+            "id": "body",
+            "component": "Column",
+            "children": ["stat", "chart", "note"]
+          },
+          {
+            "id": "stat",
+            "component": "Statistic",
+            "label": "Weekly active users",
+            "value": "48,210",
+            "caption": "Highest since launch",
+            "tone": "success"
+          },
+          {
+            "id": "chart",
+            "component": "Chart",
+            "type": "area",
+            "data": {
+              "@path": "/weeks"
+            },
+            "index": "week",
+            "categories": ["web", "mobile"]
+          },
+          {
+            "id": "note",
+            "component": "Text",
+            "text": "Mobile overtook web in week 46.",
+            "variant": "caption"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "weekly-trend",
+        "path": "/",
+        "value": {
+          "weeks": [
+            {
+              "week": "W41",
+              "web": 21000,
+              "mobile": 17000
+            },
+            {
+              "week": "W42",
+              "web": 21500,
+              "mobile": 18800
+            },
+            {
+              "week": "W43",
+              "web": 22100,
+              "mobile": 20500
+            },
+            {
+              "week": "W44",
+              "web": 22400,
+              "mobile": 22000
+            },
+            {
+              "week": "W45",
+              "web": 22800,
+              "mobile": 23900
+            },
+            {
+              "week": "W46",
+              "web": 23000,
+              "mobile": 25210
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

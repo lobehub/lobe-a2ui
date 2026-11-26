@@ -1,0 +1,167 @@
+{
+  "name": "Team Profile",
+  "description": "A profile: Avatar and name in a Row, Tags for roles, KeyValue for facts, and a templated List of members.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "team-profile",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "team-profile",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "body"
+          },
+          {
+            "id": "body",
+            "component": "Column",
+            "children": ["who", "divider", "facts", "membersTitle", "members"]
+          },
+          {
+            "id": "who",
+            "component": "Row",
+            "children": ["avatar", "whoText"],
+            "align": "center"
+          },
+          {
+            "id": "avatar",
+            "component": "Avatar",
+            "text": "🛰️",
+            "size": 48
+          },
+          {
+            "id": "whoText",
+            "component": "Column",
+            "children": ["name", "roles"]
+          },
+          {
+            "id": "name",
+            "component": "Text",
+            "text": "#### Platform team"
+          },
+          {
+            "id": "roles",
+            "component": "Row",
+            "children": ["r1", "r2"]
+          },
+          {
+            "id": "r1",
+            "component": "Tag",
+            "text": "Infrastructure",
+            "color": "info",
+            "icon": "lucide:server"
+          },
+          {
+            "id": "r2",
+            "component": "Tag",
+            "text": "On call this week",
+            "color": "success"
+          },
+          {
+            "id": "divider",
+            "component": "Divider"
+          },
+          {
+            "id": "facts",
+            "component": "KeyValue",
+            "columns": 2,
+            "items": [
+              {
+                "label": "Lead",
+                "value": "Ada Chen"
+              },
+              {
+                "label": "Timezone",
+                "value": "UTC+8"
+              },
+              {
+                "label": "Channel",
+                "value": "#platform"
+              },
+              {
+                "label": "Members",
+                "value": "3"
+              }
+            ]
+          },
+          {
+            "id": "membersTitle",
+            "component": "Text",
+            "text": "**Members**"
+          },
+          {
+            "id": "members",
+            "component": "List",
+            "children": {
+              "path": "/members",
+              "componentId": "member"
+            }
+          },
+          {
+            "id": "member",
+            "component": "Row",
+            "children": ["memberAvatar", "memberName", "memberRole"],
+            "align": "center"
+          },
+          {
+            "id": "memberAvatar",
+            "component": "Avatar",
+            "text": {
+              "@path": "initials"
+            },
+            "size": 28
+          },
+          {
+            "id": "memberName",
+            "component": "Text",
+            "text": {
+              "@path": "name"
+            },
+            "weight": 1
+          },
+          {
+            "id": "memberRole",
+            "component": "Text",
+            "text": {
+              "@path": "role"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "team-profile",
+        "path": "/",
+        "value": {
+          "members": [
+            {
+              "initials": "AC",
+              "name": "Ada Chen",
+              "role": "Lead"
+            },
+            {
+              "initials": "RP",
+              "name": "Ravi Patel",
+              "role": "SRE"
+            },
+            {
+              "initials": "LM",
+              "name": "Lin Mo",
+              "role": "Backend"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

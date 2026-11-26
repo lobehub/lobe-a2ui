@@ -12,16 +12,25 @@ export interface A2uiSurfaceRecord {
   catalogId: string;
   fallback: string;
   operations: A2uiOperation[];
+  /** Set once a person acted on it, where the host stores that with the record; read-only then. */
+  state?: A2uiSurfaceState;
   surfaceId: string;
   title?: string;
   version: string;
 }
 
-/** What a person did on a surface: the button's event name and the data model it carried. */
+/**
+ * What a person did on a surface: the official A2UI renderer-to-agent `action`, with the event's
+ * name, its context after resolving bindings, and the optional `userMessage` the Agent wrote.
+ */
 export interface A2uiActionPayload {
   context?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   name: string;
+  sourceComponentId?: string;
   surfaceId: string;
+  timestamp?: string;
+  userMessage?: string;
 }
 
 /** A surface's lifecycle once drawn. Submitted surfaces turn read-only. */

@@ -1,0 +1,108 @@
+{
+  "name": "Trip Day",
+  "description": "A schedule: Steps carry the timeline, KeyValue the booking facts, Progress the budget; a brand logo from Simple Icons heads it.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "trip-day",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "trip-day",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["header", "plan", "facts", "budget"]
+          },
+          {
+            "id": "header",
+            "component": "Row",
+            "children": ["logo", "title"],
+            "align": "center"
+          },
+          {
+            "id": "logo",
+            "component": "Icon",
+            "name": "simple:japanairlines"
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "#### Tokyo, day 1"
+          },
+          {
+            "id": "plan",
+            "component": "Steps",
+            "items": [
+              {
+                "meta": "08:30",
+                "title": "Tsukiji outer market",
+                "detail": "Breakfast",
+                "status": "done"
+              },
+              {
+                "meta": "11:00",
+                "title": "teamLab Planets",
+                "detail": "Tickets booked",
+                "status": "current"
+              },
+              {
+                "meta": "19:00",
+                "title": "Dinner in Ebisu",
+                "status": "todo"
+              }
+            ]
+          },
+          {
+            "id": "facts",
+            "component": "KeyValue",
+            "items": [
+              {
+                "label": "Hotel",
+                "value": "Trunk, Shibuya"
+              },
+              {
+                "label": "Check-in",
+                "value": "15:00"
+              }
+            ]
+          },
+          {
+            "id": "budget",
+            "component": "Progress",
+            "label": "Budget used",
+            "value": {
+              "@path": "/spent"
+            },
+            "max": 60000,
+            "caption": {
+              "@call": "formatCurrency",
+              "args": {
+                "value": {
+                  "@path": "/spent"
+                },
+                "currency": "JPY"
+              }
+            },
+            "tone": "success"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "trip-day",
+        "path": "/",
+        "value": {
+          "spent": 21500
+        }
+      }
+    }
+  ]
+}
