@@ -6,6 +6,7 @@ import { Surface } from '@lobehub/ui/dashboard';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import { A2UI_CATALOG_ID, A2UI_VERSION } from '../constants';
+import { upgradeLegacyOperations } from '../legacy';
 import type { A2uiActionPayload, A2uiSurfaceRecord, A2uiSurfaceState } from '../types';
 import { createLobeFunctions, LOBE_COMPONENTS } from './components';
 import { useA2uiHost } from './host';
@@ -68,7 +69,8 @@ export const SurfaceView = memo<SurfaceViewProps>(({ record, state, onAction }) 
   const processor = useMemo(() => {
     const next = new MessageProcessor([getLobeCatalog(locale)] as never);
     try {
-      next.processMessages(record.operations as never);
+      // Cards stored before 1.1 are rewritten into today's catalog before they replay.
+      next.processMessages(upgradeLegacyOperations(record.operations, locale) as never);
     } catch {
       return null;
     }
