@@ -127,6 +127,47 @@ export const styles = createStaticStyles(({ css, cssVar: token }) => ({
     border-radius: ${token.borderRadiusLG};
     background: ${token.colorFillTertiary};
   `,
+  cardBody: css`
+    padding: 16px;
+  `,
+  grid: css`
+    display: grid;
+    grid-template-columns: repeat(var(--a2-columns), minmax(0, 1fr));
+    gap: 12px;
+    min-width: 0;
+
+    &[data-columns='1'] {
+      --a2-columns: 1;
+    }
+
+    &[data-columns='2'] {
+      --a2-columns: 2;
+    }
+
+    &[data-columns='3'] {
+      --a2-columns: 3;
+    }
+
+    &[data-columns='4'] {
+      --a2-columns: 4;
+    }
+
+    @container a2ui (max-width: 520px) {
+      &[data-columns='4'] {
+        --a2-columns: 2;
+      }
+    }
+
+    @container a2ui (max-width: 400px) {
+      &[data-columns='3'] {
+        --a2-columns: 2;
+      }
+    }
+
+    @container a2ui (max-width: 260px) {
+      --a2-columns: 1 !important;
+    }
+  `,
   clickable: css`
     cursor: pointer;
     position: relative;
@@ -141,6 +182,141 @@ export const styles = createStaticStyles(({ css, cssVar: token }) => ({
       outline: 2px solid ${token.colorPrimaryBorder};
       outline-offset: 2px;
     }
+  `,
+  eyebrow: css`
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: ${token.colorTextTertiary};
+    letter-spacing: 0.02em;
+  `,
+  section: css`
+    & + & {
+      padding-block-start: 4px;
+    }
+  `,
+  star: css`
+    position: relative;
+    display: inline-flex;
+  `,
+  starHalf: css`
+    position: absolute;
+    inset: 0;
+  `,
+  stack: css`
+    & > * + * {
+      margin-inline-start: -6px;
+    }
+  `,
+  // One face in an AvatarGroup: a 28px circle with a picture or two initials.
+  face: css`
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    object-fit: cover;
+  `,
+  more: css`
+    width: auto;
+    min-width: 28px;
+    padding-inline: 6px;
+    border-radius: 14px;
+
+    font-weight: 500;
+    color: ${token.colorTextSecondary};
+
+    background: ${token.colorFillSecondary};
+  `,
+  matrixScroll: css`
+    overflow-x: auto;
+    min-width: 0;
+    border: 1px solid ${token.colorBorderSecondary};
+    border-radius: ${token.borderRadiusLG};
+  `,
+  matrix: css`
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+
+    th,
+    td {
+      padding-block: 8px;
+      padding-inline: 12px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    thead th {
+      font-weight: 600;
+      vertical-align: bottom;
+    }
+
+    tbody th {
+      font-weight: 400;
+      color: ${token.colorTextSecondary};
+      text-align: start;
+    }
+
+    tbody tr {
+      border-block-start: 1px solid ${token.colorBorderSecondary};
+    }
+
+    td svg {
+      vertical-align: middle;
+    }
+  `,
+  matrixPick: css`
+    background: ${token.colorFillTertiary};
+  `,
+  matrixNote: css`
+    display: block;
+
+    margin-block-end: 2px;
+
+    font-size: 11px;
+    font-weight: 500;
+    color: ${token.colorTextSecondary};
+  `,
+  linkCard: css`
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    min-width: 0;
+    padding-block: 12px;
+    padding-inline: 14px;
+    border-radius: ${token.borderRadiusLG};
+
+    color: inherit;
+    text-decoration: none;
+
+    background: ${token.colorFillTertiary};
+
+    transition: background 150ms ${token.motionEaseOut};
+
+    &:hover {
+      background: ${token.colorFillSecondary};
+    }
+
+    &:focus-visible {
+      outline: 2px solid ${token.colorPrimaryBorder};
+      outline-offset: 2px;
+    }
+  `,
+  empty: css`
+    padding-block: 20px;
+    padding-inline: 16px;
+    border: 1px dashed ${token.colorBorderSecondary};
+    border-radius: ${token.borderRadiusLG};
   `,
   link: css`
     color: inherit;

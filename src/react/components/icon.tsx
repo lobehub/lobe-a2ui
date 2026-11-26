@@ -35,6 +35,13 @@ const lucideKey = (name: string) => {
   return iconNames().has(key) ? key : undefined;
 };
 
+/** The Lucide component an Icon name stands for, once the bundled set has loaded. */
+export const useLucideIcon = (name: string | undefined) => {
+  const loaded = useIcons();
+  const key = name ? lucideKey(name) : undefined;
+  return key ? loaded?.[key] : undefined;
+};
+
 export interface A2uiIconProps {
   /** Overrides the muted text colour icons take by default. */
   color?: string;

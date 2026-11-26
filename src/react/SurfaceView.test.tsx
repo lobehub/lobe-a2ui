@@ -31,8 +31,8 @@ const record = () => {
           { children: ['head', 'metrics', 'go'], component: 'Column', id: 'col' },
           { children: ['title', 'tag'], component: 'Row', id: 'head' },
           { component: 'Text', id: 'title', text: 'Offsite' },
-          { component: 'Tag', id: 'tag', text: 'Best match' },
-          { component: 'Metrics', id: 'metrics', items: { '@path': '/metrics' } },
+          { component: 'Badge', id: 'tag', label: 'Best match' },
+          { component: 'StatGroup', id: 'metrics', items: { '@path': '/metrics' } },
           {
             action: { event: { context: { people: { '@path': '/people' } }, name: 'book' } },
             child: 'goLabel',
@@ -67,12 +67,8 @@ describe('SurfaceView', () => {
     expect(await screen.findByText('Offsite')).toBeTruthy();
     expect(screen.getByText('Best match')).toBeTruthy();
     expect(screen.getByText('¥440')).toBeTruthy();
-    // Before it is measured the strip takes one row; metricLayout.test.ts covers the wrapping.
-    const grid = document.querySelector<HTMLElement>('.lobe-dashboard-metric-strip__grid');
-    expect(grid?.style.getPropertyValue('--metric-columns')).toBe('1');
-    expect(document.querySelector('.lobe-dashboard-metric-strip')?.getAttribute('data-size')).toBe(
-      'small',
-    );
+    // The surface stands on the official dot-grid floor.
+    expect(document.querySelector('[data-a2ui="floor"]')).toBeTruthy();
 
     fireEvent.click(screen.getByText('Book it'));
     await vi.waitFor(() =>
@@ -103,7 +99,7 @@ describe('every component', () => {
     if (!result.ok) throw new Error(result.errors.join());
     const { container } = render(<SurfaceView record={result.record} />, { wrapper });
     // Replayed, not the text fallback.
-    await vi.waitFor(() => expect(container.querySelector('.lobe-dashboard-surface')).toBeTruthy());
+    await vi.waitFor(() => expect(container.querySelector('[data-a2ui="floor"]')).toBeTruthy());
     expect(container.textContent?.length).toBeGreaterThan(0);
   });
 
@@ -113,12 +109,23 @@ describe('every component', () => {
       const result = validateSurface(messages);
       if (!result.ok) throw new Error(result.errors.join());
       const { container } = render(<SurfaceView record={result.record} />, { wrapper });
-      await vi.waitFor(() =>
-        expect(container.querySelector('.lobe-dashboard-surface')).toBeTruthy(),
-      );
+      await vi.waitFor(() => expect(container.querySelector('[data-a2ui="floor"]')).toBeTruthy());
       if (id === 'plan-comparison') {
         expect(await screen.findByText('Pro fits a 14-person team best')).toBeTruthy();
         expect(screen.getByText('$19')).toBeTruthy();
+      }
+      if (id === 'kpi-dashboard') {
+        // Heading, formatted table cells and a badge column.
+        expect(await screen.findByText('Revenue grew 11% on EMEA renewals')).toBeTruthy();
+        expect(screen.getByText('$12,400')).toBeTruthy();
+        expect(screen.getByText('-3.5%')).toBeTruthy();
+        expect(screen.getByText('Overdue')).toBeTruthy();
+      }
+      if (id === 'vendor-comparison') {
+        expect(await screen.findByText('Error tracking for a 14-person team')).toBeTruthy();
+        expect(screen.getByRole('link', { name: /Beacon pricing/ }).getAttribute('href')).toBe(
+          'https://example.com/pricing/beacon',
+        );
       }
       if (id === 'trip-day') {
         expect(await screen.findByText('teamLab Planets')).toBeTruthy();
@@ -264,7 +271,7 @@ describe('host', () => {
         updateComponents: {
           components: [
             { children: ['table', 'pick', 'go'], component: 'Column', id: 'root' },
-            { columns: [{ key: 'a', label: 'A' }], component: 'Table', id: 'table', rows: [] },
+            { columns: [{ key: 'a', label: 'A' }], component: 'DataTable', id: 'table', rows: [] },
             {
               component: 'ChoicePicker',
               filterable: true,

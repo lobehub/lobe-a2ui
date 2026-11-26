@@ -23,6 +23,27 @@ const REF_TYPES: Record<string, string> = {
   Weight: 'number',
 };
 
+const isDynamicRef = (schema: Json) =>
+  typeof schema.$ref === 'string' && /\/(?:DataBinding|FunctionCall)$/.test(schema.$ref);
+
+/** One level of an object's shape, so `items` reads `{label, value, delta?}`, not `object`. */
+const shapeLine = (schema: Json) => {
+  const required = new Set((schema.required as string[] | undefined) ?? []);
+  const keys = Object.keys(schema.properties as Json).map(
+    (key) => `${key}${required.has(key) ? '' : '?'}`,
+  );
+  return `{${keys.join(', ')}}`;
+};
+
+/** An array's item type: its shape when it has one, through any binding alternatives. */
+const itemType = (items: Json | undefined): string => {
+  if (!items) return 'any';
+  const options = (items.anyOf ?? items.oneOf) as Json[] | undefined;
+  const concrete = options?.filter((option) => !isDynamicRef(option));
+  if (concrete?.length === 1) return itemType(concrete[0]);
+  return items.properties ? shapeLine(items) : typeOf(items);
+};
+
 const typeOf = (schema: Json | undefined): string => {
   if (!schema) return 'any';
   if (typeof schema.$ref === 'string') {
@@ -32,20 +53,18 @@ const typeOf = (schema: Json | undefined): string => {
   if (Array.isArray(schema.enum))
     return schema.enum.map((value) => JSON.stringify(value)).join('|');
   if ('const' in schema) return JSON.stringify(schema.const);
-  if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf))
-    return [...new Set(((schema.oneOf ?? schema.anyOf) as Json[]).map(typeOf))].join('|');
-  if (schema.type === 'array') {
-    const items = schema.items as Json | undefined;
-    // One level of item shape, so `items` reads `{label, value, delta?}[]`, not `object[]`.
-    if (items?.properties) {
-      const required = new Set((items.required as string[] | undefined) ?? []);
-      const keys = Object.keys(items.properties as Json).map(
-        (key) => `${key}${required.has(key) ? '' : '?'}`,
-      );
-      return `{${keys.join(', ')}}[]`;
-    }
-    return `${typeOf(items)}[]`;
+  if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
+    const options = (schema.oneOf ?? schema.anyOf) as Json[];
+    // Official schemas spell "this type, or a binding, or a function call" on every prop; any prop
+    // may bind (the header says so), so the index shows the type alone.
+    const concrete = options.filter((option) => !isDynamicRef(option));
+    const shown = concrete.length > 0 ? concrete : options;
+    return [...new Set(shown.map(typeOf))].join('|');
   }
+  if (schema.type === 'array') return `${itemType(schema.items as Json | undefined)}[]`;
+  if (schema.properties) return shapeLine(schema);
+  if (Array.isArray(schema.type))
+    return schema.type.map((type) => (type === 'integer' ? 'number' : type)).join('|');
   if (schema.type === 'integer') return 'number';
   if (typeof schema.type === 'string') return schema.type === 'boolean' ? 'bool' : schema.type;
   return 'object';
@@ -77,7 +96,8 @@ const firstSentence = (text: unknown) => {
 export const componentSignature = (name: string, schema: Json): string => {
   const { checkable, properties, required } = shapeOf(schema);
   const props = Object.entries(properties)
-    .filter(([prop]) => prop !== 'component')
+    // Props kept only so stored cards replay are left out of what an Agent reads.
+    .filter(([prop, value]) => prop !== 'component' && (value as Json).deprecated !== true)
     .map(([prop, value]) => `${prop}${required.has(prop) ? '' : '?'}: ${typeOf(value)}`);
   if (checkable) props.push('checks?: check[]');
   const summary = firstSentence(schema.description);

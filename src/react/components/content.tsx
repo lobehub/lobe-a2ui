@@ -1,38 +1,22 @@
 import {
-  Alert,
-  Avatar,
-  cssVar,
   Descriptions,
   Flexbox,
   Highlighter,
   Image,
   Markdown,
-  Progress,
   Steps,
   Table,
   Tag,
   Text,
   Video,
 } from '@lobehub/ui';
-import { type MetricItem, MetricStrip } from '@lobehub/ui/dashboard';
-import { type ReactNode, useEffect, useState } from 'react';
+import { MetricStrip, StatCard } from '@lobehub/ui/dashboard';
+import { type ReactNode } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
 import { useA2uiLabels } from '../host';
-import { metricColumns } from '../metricLayout';
 import { A2uiIcon } from './icon';
-import { cell, define, Heading, rowsOf, safeUrl, styles, TONE, type Tone } from './shared';
-
-/** Semantic colours of the extensions' `tone` / `color`. */
-const COLOR: Record<string, string | undefined> = {
-  default: undefined,
-  error: cssVar.colorError,
-  info: cssVar.colorInfo,
-  success: cssVar.colorSuccess,
-  warning: cssVar.colorWarning,
-};
-
-const STEP_STATUSES = ['current', 'done', 'error', 'todo'] as const;
+import { cell, define, rowsOf, safeUrl, styles } from './shared';
 
 // --- Basic catalog ---------------------------------------------------------------------------
 
@@ -180,62 +164,24 @@ export const AudioPlayerView = define('AudioPlayer', ({ props }) => {
   );
 });
 
-// --- LobeHub extensions ---------------------------------------------------------------------
+// --- Retired 1.x LobeHub components ----------------------------------------------------------
+// Kept so stored cards replay, drawn in the same a2ui look as their replacements.
 
-type MetricInput = {
-  delta?: string;
-  direction?: MetricItem['direction'];
-  hint?: string;
-  label: string;
-  tone?: Tone;
-  value: string;
-};
+type MetricInput = { delta?: string; direction?: 'down' | 'flat' | 'up'; hint?: string; label: string; tone?: string; value: string };
 
-/** The element's content width, kept current as the card resizes. */
-const useElementWidth = (element: HTMLElement | null) => {
-  const [width, setWidth] = useState<number>();
-  useEffect(() => {
-    if (!element) return;
-    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [element]);
-  return width;
-};
-
-export const MetricsView = define('Metrics', ({ props }) => {
-  const [strip, setStrip] = useState<HTMLDivElement | null>(null);
-  const width = useElementWidth(strip);
-  const items = rowsOf<MetricInput>(props.items, A2UI_LIST_LIMITS.Metrics.items);
-  // Peers share one row while each cell stays readable, then wrap into balanced rows.
-  return (
-    <div ref={setStrip} style={{ minWidth: 0 }}>
-      <MetricStrip
-        columns={metricColumns(items.length, width)}
-        size="small"
-        variant={props.variant ?? 'joined'}
-        items={items.map((item) => ({
-          delta: item.delta ? (
-            <span style={{ color: TONE[item.tone ?? 'neutral'] }} title={item.delta}>
-              {item.delta}
-            </span>
-          ) : undefined,
-          direction: item.direction,
-          hint: item.hint,
-          label: item.label,
-          // Good news is green; bad and warn take the strip's own tones.
-          value:
-            item.tone === 'good' ? (
-              <span style={{ color: TONE.good }}>{item.value}</span>
-            ) : (
-              item.value
-            ),
-          valueTone: item.tone === 'bad' ? 'danger' : item.tone === 'warn' ? 'warning' : undefined,
-        }))}
-      />
-    </div>
-  );
-});
+export const MetricsView = define('Metrics', ({ props }) => (
+  <MetricStrip
+    variant="a2ui"
+    items={rowsOf<MetricInput>(props.items, A2UI_LIST_LIMITS.Metrics.items).map((item) => ({
+      delta: item.delta,
+      direction: item.direction,
+      hint: item.hint,
+      label: item.label,
+      value: item.value,
+      valueTone: item.tone === 'bad' ? 'danger' : item.tone === 'warn' ? 'warning' : undefined,
+    }))}
+  />
+));
 
 type TableColumnInput = { align?: 'center' | 'end' | 'start'; key: string; label?: string };
 
@@ -245,203 +191,85 @@ export const TableView = define('Table', ({ props }) => {
   );
   const rows = rowsOf<Record<string, unknown>>(props.rows, A2UI_LIST_LIMITS.Table.rows);
   const labels = useA2uiLabels();
+  const title = props.title ? String(props.title) : undefined;
   if (columns.length === 0) return null;
   return (
-    <Flexbox className={styles.table} gap={8}>
-      <Heading>{props.title}</Heading>
-      <Table
-        dataSource={rows}
-        locale={{ emptyText: labels.empty }}
-        pagination={false}
-        rowHoverable={false}
-        rowKey={(_, index) => String(index)}
-        scroll={{ x: true }}
-        size="small"
-        variant="outlined"
-        columns={columns.map((column) => ({
-          align: column.align ?? 'start',
-          dataIndex: column.key,
-          key: column.key,
-          render: (value: unknown) => (
-            <span className={column.align === 'end' ? styles.figure : undefined}>
-              {cell(value)}
-            </span>
-          ),
-          title: column.label ?? column.key,
-        }))}
-      />
-      {props.caption ? (
-        <Text fontSize={12} type="secondary">
-          {String(props.caption)}
-        </Text>
-      ) : null}
-    </Flexbox>
-  );
-});
-
-export const KeyValueView = define('KeyValue', ({ props }) => {
-  const items = rowsOf<{ label?: unknown; value?: unknown }>(
-    props.items,
-    A2UI_LIST_LIMITS.KeyValue.items,
-  );
-  return (
-    <Descriptions
-      colon={false}
-      column={props.columns ?? 2}
-      title={props.title ? String(props.title) : undefined}
-      items={items.map((item, index) => ({
-        children: (
-          <Markdown fontSize={13} variant="chat">
-            {cell(item.value)}
-          </Markdown>
-        ),
-        key: index,
-        label: cell(item.label),
+    <Table
+      dataSource={rows}
+      locale={{ emptyText: labels.empty }}
+      pagination={false}
+      rowKey={(_, index) => String(index)}
+      title={title ? () => title : undefined}
+      variant="a2ui"
+      columns={columns.map((column) => ({
+        align: column.align === 'end' ? 'right' : column.align === 'center' ? 'center' : undefined,
+        dataIndex: column.key,
+        key: column.key,
+        render: (value: unknown) => cell(value),
+        title: column.label ?? column.key,
       }))}
     />
   );
 });
 
-export const ProgressView = define('Progress', ({ props }) => {
-  const max = Number(props.max ?? 100) || 100;
-  const percent = Math.max(0, Math.min(100, Math.round((Number(props.value ?? 0) / max) * 100)));
-  const color = COLOR[props.tone as string];
-  const caption = props.caption ? String(props.caption) : `${percent}%`;
-  if (props.variant === 'circle')
-    return (
-      <Flexbox horizontal align="center" gap={10}>
-        <Progress percent={percent} size="middle" strokeColor={color} type="circle" />
-        <Flexbox gap={2}>
-          <Text weight={500}>{String(props.label ?? '')}</Text>
-          <Text className={styles.figure} fontSize={12} type="secondary">
-            {caption}
-          </Text>
-        </Flexbox>
-      </Flexbox>
-    );
-  return (
-    <Flexbox gap={6} style={{ minWidth: 0, width: '100%' }}>
-      <Flexbox horizontal align="baseline" gap={8} justify="space-between">
-        <Text weight={500}>{String(props.label ?? '')}</Text>
-        <Text className={styles.figure} fontSize={12} type="secondary">
-          {caption}
-        </Text>
-      </Flexbox>
-      <Progress percent={percent} showInfo={false} size="small" strokeColor={color} />
-    </Flexbox>
-  );
-});
-
-const STEP_STATUS: Record<(typeof STEP_STATUSES)[number], 'error' | 'finish' | 'process' | 'wait'> =
-  { current: 'process', done: 'finish', error: 'error', todo: 'wait' };
-
-type StepInput = { detail?: unknown; meta?: unknown; status?: string; title?: unknown };
-
-export const StepsView = define('Steps', ({ props }) => {
-  const items = rowsOf<StepInput>(props.items, A2UI_LIST_LIMITS.Steps.items);
-  return (
-    <Flexbox gap={8} style={{ minWidth: 0 }}>
-      <Heading>{props.title}</Heading>
-      <Steps
-        orientation={props.orientation ?? 'vertical'}
-        items={items.map((item, index) => ({
-          description:
-            item.detail || item.meta ? (
-              <Flexbox gap={2}>
-                {item.meta ? (
-                  <Text className={styles.figure} fontSize={12} type="secondary">
-                    {cell(item.meta)}
-                  </Text>
-                ) : null}
-                {item.detail ? <Text type="secondary">{cell(item.detail)}</Text> : null}
-              </Flexbox>
-            ) : undefined,
-          key: index,
-          status: STEP_STATUS[item.status as keyof typeof STEP_STATUS] ?? 'wait',
-          title: cell(item.title),
-        }))}
-      />
-    </Flexbox>
-  );
-});
-
-export const StatisticView = define('Statistic', ({ props }) => (
-  <Flexbox gap={4} style={{ minWidth: 0 }}>
-    <Text fontSize={13} type="secondary">
-      {String(props.label ?? '')}
-    </Text>
-    <Text
-      className={styles.figure}
-      fontSize={28}
-      style={{ color: COLOR[props.tone as string], lineHeight: 1.2 }}
-      weight={600}
-    >
-      {props.prefix ? String(props.prefix) : null}
-      {String(props.value ?? '')}
-      {props.suffix ? (
-        <Text as="span" fontSize={14} type="secondary" weight={400}>
-          {` ${String(props.suffix)}`}
-        </Text>
-      ) : null}
-    </Text>
-    {props.caption ? (
-      <Text fontSize={12} type="secondary">
-        {String(props.caption)}
-      </Text>
-    ) : null}
-  </Flexbox>
-));
-
-export const TagView = define('Tag', ({ props }) => (
-  <Tag
-    color={props.color === 'default' ? undefined : props.color}
-    icon={
-      props.icon ? <A2uiIcon color="currentColor" name={String(props.icon)} size={12} /> : undefined
-    }
-  >
-    {String(props.text ?? '')}
-  </Tag>
-));
-
-export const CalloutView = define('Callout', ({ props }) => (
-  <Alert
-    showIcon
-    title={<Text weight={600}>{String(props.title ?? '')}</Text>}
-    type={props.level}
-    variant="outlined"
-    description={
-      props.body ? (
-        <Markdown fontSize={13} variant="chat">
-          {String(props.body)}
-        </Markdown>
-      ) : undefined
-    }
+export const KeyValueView = define('KeyValue', ({ props }) => (
+  <Descriptions
+    column={props.columns ?? 1}
+    title={props.title ? String(props.title) : undefined}
+    variant="a2ui"
+    items={rowsOf<{ label?: unknown; value?: unknown }>(props.items, A2UI_LIST_LIMITS.KeyValue.items).map(
+      (item, index) => ({ children: cell(item.value), key: index, label: cell(item.label) }),
+    )}
   />
 ));
 
-export const AvatarView = define('Avatar', ({ props }) => {
-  const src = safeUrl(props.src);
-  const text = props.text ? String(props.text) : undefined;
-  if (!src && !text) return null;
-  return (
-    <Avatar
-      avatar={src ?? text}
-      fallbackVariant="text"
-      shape={props.shape === 'square' ? 'square' : 'circle'}
-      size={Number(props.size ?? 32)}
-      title={text}
-    />
-  );
-});
+const STEP_STATUS: Record<string, 'error' | 'finish' | 'process' | 'wait'> = {
+  current: 'process',
+  done: 'finish',
+  error: 'error',
+  todo: 'wait',
+};
+
+type StepInput = { detail?: unknown; meta?: unknown; status?: string; title?: unknown };
+
+export const StepsView = define('Steps', ({ props }) => (
+  <Steps
+    orientation="vertical"
+    variant="a2ui"
+    items={rowsOf<StepInput>(props.items, A2UI_LIST_LIMITS.Steps.items).map((item, index) => ({
+      description: item.detail ? cell(item.detail) : undefined,
+      key: index,
+      status: STEP_STATUS[item.status as string] ?? 'wait',
+      time: item.meta ? cell(item.meta) : undefined,
+      title: cell(item.title),
+    }))}
+  />
+));
+
+export const StatisticView = define('Statistic', ({ props }) => (
+  <StatCard
+    hint={props.caption ? String(props.caption) : undefined}
+    label={String(props.label ?? '')}
+    value={`${props.prefix ? String(props.prefix) : ''}${String(props.value ?? '')}${props.suffix ? ` ${String(props.suffix)}` : ''}`}
+    valueTone={props.tone === 'error' ? 'danger' : props.tone === 'warning' ? 'warning' : undefined}
+    variant="a2ui"
+  />
+));
+
+export const TagView = define('Tag', ({ props }) => (
+  <span style={{ display: 'inline-flex' }}>
+    <Tag
+      color={props.color === 'default' ? undefined : props.color}
+      icon={props.icon ? <A2uiIcon color="currentColor" name={String(props.icon)} size={12} /> : undefined}
+      variant="a2ui"
+    >
+      {String(props.text ?? '')}
+    </Tag>
+  </span>
+));
 
 export const CodeView = define('Code', ({ props }) => (
-  <Highlighter
-    copyable
-    language={String(props.language ?? 'txt')}
-    showLanguage={!!props.language}
-    style={{ minWidth: 0 }}
-    variant="filled"
-  >
+  <Highlighter copyable language={String(props.language ?? 'txt')} variant="a2ui">
     {String(props.code ?? '')}
   </Highlighter>
 ));

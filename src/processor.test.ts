@@ -9,12 +9,13 @@ const chart = [
     updateComponents: {
       components: [
         {
-          categories: ['v'],
-          component: 'Chart',
-          data: [{ k: 'a', v: 1 }],
+          component: 'BarChart',
+          data: [
+            { x: 'a', y: 1 },
+            { x: 'b', y: 2 },
+            { x: 'c', y: 3 },
+          ],
           id: 'root',
-          index: 'k',
-          type: 'bar',
         },
       ],
       surfaceId: 's',
@@ -26,12 +27,12 @@ const chart = [
 describe('createA2uiProcessor', () => {
   it('describes and checks only the catalogs the host renderer supports', () => {
     const basic = createA2uiProcessor({ catalogs: ['basic'] });
-    expect(basic.catalog.components.Chart).toBeUndefined();
+    expect(basic.catalog.components.BarChart).toBeUndefined();
     expect(basic.examples.every((example) => example.catalog === 'basic')).toBe(true);
-    expect(basic.promptSnippet).not.toContain('"Chart"');
+    expect(basic.promptSnippet).not.toContain('"BarChart"');
     const result = basic.execute({ operations: chart });
     expect(result.success).toBe(false);
-    expect(!result.success && result.content).toMatch(/Unknown component "Chart"/);
+    expect(!result.success && result.content).toMatch(/Unknown component "BarChart"/);
 
     const full = createA2uiProcessor();
     expect(full.execute({ operations: chart }).success).toBe(true);
@@ -41,9 +42,9 @@ describe('createA2uiProcessor', () => {
   it('prunes components and functions like the official transformers', () => {
     const small = createA2uiProcessor({
       examples: false,
-      prune: { components: ['Column', 'Text', 'Chart'], functions: ['formatNumber'] },
+      prune: { components: ['Column', 'Text', 'BarChart'], functions: ['formatNumber'] },
     });
-    expect(Object.keys(small.catalog.components).sort()).toEqual(['Chart', 'Column', 'Text']);
+    expect(Object.keys(small.catalog.components).sort()).toEqual(['BarChart', 'Column', 'Text']);
     expect(Object.keys(small.catalog.functions!)).toEqual(['formatNumber']);
     const call = small.validate([
       {
@@ -79,13 +80,22 @@ describe('createA2uiProcessor', () => {
   it('reports prompt sizes', () => {
     const sizes = {
       'basic, no examples': createA2uiProcessor({ catalogs: ['basic'], examples: false }),
-      'basic + lobehub, all 53 examples': createA2uiProcessor({ examples: 'all' }),
+      'basic + lobehub, all 57 examples': createA2uiProcessor({ examples: 'all' }),
       'basic + lobehub, default examples': createA2uiProcessor(),
       'basic + lobehub, no examples': createA2uiProcessor({ examples: false }),
       'basic only, default examples': createA2uiProcessor({ catalogs: ['basic'] }),
       'pruned to 8 components': createA2uiProcessor({
         prune: {
-          components: ['Card', 'Column', 'Row', 'Text', 'Icon', 'Metrics', 'Chart', 'Table'],
+          components: [
+            'Card',
+            'Column',
+            'Row',
+            'Text',
+            'Icon',
+            'StatGroup',
+            'BarChart',
+            'DataTable',
+          ],
         },
       }),
     };

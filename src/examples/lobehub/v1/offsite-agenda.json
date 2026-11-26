@@ -1,0 +1,96 @@
+{
+  "name": "Offsite Agenda",
+  "description": "A schedule: a Heading, an Agenda of two days with timed sessions, and a Quote from last year.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "offsite-agenda",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "offsite-agenda",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "agenda", "quote"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "Team offsite",
+            "eyebrow": "Lisbon, Oct 15-16",
+            "subtitle": "Planning on day one, building on day two"
+          },
+          {
+            "id": "agenda",
+            "component": "Agenda",
+            "days": {
+              "@path": "/days"
+            }
+          },
+          {
+            "id": "quote",
+            "component": "Quote",
+            "text": "The best two days of the year: we shipped more after it than in the quarter before.",
+            "author": "Ada Chen",
+            "role": "Platform lead"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "offsite-agenda",
+        "path": "/",
+        "value": {
+          "days": [
+            {
+              "date": "2026-10-15",
+              "label": "Day 1",
+              "events": [
+                {
+                  "time": "09:30",
+                  "title": "Roadmap review",
+                  "location": "Main room",
+                  "tone": "accent"
+                },
+                {
+                  "time": "13:00",
+                  "title": "Lunch at Time Out Market",
+                  "location": "Cais do Sodré"
+                },
+                {
+                  "time": "15:00",
+                  "title": "Planning poker",
+                  "speaker": "Ravi Patel"
+                }
+              ]
+            },
+            {
+              "date": "2026-10-16",
+              "label": "Day 2",
+              "events": [
+                {
+                  "time": "10:00",
+                  "title": "Hack day kickoff",
+                  "tone": "positive"
+                },
+                {
+                  "time": "17:00",
+                  "title": "Demos",
+                  "location": "Main room"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

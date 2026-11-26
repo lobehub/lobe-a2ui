@@ -1,5 +1,5 @@
 import {
-  A2UI_CATALOG_DOCUMENT,
+  A2UI_AUTHORING_CATALOG_DOCUMENT,
   A2UI_CATALOG_ID,
   BASIC_CATALOG_DOCUMENT,
   type CatalogDocument,
@@ -124,7 +124,7 @@ export const createA2uiProcessor = (options: A2uiProcessorOptions = {}): A2uiPro
   if (!catalogs.includes('basic'))
     throw new Error('The lobehub catalog extends the basic catalog; include "basic"');
   let catalog: CatalogDocument = catalogs.includes('lobehub')
-    ? A2UI_CATALOG_DOCUMENT
+    ? A2UI_AUTHORING_CATALOG_DOCUMENT
     : { ...mergeCatalogDocuments(BASIC_CATALOG_DOCUMENT), catalogId: A2UI_CATALOG_ID };
   if (options.prune?.components)
     catalog = pruneCatalogComponents(catalog, options.prune.components);

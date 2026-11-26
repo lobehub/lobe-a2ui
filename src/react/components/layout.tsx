@@ -1,9 +1,9 @@
-import { Accordion, cx, Divider, Flexbox, Grid, Modal, Tabs, Text } from '@lobehub/ui';
-import { Surface } from '@lobehub/ui/dashboard';
-import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import { Accordion, cx, Divider, Flexbox, Modal, Tabs, Text } from '@lobehub/ui';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { useState } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
+import { a2ui } from './a2ui';
 import {
   ALIGN,
   CardDepthContext,
@@ -18,64 +18,35 @@ import {
 const INNER_CONTROL = 'a, button, input, textarea, select, [role="button"]';
 
 /**
- * A Card with an action is one target: the whole card is a button, with a fill on hover and a
- * focus ring from the keyboard. A link or button inside it still does its own thing.
- */
-const Clickable = ({
-  children,
-  onActivate,
-  tile,
-}: {
-  children: ReactNode;
-  onActivate: () => void;
-  tile: boolean;
-}) => (
-  <div
-    className={cx(styles.clickable, tile && styles.tile)}
-    role="button"
-    tabIndex={0}
-    onClick={(event: MouseEvent<HTMLDivElement>) => {
-      const hit = (event.target as HTMLElement).closest(INNER_CONTROL);
-      if (hit && hit !== event.currentTarget) return;
-      onActivate();
-    }}
-    onKeyDown={(event: KeyboardEvent) => {
-      if (event.target !== event.currentTarget) return;
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        onActivate();
-      }
-    }}
-  >
-    {children}
-  </div>
-);
-
-/**
- * A Card as the root is the surface's card: a @lobehub/ui Surface with a padded body. Inside
- * another card it is a filled tile with no border, so a grid of cards reads as groups in one card
- * rather than boxes in a box. With an action, either one is clickable as a whole.
+ * A Card is the official boxed panel (`.a2-card`): surface, hairline, 14px corners, a soft shadow.
+ * With an action the whole card is one button: the border strengthens on hover, a focus ring shows
+ * from the keyboard, and a link or button inside still does its own thing.
  */
 export const CardView = define('Card', ({ props, buildChild }) => {
   const depth = useCardDepth();
   const child = <CardDepthContext value={depth + 1}>{buildChild(props.child)}</CardDepthContext>;
   const action = typeof props.action === 'function' ? (props.action as () => void) : undefined;
-  if (depth === 0) {
-    const card = <Surface padded>{child}</Surface>;
-    return action ? (
-      <Clickable tile={false} onActivate={action}>
-        {card}
-      </Clickable>
-    ) : (
-      card
-    );
-  }
-  return action ? (
-    <Clickable tile onActivate={action}>
+  if (!action) return <div className={cx(a2ui.card, styles.cardBody)}>{child}</div>;
+  return (
+    <div
+      className={cx(a2ui.card, a2ui.pressable, styles.cardBody)}
+      role="button"
+      tabIndex={0}
+      onClick={(event: MouseEvent<HTMLDivElement>) => {
+        const hit = (event.target as HTMLElement).closest(INNER_CONTROL);
+        if (hit && hit !== event.currentTarget) return;
+        action();
+      }}
+      onKeyDown={(event: KeyboardEvent) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          action();
+        }
+      }}
+    >
       {child}
-    </Clickable>
-  ) : (
-    <div className={styles.tile}>{child}</div>
+    </div>
   );
 });
 
@@ -168,12 +139,18 @@ export const DividerView = define('Divider', ({ props }) =>
   ),
 );
 
-export const GridView = define('Grid', ({ props, buildChild }) => (
-  // Equal columns while each stays at least 200px wide; fewer, then one, on narrow cards.
-  <Grid gap={12} maxItemWidth={200} rows={props.columns ?? 2}>
-    {childrenOf(props.children, buildChild).slice(0, A2UI_LIST_LIMITS.Grid.children)}
-  </Grid>
-));
+/**
+ * Equal columns that step down with the surface's width, as the official playground's do: 4 to 2
+ * under 520px, 3 to 2 under 400px, and to 1 under 260px.
+ */
+export const GridView = define('Grid', ({ props, buildChild }) => {
+  const columns = Math.max(1, Math.min(4, Number(props.columns ?? 2) || 2));
+  return (
+    <div className={styles.grid} data-columns={columns}>
+      {childrenOf(props.children, buildChild).slice(0, A2UI_LIST_LIMITS.Grid.children)}
+    </div>
+  );
+});
 
 /** A section that opens from its header (@lobehub/ui Accordion with one item). */
 export const CollapseView = define('Collapse', ({ props, buildChild }) => (

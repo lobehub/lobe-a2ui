@@ -1,6 +1,13 @@
 import { MessageProcessor } from '@a2ui/web_core';
 
-import { A2UI_CATALOG_ID, A2UI_COMPONENT_NAMES, A2UI_LIST_LIMITS, A2UI_VERSION } from './catalog';
+import {
+  A2UI_CATALOG_ID,
+  A2UI_COMPONENT_NAMES,
+  A2UI_DEPRECATED_COMPONENTS,
+  A2UI_LIST_LIMITS,
+  A2UI_RENDERABLE_COMPONENT_NAMES,
+  A2UI_VERSION,
+} from './catalog';
 import { dataModelOf, resolve, surfaceText, surfaceTitle } from './fallback';
 import { iconError } from './icons';
 import { getSchemaCatalog } from './schemaCatalog';
@@ -94,6 +101,7 @@ const MEDIA_PROPS: Record<string, string[]> = {
   AudioPlayer: ['url'],
   Avatar: ['src'],
   Image: ['url'],
+  LinkCard: ['href'],
   Video: ['url', 'posterUrl'],
 };
 /** SVG path data: commands, numbers and separators, nothing that could carry markup. */
@@ -152,6 +160,11 @@ const safetyErrors = (component: Record<string, unknown>, model: Record<string, 
  * to the Agent so it can fix its call. Accepts operations as an array or a JSON string.
  */
 export interface ValidateSurfaceOptions {
+  /**
+   * Accept the retired 1.x components, as stored cards and their upgrades use them. New cards
+   * from an Agent never set this.
+   */
+  allowDeprecated?: boolean;
   /** The components the active catalogs offer; defaults to the whole catalog. */
   components?: ReadonlySet<string>;
   /** The functions the active catalogs offer; defaults to all of them. */
@@ -173,7 +186,9 @@ export const validateSurface = (
   raw: unknown,
   options: ValidateSurfaceOptions = {},
 ): ValidateSurfaceResult => {
-  const allowed = options.components ?? A2UI_COMPONENT_NAMES;
+  const allowed =
+    options.components ??
+    (options.allowDeprecated ? A2UI_RENDERABLE_COMPONENT_NAMES : A2UI_COMPONENT_NAMES);
   const parsed = parseOperations(raw);
   if (!Array.isArray(parsed) || parsed.length === 0)
     return { errors: ['operations must be a non-empty array of A2UI messages'], ok: false };
@@ -200,6 +215,16 @@ export const validateSurface = (
     errors.push(`At most ${A2UI_LIMITS.components} components per surface`);
   for (const component of components) {
     const name = component.component;
+    if (
+      !options.allowDeprecated &&
+      typeof name === 'string' &&
+      name in A2UI_DEPRECATED_COMPONENTS
+    ) {
+      errors.push(
+        `${name} (${String(component.id)}) is retired: use ${A2UI_DEPRECATED_COMPONENTS[name]}`,
+      );
+      continue;
+    }
     if (typeof name !== 'string' || !allowed.has(name)) {
       errors.push(
         `Unknown component "${String(name)}" (${String(component.id)}). Use one of: ${[...allowed].join(', ')}`,

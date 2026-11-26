@@ -1,6 +1,6 @@
 {
   "name": "Sales Dashboard",
-  "description": "A dashboard: Statistics in a Grid, then Tabs that switch between a bar Chart, a donut and a ranked barList; a categoryBar splits revenue by region.",
+  "description": "A dashboard: a Heading whose subtitle states the takeaway, a Grid of Stat, one BarChart and a DataTable with badge and currency columns, closed by an illustrative-data Caption.",
   "messages": [
     {
       "version": "1.0",
@@ -17,101 +17,99 @@
           {
             "id": "root",
             "component": "Column",
-            "children": ["title", "stats", "split", "tabs"]
+            "children": ["head", "kpis", "chart", "accounts", "note"]
           },
           {
-            "id": "title",
-            "component": "Text",
-            "text": "#### Q3 sales"
+            "id": "head",
+            "component": "Heading",
+            "text": "Q3 sales by region",
+            "eyebrow": "Sales dashboard",
+            "subtitle": "Revenue grew 11% on EMEA renewals"
           },
           {
-            "id": "stats",
+            "id": "kpis",
             "component": "Grid",
             "columns": 3,
-            "children": ["s1", "s2", "s3"]
+            "children": ["k1", "k2", "k3"]
           },
           {
-            "id": "s1",
-            "component": "Statistic",
+            "id": "k1",
+            "component": "Stat",
             "label": "Revenue",
-            "prefix": "$",
-            "value": "1.28M",
-            "caption": "+12% vs Q2",
-            "tone": "success"
+            "value": "$18.4M",
+            "delta": "+11.2%",
+            "trend": "up",
+            "caption": "vs Q2"
           },
           {
-            "id": "s2",
-            "component": "Statistic",
-            "label": "Orders",
-            "value": "8,412"
+            "id": "k2",
+            "component": "Stat",
+            "label": "Units sold",
+            "value": "128k",
+            "delta": "+8.4%",
+            "trend": "up",
+            "caption": "vs Q2"
           },
           {
-            "id": "s3",
-            "component": "Statistic",
-            "label": "Refund rate",
-            "value": "3.1",
-            "suffix": "%",
-            "tone": "warning"
+            "id": "k3",
+            "component": "Stat",
+            "label": "Quota attainment",
+            "value": "104%",
+            "delta": "+3 pts",
+            "trend": "up",
+            "caption": "Team of 42"
           },
           {
-            "id": "split",
-            "component": "Chart",
-            "type": "categoryBar",
+            "id": "chart",
+            "component": "BarChart",
             "title": "Revenue by region",
+            "subtitle": "EMEA closed the gap on North America",
+            "format": "currency",
             "data": {
               "@path": "/regions"
-            },
-            "index": "region",
-            "categories": ["share"],
-            "unit": "%"
+            }
           },
           {
-            "id": "tabs",
-            "component": "Tabs",
-            "tabs": [
+            "id": "accounts",
+            "component": "DataTable",
+            "title": "Top accounts",
+            "columns": [
               {
-                "title": "By month",
-                "child": "byMonth"
+                "key": "account",
+                "label": "Account"
               },
               {
-                "title": "By channel",
-                "child": "byChannel"
+                "key": "plan",
+                "label": "Plan",
+                "format": "badge"
               },
               {
-                "title": "Top products",
-                "child": "top"
+                "key": "status",
+                "label": "Status",
+                "format": "badge"
+              },
+              {
+                "key": "mrr",
+                "label": "MRR",
+                "format": "currency",
+                "align": "right"
+              },
+              {
+                "key": "growth",
+                "label": "Growth",
+                "format": "percent",
+                "align": "right"
               }
-            ]
+            ],
+            "rows": {
+              "@path": "/accounts"
+            },
+            "pageSize": 5
           },
           {
-            "id": "byMonth",
-            "component": "Chart",
-            "type": "bar",
-            "data": {
-              "@path": "/months"
-            },
-            "index": "month",
-            "categories": ["online", "retail"]
-          },
-          {
-            "id": "byChannel",
-            "component": "Chart",
-            "type": "donut",
-            "data": {
-              "@path": "/channels"
-            },
-            "index": "channel",
-            "categories": ["revenue"]
-          },
-          {
-            "id": "top",
-            "component": "Chart",
-            "type": "barList",
-            "data": {
-              "@path": "/products"
-            },
-            "index": "name",
-            "categories": ["units"]
+            "id": "note",
+            "component": "Caption",
+            "text": "Illustrative data"
           }
         ]
       }
@@ -124,61 +122,88 @@
         "value": {
           "regions": [
             {
-              "region": "Americas",
-              "share": 46
+              "x": "NA",
+              "y": 6800000,
+              "series": "Q2"
             },
             {
-              "region": "EMEA",
-              "share": 32
+              "x": "NA",
+              "y": 7100000,
+              "series": "Q3"
             },
             {
-              "region": "APAC",
-              "share": 22
+              "x": "EMEA",
+              "y": 4400000,
+              "series": "Q2"
+            },
+            {
+              "x": "EMEA",
+              "y": 5200000,
+              "series": "Q3"
+            },
+            {
+              "x": "APAC",
+              "y": 3700000,
+              "series": "Q2"
+            },
+            {
+              "x": "APAC",
+              "y": 3900000,
+              "series": "Q3"
+            },
+            {
+              "x": "LATAM",
+              "y": 2100000,
+              "series": "Q2"
+            },
+            {
+              "x": "LATAM",
+              "y": 2200000,
+              "series": "Q3"
             }
           ],
-          "months": [
+          "accounts": [
             {
-              "month": "Jul",
-              "online": 310,
-              "retail": 120
+              "account": "Northwind Labs",
+              "plan": "Enterprise",
+              "status": "Active",
+              "mrr": 12400,
+              "growth": 18.2
             },
             {
-              "month": "Aug",
-              "online": 352,
-              "retail": 131
+              "account": "Kestrel Robotics",
+              "plan": "Scale",
+              "status": "Active",
+              "mrr": 6850,
+              "growth": 9.4
             },
             {
-              "month": "Sep",
-              "online": 398,
-              "retail": 140
-            }
-          ],
-          "channels": [
-            {
-              "channel": "Web",
-              "revenue": 61
+              "account": "Helix Health",
+              "plan": "Enterprise",
+              "status": "Pending",
+              "mrr": 9800,
+              "growth": 4.1
             },
             {
-              "channel": "Stores",
-              "revenue": 27
+              "account": "Lumen Studio",
+              "plan": "Pro",
+              "status": "Active",
+              "mrr": 1240,
+              "growth": 22.0
             },
             {
-              "channel": "Partners",
-              "revenue": 12
-            }
-          ],
-          "products": [
-            {
-              "name": "Desk Pro",
-              "units": 1240
+              "account": "Orbit Freight",
+              "plan": "Scale",
+              "status": "Overdue",
+              "mrr": 4300,
+              "growth": -3.5
             },
             {
-              "name": "Chair X",
-              "units": 980
-            },
-            {
-              "name": "Lamp 2",
-              "units": 610
+              "account": "Cobalt Bank",
+              "plan": "Enterprise",
+              "status": "Active",
+              "mrr": 15800,
+              "growth": 6.7
             }
           ]
         }

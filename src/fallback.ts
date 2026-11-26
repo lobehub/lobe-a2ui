@@ -64,6 +64,9 @@ const shownOrder = (operations: A2uiOperation[]): Component[] => {
     seen.add(id);
     ordered.push(component);
     for (const key of ['badge', 'child', 'trigger', 'content'] as const) visit(component[key]);
+    // Accordion items may draw a child.
+    if (Array.isArray(component.items))
+      for (const item of component.items) if (isRecord(item)) visit(item.child);
     if (Array.isArray(component.children)) component.children.forEach(visit);
     // A template list draws its template once per item; its words are read once.
     else if (isRecord(component.children)) visit(component.children.componentId);
@@ -95,7 +98,92 @@ const strings = (component: Component, model: Record<string, unknown>): string[]
       );
     }
     case 'Callout': {
-      return [...text(component.title), ...text(component.body)];
+      return [...text(component.title), ...text(component.text), ...text(component.body)];
+    }
+    case 'Alert': {
+      return [...text(component.title), ...text(component.message)];
+    }
+    case 'StatGroup': {
+      return list(component.items).map((item) =>
+        [...text(item.label), ...text(item.value), ...text(item.delta)].join(' '),
+      );
+    }
+    case 'Stat':
+    case 'Sparkline': {
+      return [
+        [...text(component.label), ...text(component.value), ...text(component.delta)].join(' '),
+      ];
+    }
+    case 'KeyValueList': {
+      return [
+        ...text(component.title),
+        ...list(component.items).map((item) =>
+          [...text(item.label), ...text(item.value)].join(': '),
+        ),
+      ];
+    }
+    case 'Timeline': {
+      return list(component.items).map((item) =>
+        [...text(item.time), ...text(item.title)].join(' '),
+      );
+    }
+    case 'Agenda': {
+      return [
+        ...text(component.title),
+        ...list(component.days).flatMap((day) =>
+          list(day.events).map((event) => [...text(event.time), ...text(event.title)].join(' ')),
+        ),
+      ];
+    }
+    case 'TagList': {
+      const tags = resolve(component.tags, model);
+      return Array.isArray(tags) ? [tags.map(String).join(', ')] : [];
+    }
+    case 'Badge':
+    case 'Avatar': {
+      return [...text(component.label), ...text(component.name), ...text(component.text)];
+    }
+    case 'Quote': {
+      return [...text(component.text), ...text(component.author)];
+    }
+    case 'Kbd': {
+      const keys = resolve(component.keys, model);
+      return [
+        [Array.isArray(keys) ? keys.map(String).join('+') : '', ...text(component.label)]
+          .filter(Boolean)
+          .join(' '),
+      ];
+    }
+    case 'Gauge':
+    case 'RadialProgress': {
+      return [
+        [
+          ...text(component.title),
+          ...text(component.label),
+          ...text(component.display ?? component.value),
+        ]
+          .filter(Boolean)
+          .join(' '),
+      ];
+    }
+    case 'Markdown':
+    case 'Title':
+    case 'Caption':
+    case 'Link': {
+      return [...text(component.text)];
+    }
+    case 'LineChart':
+    case 'AreaChart':
+    case 'BarChart':
+    case 'PieChart':
+    case 'ScatterChart':
+    case 'RadarChart':
+    case 'Heatmap':
+    case 'Treemap':
+    case 'SankeyChart':
+    case 'CandlestickChart':
+    case 'DataTable': {
+      return [...text(component.title), ...text(component.subtitle)];
     }
     case 'Table': {
       const keys = list(component.columns)
@@ -139,13 +227,36 @@ const strings = (component: Component, model: Record<string, unknown>): string[]
           [component.prefix, component.value, component.suffix]
             .map((part) => text(part)[0] ?? '')
             .join(''),
+          ...text(component.delta),
         ]
           .filter(Boolean)
           .join(' '),
       ];
     }
-    case 'Collapse': {
+    case 'Collapse':
+    case 'Section':
+    case 'LinkCard':
+    case 'EmptyState': {
       return [...text(component.title)];
+    }
+    case 'Accordion': {
+      return list(component.items).flatMap((item) => text(item.title));
+    }
+    case 'Heading': {
+      return [...text(component.text), ...text(component.eyebrow), ...text(component.subtitle)];
+    }
+    case 'Rating': {
+      const value = Number(resolve(component.value, model));
+      return [
+        [...text(component.label), Number.isFinite(value) ? `${value}/5` : ''].join(' ').trim(),
+      ];
+    }
+    case 'AvatarGroup': {
+      return [...text(component.label)];
+    }
+    case 'ComparisonTable': {
+      const options = Array.isArray(component.options) ? component.options.map(String) : [];
+      return [...text(component.title), options.join(' / ')].filter(Boolean);
     }
     case 'Tabs': {
       return list(component.tabs).flatMap((tab) => text(tab.title));
@@ -168,10 +279,16 @@ const strings = (component: Component, model: Record<string, unknown>): string[]
   }
 };
 
-/** The surface's heading: the Card title, else the first heading Text, else the first callout. */
+/**
+ * The surface's heading: its Heading, else the Card title, else the first heading Text, else the
+ * first callout.
+ */
 export const surfaceTitle = (operations: A2uiOperation[]): string | undefined => {
   const model = dataModelOf(operations);
   const components = shownOrder(operations);
+  const heading = components.find((component) => component.component === 'Heading');
+  const headingText = heading && resolve(heading.text, model);
+  if (typeof headingText === 'string' && headingText.trim()) return clean(headingText);
   for (const component of components) {
     if (component.component === 'Card') {
       const title = resolve(component.title, model);

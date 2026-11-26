@@ -1,4 +1,8 @@
-import { A2UI_CATALOG_DOCUMENT, A2UI_CATALOG_ID, type CatalogDocument } from '../catalog';
+import {
+  A2UI_AUTHORING_CATALOG_DOCUMENT,
+  A2UI_CATALOG_ID,
+  type CatalogDocument,
+} from '../catalog';
 import { A2UI_EXAMPLES } from '../examples';
 import type { A2uiExample } from '../examples/types';
 import agentToRenderer from '../schema/agent_to_renderer.json';
@@ -34,7 +38,7 @@ export const loadExamples = (
 
 /**
  * The examples the prompt shows by default: a varied subset, since every example costs tokens
- * (`loadExamples()` returns all 53). Official basic surfaces first, then LobeHub's, which show
+ * (`loadExamples()` returns all 57). Official basic surfaces first, then LobeHub's, which show
  * the extension components in differently shaped cards.
  */
 export const A2UI_PROMPT_EXAMPLE_IDS = [
@@ -44,15 +48,16 @@ export const A2UI_PROMPT_EXAMPLE_IDS = [
   'user-profile',
   'software-purchase',
   'child-list-template',
+  'sales-dashboard',
   'service-health',
   'plan-comparison',
   'trip-day',
   'team-profile',
-  'sales-dashboard',
   'code-answer',
   'release-pipeline',
-  'model-comparison',
   'signup-funnel',
+  'vendor-comparison',
+  'cloud-costs',
 ] as const;
 
 export const A2UI_PROMPT_EXAMPLES: A2uiExample[] = loadExamples(undefined, A2UI_PROMPT_EXAMPLE_IDS);
@@ -219,7 +224,7 @@ export interface BuildA2uiPromptOptions {
  * types the catalog and those messages use, and the catalog schema), then the examples.
  */
 export const buildA2uiPrompt = (options: BuildA2uiPromptOptions = {}): string => {
-  const base = options.catalog ?? A2UI_CATALOG_DOCUMENT;
+  const base = options.catalog ?? A2UI_AUTHORING_CATALOG_DOCUMENT;
   const catalog = options.components ? pruneCatalogComponents(base, options.components) : base;
   const messages = pruneMessagesSchema(agentToRenderer as Json, A2UI_PROMPT_MESSAGES);
   const common = pruneCommonTypesSchema(commonTypes as Json, catalog, messages);
@@ -254,12 +259,25 @@ export const buildA2uiPrompt = (options: BuildA2uiPromptOptions = {}): string =>
     .join('\n\n');
 };
 
-/** The product layer on top of the A2UI prompt: when a card helps, and four rules. */
+/**
+ * The product layer on top of the A2UI prompt: when a card helps, then the official A2UI
+ * playground's design rules (CopilotKit, MIT), without the parts for components this catalog does
+ * not have (maps, domain cards), plus LobeHub's rules on links, buttons and figures.
+ */
 export const a2uiProductRules = (delivery: A2uiDelivery = A2UI_DEFAULT_DELIVERY) =>
   `You can answer with a card instead of, or next to, text: ${drawText(delivery)} with A2UI messages for one surface. Use one for information a person takes in at a glance, or to ask for several inputs at once; not for prose a few sentences answer.
+
+### Design rules
+- Fully answer the request. Lead with a Heading, then the component built for the job: comparisons -> ComparisonTable, schedules -> Agenda or Timeline, code -> CodeBlock, people -> Avatar or AvatarGroup, statuses -> Badge, ratings -> Rating, a single ratio or score -> RadialProgress or Gauge. Pick the richest component that fits: charts for numbers over time or comparisons, DataTable for many rows, Timeline for sequences.
+- Lay out with Column, Row and Grid. Use Card only for an interactive panel (a form, controls) or for one thing with its own page (give it an openUrl action), and Section to group with a title. Short text is Text, Title or Caption; prose is Markdown.
+- One chart per question unless asked for more; never two charts, or a chart and a table, of the same numbers; never a chart whose series is flat or has under 3 points (use a Stat).
+- Put KPIs in a Grid of Stat (a Sparkline when the trend matters). Aim for 8 to 18 components, never more than 20: show each fact once, prefer one rich component over many small ones, and use small ones (Badge, Avatar, Divider) where they carry meaning.
+- Multi-series charts share one axis: combine only series of similar size. Percent values are 0-100 (12.4 means 12.4%) with format "percent", never fractions. Stat values are short numbers; put takeaways in KeyValueList, Callout or Markdown.
+- Subtitles describe the content ("Revenue grew 12% on EMEA renewals"), never the UI itself.
+- Link what has its own page: [label](https://…) in Text, a Link, a LinkCard, or an openUrl action on its Card.
 - A display card needs no buttons: add one only for a real next step you can carry out when it is clicked.
-- Link what has its own page: write [label](https://…) in Text, or give the Card that stands for it an openUrl action, so a person can click through.
-- Show only figures you were given or measured; say so on the card when something is an estimate or an example.`;
+- Show only figures you were given or measured; when they are illustrative, end with a Caption saying so.
+- Write final copy: never "placeholder", "sample text" or "lorem", and no em dashes.`;
 
 /** How the model reads a component's full schema and examples: a tool, or a command. */
 export type A2uiDocsAccess = { command: string } | { tool: string };
@@ -300,7 +318,7 @@ export interface BuildA2uiIndexPromptOptions {
  * read on demand (`buildA2uiDocs`), so the always-on prompt stays well under the official one.
  */
 export const buildA2uiIndexPrompt = (options: BuildA2uiIndexPromptOptions = {}): string => {
-  const catalog = options.catalog ?? A2UI_CATALOG_DOCUMENT;
+  const catalog = options.catalog ?? A2UI_AUTHORING_CATALOG_DOCUMENT;
   const examples =
     options.examples === false
       ? []
@@ -312,7 +330,7 @@ export const buildA2uiIndexPrompt = (options: BuildA2uiIndexPromptOptions = {}):
       'each following the provided A2UI JSON SCHEMA',
       'in the A2UI 1.0 format below',
     ),
-    `- Messages are createSurface {surfaceId, catalogId}, updateComponents {surfaceId, components}, and optionally updateDataModel {surfaceId, path?, value}; each also has "version": "1.0". A component is {"id", "component": Name, ...props}; exactly one has id "root". A prop shown as \`{@path}\` or a dynamic type may bind to the data model with {"@path": "/key"}.
+    `- Messages are createSurface {surfaceId, catalogId}, updateComponents {surfaceId, components}, and optionally updateDataModel {surfaceId, path?, value}; each also has "version": "1.0". A component is {"id", "component": Name, ...props}; exactly one has id "root". Any prop may also bind to the data model with {"@path": "/key"}.
 - The lines below are an index. Before using a component whose props you are unsure of, ${docsText(docs)} to read its full schema and examples. An invalid card comes back with the errors and the schemas of the components involved.`,
     catalogIndex(catalog),
     exampleBlock(examples),
@@ -346,7 +364,7 @@ export const buildA2uiDocs = (
   names: readonly string[],
   options: BuildA2uiDocsOptions = {},
 ): string => {
-  const base = options.catalog ?? A2UI_CATALOG_DOCUMENT;
+  const base = options.catalog ?? A2UI_AUTHORING_CATALOG_DOCUMENT;
   const wanted = [...new Set(names.map((name) => name.trim()).filter(Boolean))];
   const components = wanted.filter((name) => name in base.components);
   const functions = wanted.filter((name) => name in (base.functions ?? {}));

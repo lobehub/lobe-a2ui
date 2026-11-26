@@ -30,7 +30,14 @@ const legacy = {
     {
       updateComponents: {
         components: [
-          { badge: 'b', child: 'col', component: 'Card', description: 'Overnight', id: 'root', title: 'DC daily check' },
+          {
+            badge: 'b',
+            child: 'col',
+            component: 'Card',
+            description: 'Overnight',
+            id: 'root',
+            title: 'DC daily check',
+          },
           { color: 'warning', component: 'Tag', id: 'b', text: 'Watch' },
           { children: ['m', 'i', 'bars'], component: 'Column', id: 'col' },
           {
@@ -41,8 +48,20 @@ const legacy = {
               { delta: '+57%', label: '4xx', tone: 'bad', value: '667' },
             ],
           },
-          { component: 'Items', id: 'i', items: [{ detail: 'since 02:00', status: 'worse', title: '4xx up' }], title: 'Follow-ups' },
-          { component: 'Bars', id: 'bars', labels: ['00', '01'], title: 'P95', unit: 's', values: [0.8, 1.2] },
+          {
+            component: 'Items',
+            id: 'i',
+            items: [{ detail: 'since 02:00', status: 'worse', title: '4xx up' }],
+            title: 'Follow-ups',
+          },
+          {
+            component: 'Bars',
+            id: 'bars',
+            labels: ['00', '01'],
+            title: 'P95',
+            unit: 's',
+            values: [0.8, 1.2],
+          },
         ],
         surfaceId: 'dc',
       },
@@ -59,7 +78,8 @@ describe('cards stored before 1.1', () => {
     expect(hasLegacyComponents(legacy.operations)).toBe(true);
     const upgraded = upgradeLegacyOperations(legacy.operations);
     expect(hasLegacyComponents(upgraded)).toBe(false);
-    const result = validateSurface(upgraded);
+    // Upgrades replay stored cards, so they may use the retired 1.x components.
+    const result = validateSurface(upgraded, { allowDeprecated: true });
     expect(result.ok ? [] : result.errors).toEqual([]);
   });
 
@@ -72,12 +92,28 @@ describe('cards stored before 1.1', () => {
     );
     await vi.waitFor(() => expect(container.textContent).toContain('4xx up'));
     const text = container.textContent ?? '';
-    for (const part of ['DC daily check', 'Overnight', 'Watch', '667', 'Follow-ups', '恶化', 'since 02:00'])
+    for (const part of [
+      'DC daily check',
+      'Overnight',
+      'Watch',
+      '667',
+      'Follow-ups',
+      '恶化',
+      'since 02:00',
+    ])
       expect(text).toContain(part);
   });
 
   it('leave today’s cards untouched', () => {
-    const current = [{ updateComponents: { components: [{ component: 'Text', id: 'root', text: 'Hi' }], surfaceId: 's' }, version: '1.0' }];
+    const current = [
+      {
+        updateComponents: {
+          components: [{ component: 'Text', id: 'root', text: 'Hi' }],
+          surfaceId: 's',
+        },
+        version: '1.0',
+      },
+    ];
     expect(upgradeLegacyOperations(current)).toBe(current);
   });
 });

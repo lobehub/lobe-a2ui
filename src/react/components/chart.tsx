@@ -15,11 +15,12 @@ import {
   SparkLineChart,
   Tracker,
 } from '@lobehub/charts';
-import { cssVar, Flexbox, Text, useThemeMode } from '@lobehub/ui';
+import { cssVar, Flexbox, Text } from '@lobehub/ui';
 import type { ReactNode } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
 import { useA2uiHost } from '../host';
+import { formatNumber, isNumberFormat } from './format';
 import { define, rowsOf } from './shared';
 
 const SERIES_CHARTS = { area: AreaChart, bar: BarChart, line: LineChart } as const;
@@ -31,15 +32,6 @@ const SPARK_CHARTS = {
 /** Chat-width cards: tall enough to read a trend, short enough not to crowd the reply. */
 const CHART_HEIGHT = 180;
 const MAX_SERIES = 4;
-
-/**
- * Series colours in a fixed order, a step per theme: blue, orange, aqua, yellow. Checked for
- * colour-blind separation between neighbours; quieter than the antd preset the charts default to.
- */
-const SERIES_COLORS = {
-  dark: ['#3987e5', '#d95926', '#199e70', '#c98500'],
-  light: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100'],
-};
 
 const TRACKER_COLOR: Record<string, string> = {
   bad: cssVar.colorError,
@@ -63,7 +55,8 @@ const drawChart = (
   index: string,
   categories: string[],
   format: (value: number) => string,
-  colors: string[],
+  colors: string[] | undefined,
+  stacked: boolean,
 ): ReactNode => {
   const first = categories[0];
   const named = () =>
@@ -88,12 +81,12 @@ const drawChart = (
       );
     }
     case 'barList': {
-      return <BarList color={colors[0]} data={named()} valueFormatter={format} />;
+      return <BarList color={colors?.[0]} data={named()} valueFormatter={format} />;
     }
     case 'funnel': {
       return (
         <FunnelChart
-          color={colors[0]}
+          color={colors?.[0]}
           data={named()}
           style={{ height: CHART_HEIGHT }}
           valueFormatter={format}
@@ -197,6 +190,7 @@ const drawChart = (
           valueFormatter={format}
           yAxisWidth={44}
           {...(type === 'bar' ? { barCategoryGap: '32%' } : {})}
+          {...(stacked && (type === 'bar' || type === 'area') ? { stack: true } : {})}
         />
       );
     }
@@ -206,21 +200,32 @@ const drawChart = (
 /** Every chart @lobehub/charts draws, from one rows-and-fields model. */
 export const ChartView = define('Chart', ({ props }) => {
   const locale = useA2uiHost()?.locale;
-  const { isDarkMode } = useThemeMode();
   const rows = rowsOf<Row>(props.data, A2UI_LIST_LIMITS.Chart.data);
   const index = String(props.index ?? '');
   const categories = (Array.isArray(props.categories) ? props.categories : [])
     .map(String)
     .slice(0, props.type === 'scatter' ? 3 : MAX_SERIES);
   const unit = props.unit ? String(props.unit) : '';
-  const format = (value: number) => `${value.toLocaleString()}${unit}`;
+  const numberFormat = isNumberFormat(props.format) ? props.format : undefined;
+  const currency = props.currency ? String(props.currency) : undefined;
+  const format = (value: number) =>
+    `${numberFormat ? formatNumber(value, numberFormat, locale, currency) : value.toLocaleString(locale)}${unit}`;
   if (rows.length === 0) return null;
   if (categories.length === 0 && props.type !== 'tracker') return null;
 
   // Charts side by side in a Row share its width.
   return (
     <Flexbox flex={1} gap={8} style={{ minWidth: 0 }}>
-      {props.title ? <Text weight={600}>{String(props.title)}</Text> : null}
+      {props.title || props.subtitle ? (
+        <Flexbox gap={2}>
+          {props.title ? <Text weight={600}>{String(props.title)}</Text> : null}
+          {props.subtitle ? (
+            <Text fontSize={12} type="secondary">
+              {String(props.subtitle)}
+            </Text>
+          ) : null}
+        </Flexbox>
+      ) : null}
       {drawChart(
         locale,
         String(props.type),
@@ -228,7 +233,8 @@ export const ChartView = define('Chart', ({ props }) => {
         index,
         categories,
         format,
-        SERIES_COLORS[isDarkMode ? 'dark' : 'light'],
+        undefined,
+        props.stacked === true,
       )}
     </Flexbox>
   );

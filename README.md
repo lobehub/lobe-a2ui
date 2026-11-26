@@ -18,11 +18,11 @@ The root entry has no React dependency, so a server validates, stores and prompt
 The catalog is two A2UI catalog documents (JSON Schema, with the descriptions a model reads), merged:
 
 - `src/schema/basic_catalog.json`: the official A2UI 1.0 basic catalog, verbatim from google/A2UI `catalogs/basic/v1/catalog.json`.
-- `src/schema/lobehub_catalog.json`: LobeHub's extension catalog in the same format: neutral building blocks, and Icon names that also reach a bundled set of Lucide icons. Every official component and prop stays as the basic catalog defines it.
+- `src/schema/lobehub_catalog.json`: LobeHub's extension catalog in the same format, aligned with the official A2UI playground catalog (CopilotKit, MIT): its component definitions are taken as they are, so an Agent that knows the playground writes LobeHub cards. Every official basic component and prop stays as the basic catalog defines it.
 
 Validation, rendering and the prompt all read the merged document (`A2UI_CATALOG_DOCUMENT`): web_core derives each component's validator from its JSON Schema (`Catalog.fromJson`), so the server checks exactly what the renderer reads, and the prompt shows the same schema.
 
-Any component may be the root. `SurfaceView` frames the surface in a `Surface` card: a `Card` root is that card, any other root is placed in one.
+Any component may be the root. As in the official playground, a surface stands on a dot-grid floor and each boxed component (a chart, a table, a stat, a `Card`) is its own card on it, rather than the whole surface sitting in one box.
 
 ### Official basic catalog coverage
 
@@ -59,38 +59,34 @@ All 43 official examples (`src/examples/basic/v1`, from `catalogs/basic/v1/examp
 
 ### LobeHub extension catalog
 
-`src/schema/lobehub_catalog.json` (catalog id `https://lobehub.com/a2ui/catalog/v1`) adds neutral building blocks in the official catalog format. Every word they show comes from the Agent; props only set data, tone, size and layout.
+`src/schema/lobehub_catalog.json` (catalog id `https://lobehub.com/a2ui/catalog/v1`) takes these components from the official playground catalog, with its schemas and descriptions, and draws them with the `a2ui` variant of `@lobehub/ui` (6.23+) and `@lobehub/charts` (6.2+): the official layout, type and spacing on LobeHub's own colour tokens, light and dark.
 
-| Component   | Drawn with              | Props                                                                                                                                                                                        |
-| ----------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Chart`     | `@lobehub/charts`       | `type` (line, area, bar, donut, barList, scatter, funnel, radar, heatmap, tracker, sparkLine, sparkArea, sparkBar, categoryBar), `data` (≤ 200 rows), `index`, `categories`, `title`, `unit` |
-| `Metrics`   | dashboard `MetricStrip` | `items[{label, value, delta, direction, tone, hint}]` (≤ 8), `variant`                                                                                                                       |
-| `Statistic` | `Text`                  | `label`, `value`, `prefix`, `suffix`, `caption`, `tone`                                                                                                                                      |
-| `Table`     | `Table`                 | `columns[{key, label, align}]` (≤ 8), `rows` (≤ 50), `title`, `caption`                                                                                                                      |
-| `KeyValue`  | `Descriptions`          | `items[{label, value}]` (≤ 30), `columns`, `title`                                                                                                                                           |
-| `Progress`  | `Progress`              | `label`, `value`, `max`, `caption`, `tone`, `variant` (line, circle)                                                                                                                         |
-| `Steps`     | `Steps`                 | `items[{title, detail, meta, status}]` (≤ 20), `orientation`, `title`                                                                                                                        |
-| `Tag`       | `Tag`                   | `text`, `color`, `icon`                                                                                                                                                                      |
-| `Callout`   | `Alert`                 | `level`, `title`, `body`                                                                                                                                                                     |
-| `Avatar`    | `Avatar`                | `src` (https), `text` (emoji or initials), `size`, `shape`                                                                                                                                   |
-| `Code`      | `Highlighter`           | `code`, `language`                                                                                                                                                                           |
-| `Collapse`  | `Accordion`             | `title`, `child`, `defaultOpen`                                                                                                                                                              |
-| `Grid`      | `Grid`                  | `children` (≤ 12), `columns` (2–4, stack when narrow)                                                                                                                                        |
-| `Icon`      | basic Icon, plus sets   | `name` also takes `lucide:<name>` from the bundled set                                                                                                                                       |
+| Group    | Components                                                                                                                                                                                               |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Text     | `Heading` (title, the context after it, a subtitle), `Section`, `Title`, `Caption`, `Markdown`, `Quote`, `Kbd`, `Link`, `LinkCard`                                                                       |
+| KPIs     | `Stat`, `StatGroup`, `Sparkline`                                                                                                                                                                         |
+| Data     | `DataTable` (formats, badges, search, pages), `KeyValueList`, `Timeline`, `Agenda`, `ComparisonTable`, `TagList`, `Badge`, `Avatar`, `AvatarGroup`, `Rating`, `Progress`, `RadialProgress`               |
+| Charts   | `LineChart`, `AreaChart`, `BarChart`, `PieChart`, `ScatterChart`, `RadarChart`, `Heatmap`, `Gauge`, `Treemap`, `SankeyChart`, `CandlestickChart` (data in the official long format, `[{x, y, series?}]`) |
+| Feedback | `Alert`, `Callout`, `EmptyState`, `CodeBlock`, `Accordion`                                                                                                                                               |
+| Layout   | `Grid` (2-4 columns that step down with the surface width), `Card` with an optional `action` (the whole card clickable), `Icon` (bundled Lucide)                                                         |
+
+The 1.x components (`Metrics`, `Chart`, `Statistic`, `Table`, `KeyValue`, `Steps`, `Tag`, `Collapse`, `Code`) stay in the catalog, marked `deprecated` with their replacement, so stored cards replay in the same look. New cards may not use them (`validateSurface` names the replacement), and the prompt leaves them out; `validateSurface(ops, { allowDeprecated: true })` accepts them for stored cards.
 
 ### Examples
 
-Like google/A2UI's `catalogs/<name>/<version>/examples`, every catalog ships complete example surfaces: `src/examples/basic/v1` holds the 43 official basic examples verbatim, `src/examples/lobehub/v1` ten LobeHub surfaces of different shapes that use every extension component and chart type. `loadExamples(catalogs, ids?)` reads them; tests validate and render every one.
+Like google/A2UI's `catalogs/<name>/<version>/examples`, every catalog ships complete example surfaces: `src/examples/basic/v1` holds the 43 official basic examples verbatim, `src/examples/lobehub/v1` fourteen LobeHub surfaces written the way the official playground writes them, covering every extension component and chart. `loadExamples(catalogs, ids?)` reads them; tests validate and render every one.
+
+### Prompt
+
+The prompt carries the official playground's design rules, without the parts for components this catalog does not have (maps, domain cards): lead with a `Heading` whose subtitle states the takeaway, pick the component built for the job, lay out with Column / Row / Grid and group with `Section`, one chart per question, KPIs in a Grid of `Stat`, 8 to 18 components, percents as 0-100 with format `percent`, and a closing `Caption` when figures are illustrative. LobeHub adds its rules on links, buttons and figures. The always-on (progressive) prompt indexes every component in one line and stays under half of the playground's own 48 KB prompt.
+
+Not taken from the playground: its Express DSL (a compact non-JSON syntax), maps and domain cards (weather, recipes, stocks).
 
 ### Icons
 
 `Icon.name` keeps the 59 basic names and adds `lucide:<name>` (kebab-case, `lucide:trending-up`) from a fixed set of about 210 Lucide icons listed in `src/icons/names.ts`. The set ships inside the renderer (`src/react/icons/lucide.ts`, imported from `lucide-react`, a peer) as one lazy chunk that loads the first time a card shows an icon: no icon is fetched from a CDN, and hosts that never draw one don't load it. It is about 20 KB gzipped.
 
 Icons are muted line icons in the secondary text colour, an accent beside a heading or label. There are no brand logos. Names outside the set fail validation with close suggestions; stored cards that name one draw nothing in its place instead of an empty gap. To add an icon, add its name to `names.ts` and its import to `lucide.ts`; a test keeps the two in step.
-
-### Chart colours
-
-Series take four colours in a fixed order, a step per theme: blue, orange, aqua, yellow (light `#2a78d6 #eb6834 #1baf7a #eda100`, dark `#3987e5 #d95926 #199e70 #c98500`). Neighbours stay apart for colour-blind readers, and charts with more than one series keep their legend. Bars leave a third of each slot empty; a tracker with up to 60 blocks fills the card's width as a slim bar.
 
 ### Safety
 

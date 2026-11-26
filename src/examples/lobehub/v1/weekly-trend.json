@@ -1,6 +1,6 @@
 {
   "name": "Weekly Trend",
-  "description": "A single trend answer: one big Statistic, an area Chart of two series and a line of context.",
+  "description": "A single trend answer: a Heading whose subtitle states the takeaway, a Stat with its change, and a LineChart of two series.",
   "messages": [
     {
       "version": "1.0",
@@ -16,37 +16,32 @@
         "components": [
           {
             "id": "root",
-            "component": "Card",
-            "child": "body"
+            "component": "Column",
+            "children": ["head", "stat", "chart"]
           },
           {
-            "id": "body",
-            "component": "Column",
-            "children": ["stat", "chart", "note"]
+            "id": "head",
+            "component": "Heading",
+            "text": "Weekly active users",
+            "subtitle": "Mobile overtook web in week 46"
           },
           {
             "id": "stat",
-            "component": "Statistic",
-            "label": "Weekly active users",
+            "component": "Stat",
+            "label": "This week",
             "value": "48,210",
-            "caption": "Highest since launch",
-            "tone": "success"
+            "delta": "+5.1%",
+            "trend": "up",
+            "caption": "Highest since launch"
           },
           {
             "id": "chart",
-            "component": "Chart",
-            "type": "area",
+            "component": "LineChart",
+            "title": "Web vs mobile",
+            "format": "compact",
             "data": {
               "@path": "/weeks"
-            },
-            "index": "week",
-            "categories": ["web", "mobile"]
-          },
-          {
-            "id": "note",
-            "component": "Text",
-            "text": "Mobile overtook web in week 46.",
-            "variant": "caption"
+            }
           }
         ]
       }
@@ -59,34 +54,64 @@
         "value": {
           "weeks": [
             {
-              "week": "W41",
-              "web": 21000,
-              "mobile": 17000
+              "x": "W41",
+              "y": 21000,
+              "series": "Web"
             },
             {
-              "week": "W42",
-              "web": 21500,
-              "mobile": 18800
+              "x": "W41",
+              "y": 17000,
+              "series": "Mobile"
             },
             {
-              "week": "W43",
-              "web": 22100,
-              "mobile": 20500
+              "x": "W42",
+              "y": 21500,
+              "series": "Web"
             },
             {
-              "week": "W44",
-              "web": 22400,
-              "mobile": 22000
+              "x": "W42",
+              "y": 18800,
+              "series": "Mobile"
             },
             {
-              "week": "W45",
-              "web": 22800,
-              "mobile": 23900
+              "x": "W43",
+              "y": 22100,
+              "series": "Web"
             },
             {
-              "week": "W46",
-              "web": 23000,
-              "mobile": 25210
+              "x": "W43",
+              "y": 20500,
+              "series": "Mobile"
+            },
+            {
+              "x": "W44",
+              "y": 22400,
+              "series": "Web"
+            },
+            {
+              "x": "W44",
+              "y": 22000,
+              "series": "Mobile"
+            },
+            {
+              "x": "W45",
+              "y": 22800,
+              "series": "Web"
+            },
+            {
+              "x": "W45",
+              "y": 23900,
+              "series": "Mobile"
+            },
+            {
+              "x": "W46",
+              "y": 23000,
+              "series": "Web"
+            },
+            {
+              "x": "W46",
+              "y": 25210,
+              "series": "Mobile"
             }
           ]
         }

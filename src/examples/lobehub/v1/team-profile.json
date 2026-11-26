@@ -1,6 +1,6 @@
 {
   "name": "Team Profile",
-  "description": "A profile: Avatar and name in a Row, Tags for roles, KeyValue for facts, and a templated List of members.",
+  "description": "People: a Heading, an AvatarGroup of the team, a KeyValueList of the facts and a TagList of what they own.",
   "messages": [
     {
       "version": "1.0",
@@ -16,61 +16,42 @@
         "components": [
           {
             "id": "root",
-            "component": "Card",
-            "child": "body"
-          },
-          {
-            "id": "body",
             "component": "Column",
-            "children": ["who", "divider", "facts", "membersTitle", "members"]
+            "children": ["head", "people", "facts", "owns"]
           },
           {
-            "id": "who",
-            "component": "Row",
-            "children": ["avatar", "whoText"],
-            "align": "center"
+            "id": "head",
+            "component": "Heading",
+            "text": "Platform team",
+            "eyebrow": "On call this week",
+            "subtitle": "Five engineers own the infrastructure and the deploy pipeline"
           },
           {
-            "id": "avatar",
-            "component": "Avatar",
-            "text": "🛰️",
-            "size": 48
-          },
-          {
-            "id": "whoText",
-            "component": "Column",
-            "children": ["name", "roles"]
-          },
-          {
-            "id": "name",
-            "component": "Text",
-            "text": "#### Platform team"
-          },
-          {
-            "id": "roles",
-            "component": "Row",
-            "children": ["r1", "r2"]
-          },
-          {
-            "id": "r1",
-            "component": "Tag",
-            "text": "Infrastructure",
-            "color": "info",
-            "icon": "lucide:server"
-          },
-          {
-            "id": "r2",
-            "component": "Tag",
-            "text": "On call this week",
-            "color": "success"
-          },
-          {
-            "id": "divider",
-            "component": "Divider"
+            "id": "people",
+            "component": "AvatarGroup",
+            "label": "5 engineers",
+            "max": 4,
+            "people": [
+              {
+                "name": "Ada Chen"
+              },
+              {
+                "name": "Ravi Patel"
+              },
+              {
+                "name": "Lin Mo"
+              },
+              {
+                "name": "Sam Ortiz"
+              },
+              {
+                "name": "Mia Berg"
+              }
+            ]
           },
           {
             "id": "facts",
-            "component": "KeyValue",
+            "component": "KeyValueList",
             "columns": 2,
             "items": [
               {
@@ -86,81 +67,18 @@
                 "value": "#platform"
               },
               {
-                "label": "Members",
-                "value": "3"
+                "label": "On call",
+                "value": "Ravi Patel",
+                "hint": "until Sunday"
               }
             ]
           },
           {
-            "id": "membersTitle",
-            "component": "Text",
-            "text": "**Members**"
-          },
-          {
-            "id": "members",
-            "component": "List",
-            "children": {
-              "path": "/members",
-              "componentId": "member"
-            }
-          },
-          {
-            "id": "member",
-            "component": "Row",
-            "children": ["memberAvatar", "memberName", "memberRole"],
-            "align": "center"
-          },
-          {
-            "id": "memberAvatar",
-            "component": "Avatar",
-            "text": {
-              "@path": "initials"
-            },
-            "size": 28
-          },
-          {
-            "id": "memberName",
-            "component": "Text",
-            "text": {
-              "@path": "name"
-            },
-            "weight": 1
-          },
-          {
-            "id": "memberRole",
-            "component": "Text",
-            "text": {
-              "@path": "role"
-            },
-            "variant": "caption"
+            "id": "owns",
+            "component": "TagList",
+            "tags": ["Kubernetes", "Postgres", "Deploys", "Observability", "Edge cache"]
           }
         ]
-      }
-    },
-    {
-      "version": "1.0",
-      "updateDataModel": {
-        "surfaceId": "team-profile",
-        "path": "/",
-        "value": {
-          "members": [
-            {
-              "initials": "AC",
-              "name": "Ada Chen",
-              "role": "Lead"
-            },
-            {
-              "initials": "RP",
-              "name": "Ravi Patel",
-              "role": "SRE"
-            },
-            {
-              "initials": "LM",
-              "name": "Lin Mo",
-              "role": "Backend"
-            }
-          ]
-        }
       }
     }
   ]

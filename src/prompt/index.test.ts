@@ -33,7 +33,8 @@ describe('buildA2uiPrompt', () => {
     expect(catalog.catalogId).toBe(A2UI_CATALOG_ID);
     expect(new Set(Object.keys(catalog.components))).toEqual(A2UI_COMPONENT_NAMES);
     // Descriptions live in the schema, as the catalog writes them.
-    expect(catalog.components.Metrics.description).toMatch(/MetricStrip/);
+    expect(catalog.components.StatGroup.description).toMatch(/several KPIs/);
+    expect(catalog.components.Metrics).toBeUndefined();
     expect(catalog.components.Card).toEqual(JSON.parse(JSON.stringify(catalog.components.Card)));
   });
 

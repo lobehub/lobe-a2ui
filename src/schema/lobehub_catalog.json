@@ -3,12 +3,4275 @@
   "$id": "https://lobehub.com/a2ui/catalog/lobehub.json",
   "protocolVersion": "1.0",
   "title": "LobeHub A2UI Extensions",
-  "description": "LobeHub's extensions on top of the A2UI basic catalog: neutral building blocks drawn with @lobehub/ui and @lobehub/charts. Every word shown comes from the Agent; props only set data, tone, size and layout. Icon names also reach a bundled set of Lucide icons.",
+  "description": "LobeHub's extensions on top of the A2UI basic catalog, aligned with the official A2UI playground catalog (CopilotKit, MIT): headings and sections, KPIs, data views, charts and feedback, drawn with @lobehub/ui and @lobehub/charts in their a2ui look. Every word shown comes from the Agent. Icon names reach a bundled set of Lucide icons.",
   "catalogId": "https://lobehub.com/a2ui/catalog/v1",
   "components": {
+    "Heading": {
+      "type": "object",
+      "description": "Surface title with optional eyebrow and subtitle. Start most surfaces with one.",
+      "properties": {
+        "component": {
+          "const": "Heading"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "eyebrow": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["1", "2", "3"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "text"]
+    },
+    "Section": {
+      "type": "object",
+      "description": "Titled group with eyebrow, title, description, and children.",
+      "properties": {
+        "component": {
+          "const": "Section"
+        },
+        "eyebrow": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "children": {
+          "$ref": "common_types.json#/$defs/ChildList"
+        }
+      },
+      "required": ["component", "title", "children"]
+    },
+    "Title": {
+      "type": "object",
+      "description": "A heading in a Card or next to another component; a heading alone is markdown. Size \"2xl\" at most once per surface, \"lg\" for sections. \"sm\" is an h4, \"md\"/\"lg\" an h3 (default \"md\"), \"xl\" and up an h2. Bold unless strong is false.",
+      "properties": {
+        "component": {
+          "const": "Title"
+        },
+        "text": {
+          "description": "Heading text",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "color": {
+          "description": "One of default|prose|primary|emphasis|secondary|tertiary|success|info|warning|caution|danger|discovery or a CSS color",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "fontWeight": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["normal", "medium", "semibold", "bold"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "textAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["start", "center", "end"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "italic": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "truncate": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "maxLines": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "tabularNums": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": ["number", "string"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "size": {
+          "description": "Default \"md\"",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "strong": {
+          "description": "Default true",
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "text"]
+    },
+    "Caption": {
+      "type": "object",
+      "description": "Small secondary text: a hint under a control, or a label in a Row. `text` can have inline markdown.",
+      "properties": {
+        "component": {
+          "const": "Caption"
+        },
+        "text": {
+          "description": "Caption text",
+          "anyOf": [
+            {
+              "type": ["string", "number"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "color": {
+          "description": "One of default|prose|primary|emphasis|secondary|tertiary|success|info|warning|caution|danger|discovery or a CSS color",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "size": {
+          "description": "Default \"lg\"",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["sm", "md", "lg"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "fontWeight": {
+          "description": "Default \"normal\"",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["normal", "medium", "semibold", "bold"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "textAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["start", "center", "end"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "truncate": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "maxLines": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "text"]
+    },
+    "Markdown": {
+      "type": "object",
+      "description": "A block of GitHub-flavored markdown. Use it only next to other components, for example in a table cell or next to a chart. Markdown alone goes outside the fence.",
+      "properties": {
+        "component": {
+          "const": "Markdown"
+        },
+        "text": {
+          "description": "Markdown source",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "streaming": {
+          "description": "Default false",
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "text"]
+    },
+    "Stat": {
+      "type": "object",
+      "description": "One numeric KPI: label, short value (number or <10 chars like '$84k'), optional delta (e.g. '+4.2%'), caption. Not for sentences.",
+      "properties": {
+        "component": {
+          "const": "Stat"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": ["string", "number"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "trend": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["up", "down", "flat"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["default", "positive", "negative", "warning", "info", "accent"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "label", "value"]
+    },
+    "StatGroup": {
+      "type": "object",
+      "description": "Compact strip of several KPIs in one card.",
+      "properties": {
+        "component": {
+          "const": "StatGroup"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": ["string", "number"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "delta": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "trend": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": ["up", "down", "flat"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["label", "value"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "items"]
+    },
+    "Sparkline": {
+      "type": "object",
+      "description": "Tiny trend with label and latest value; a compact KPI with history, fits in a Grid instead of Stat. values: numbers.",
+      "properties": {
+        "component": {
+          "const": "Sparkline"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "values": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["positive", "negative", "default"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "values"]
+    },
+    "DataTable": {
+      "type": "object",
+      "description": "Sortable, filterable table (TanStack Table). columns [{key,label,format?}], rows are objects keyed by column key.",
+      "properties": {
+        "component": {
+          "const": "DataTable"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "columns": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "format": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": ["text", "number", "currency", "percent", "badge", "date"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "align": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": ["left", "right"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["key", "label"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "rows": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": {
+                      "anyOf": [
+                        {},
+                        {
+                          "$ref": "common_types.json#/$defs/DataBinding"
+                        },
+                        {
+                          "$ref": "common_types.json#/$defs/FunctionCall"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "searchable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "pageSize": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "columns", "rows"]
+    },
+    "KeyValueList": {
+      "type": "object",
+      "description": "Label/value rows, e.g. specs or order details.",
+      "properties": {
+        "component": {
+          "const": "KeyValueList"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "items": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": ["string", "number"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "hint": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["label", "value"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "columns": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "items"]
+    },
+    "Timeline": {
+      "type": "object",
+      "description": "Vertical timeline of dated events or steps with status.",
+      "properties": {
+        "component": {
+          "const": "Timeline"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "time": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "description": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "status": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": ["done", "current", "upcoming"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "icon": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["title"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "items"]
+    },
+    "Agenda": {
+      "type": "object",
+      "description": "Calendar agenda: days with timed events (conference, week plan, schedule). Prefer over Timeline for clock times.",
+      "properties": {
+        "component": {
+          "const": "Agenda"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "days": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "events": {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "time": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/DataBinding"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/FunctionCall"
+                                        }
+                                      ]
+                                    },
+                                    "title": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/DataBinding"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/FunctionCall"
+                                        }
+                                      ]
+                                    },
+                                    "speaker": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/DataBinding"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/FunctionCall"
+                                        }
+                                      ]
+                                    },
+                                    "location": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/DataBinding"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/FunctionCall"
+                                        }
+                                      ]
+                                    },
+                                    "description": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/DataBinding"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/FunctionCall"
+                                        }
+                                      ]
+                                    },
+                                    "tone": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "enum": ["default", "positive", "negative", "warning", "info", "accent"]
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/DataBinding"
+                                        },
+                                        {
+                                          "$ref": "common_types.json#/$defs/FunctionCall"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": ["title"],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "$ref": "common_types.json#/$defs/DataBinding"
+                                },
+                                {
+                                  "$ref": "common_types.json#/$defs/FunctionCall"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["date", "events"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "days"]
+    },
+    "ComparisonTable": {
+      "type": "object",
+      "description": "Feature matrix comparing options side by side. options are the option names as strings; rows [{feature, values}] with one value per option, in the same order, each true/false/text; highlight is the recommended option's index in options (0 is the first).",
+      "properties": {
+        "component": {
+          "const": "ComparisonTable"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "options": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "rows": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "feature": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "values": {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": ["string", "number", "boolean"]
+                                },
+                                {
+                                  "$ref": "common_types.json#/$defs/DataBinding"
+                                },
+                                {
+                                  "$ref": "common_types.json#/$defs/FunctionCall"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["feature", "values"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "highlight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "options", "rows"]
+    },
+    "Progress": {
+      "type": "object",
+      "description": "Labelled progress bar, value 0-100: goals, budgets used, completion, coverage.",
+      "properties": {
+        "component": {
+          "const": "Progress"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["accent", "default", "error", "info", "negative", "positive", "success", "warning"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "max": {
+          "$ref": "common_types.json#/$defs/DynamicNumber",
+          "description": "Default 100.",
+          "deprecated": true
+        },
+        "variant": {
+          "type": "string",
+          "enum": ["line", "circle"],
+          "description": "line (default) or a small ring.",
+          "deprecated": true
+        }
+      },
+      "required": ["component", "value"]
+    },
+    "RadialProgress": {
+      "type": "object",
+      "description": "Ring with centered value, value 0-100: a single score or percent complete.",
+      "properties": {
+        "component": {
+          "const": "RadialProgress"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "display": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["default", "positive", "negative", "warning", "info", "accent"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "value"]
+    },
+    "Rating": {
+      "type": "object",
+      "description": "Star rating (0-5) with optional review count: products, places, reviews.",
+      "properties": {
+        "component": {
+          "const": "Rating"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "count": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "value"]
+    },
+    "Avatar": {
+      "type": "object",
+      "description": "Person avatar (initials if no image) with name and subtitle: authors, owners, reviewers.",
+      "properties": {
+        "component": {
+          "const": "Avatar"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "image": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "size": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": ["sm", "md", "lg"]
+                },
+                {
+                  "$ref": "common_types.json#/$defs/DataBinding"
+                },
+                {
+                  "$ref": "common_types.json#/$defs/FunctionCall"
+                }
+              ]
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["online", "away", "offline"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "src": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "https image URL.",
+          "deprecated": true
+        },
+        "text": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "An emoji or a name's initials, when there is no image.",
+          "deprecated": true
+        },
+        "shape": {
+          "type": "string",
+          "enum": ["circle", "square"],
+          "description": "Default 'circle'.",
+          "deprecated": true
+        }
+      },
+      "required": ["component"]
+    },
+    "AvatarGroup": {
+      "type": "object",
+      "description": "Overlapping avatar stack with +N overflow: attendees, team members, reviewers.",
+      "properties": {
+        "component": {
+          "const": "AvatarGroup"
+        },
+        "people": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "image": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["name"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "people"]
+    },
+    "TagList": {
+      "type": "object",
+      "description": "Wrapping list of tags/chips.",
+      "properties": {
+        "component": {
+          "const": "TagList"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["default", "positive", "negative", "warning", "info", "accent"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "tags"]
+    },
+    "Badge": {
+      "type": "object",
+      "description": "A small status pill. Use the colors success, danger and warning only to show a status, not for decoration.",
+      "properties": {
+        "component": {
+          "const": "Badge"
+        },
+        "label": {
+          "description": "Badge text",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "variant": {
+          "description": "Default \"soft\"",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["soft", "solid", "outline"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "color": {
+          "description": "Default \"secondary\"",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["secondary", "success", "danger", "warning", "info", "discovery"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "size": {
+          "description": "Default \"md\"",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["sm", "md", "lg"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "pill": {
+          "description": "Default true",
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "fontWeight": {
+          "description": "Default \"medium\"",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["normal", "medium", "semibold", "bold"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "maxWidth": {
+          "anyOf": [
+            {
+              "type": ["number", "string"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "padding": {
+          "anyOf": [
+            {
+              "type": ["number", "string"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "label"]
+    },
+    "LineChart": {
+      "type": "object",
+      "description": "Trend over ordered x. data [{x,y,series?}]; one line per series.",
+      "properties": {
+        "component": {
+          "const": "LineChart"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "anyOf": [
+                          {
+                            "type": ["string", "number"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "y": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "series": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["x", "y"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "curve": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "highlight": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "AreaChart": {
+      "type": "object",
+      "description": "Filled trend for volumes or cumulative totals (traffic, signups); series stack. data [{x,y,series?}].",
+      "properties": {
+        "component": {
+          "const": "AreaChart"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "anyOf": [
+                          {
+                            "type": ["string", "number"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "y": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "series": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["x", "y"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "stacked": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "highlight": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "BarChart": {
+      "type": "object",
+      "description": "Compare categories. data [{x,y,series?}]; series grouped side by side, or stacked:true. horizontal for long labels.",
+      "properties": {
+        "component": {
+          "const": "BarChart"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "anyOf": [
+                          {
+                            "type": ["string", "number"]
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "y": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "series": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["x", "y"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "stacked": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "horizontal": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "highlight": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "PieChart": {
+      "type": "object",
+      "description": "Part-to-whole. data [{label,value}]; donut:true for a ring with center total.",
+      "properties": {
+        "component": {
+          "const": "PieChart"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["label", "value"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "donut": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "centerLabel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "ScatterChart": {
+      "type": "object",
+      "description": "Relationship between two numbers (price vs rating, effort vs impact). data [{x,y,label?,size?,series?}].",
+      "properties": {
+        "component": {
+          "const": "ScatterChart"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "y": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "size": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "series": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["x", "y"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "xLabel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "yLabel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "RadarChart": {
+      "type": "object",
+      "description": "Multi-axis profile (scores per criterion for 2-3 options or people). data [{axis,value,series?}], values on a shared scale.",
+      "properties": {
+        "component": {
+          "const": "RadarChart"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "axis": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "series": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["axis", "value"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "Heatmap": {
+      "type": "object",
+      "description": "Matrix of values, e.g. day x hour. data [{x,y,value}] with x,y categories.",
+      "properties": {
+        "component": {
+          "const": "Heatmap"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "y": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["x", "y", "value"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "Gauge": {
+      "type": "object",
+      "description": "Half-ring gauge for a single value within min..max (score, utilization).",
+      "properties": {
+        "component": {
+          "const": "Gauge"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "value"]
+    },
+    "Treemap": {
+      "type": "object",
+      "description": "Nested part-to-whole as rectangles. data [{name,value,group?}].",
+      "properties": {
+        "component": {
+          "const": "Treemap"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "group": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "SankeyChart": {
+      "type": "object",
+      "description": "Flows between stages, e.g. budget or funnel paths. links [{source,target,value}].",
+      "properties": {
+        "component": {
+          "const": "SankeyChart"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "links": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "target": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["source", "target", "value"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "links"]
+    },
+    "CandlestickChart": {
+      "type": "object",
+      "description": "OHLC price candles. data [{date,open,high,low,close}].",
+      "properties": {
+        "component": {
+          "const": "CandlestickChart"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["number", "currency", "percent", "compact"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "open": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "high": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "low": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "close": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["date", "open", "high", "low", "close"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "data"]
+    },
+    "Alert": {
+      "type": "object",
+      "description": "Inline alert with icon, title and message.",
+      "properties": {
+        "component": {
+          "const": "Alert"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["info", "success", "warning", "error"]
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "title"]
+    },
+    "Callout": {
+      "type": "object",
+      "description": "Highlighted tip or note with optional emoji/icon and a call to action.",
+      "properties": {
+        "component": {
+          "const": "Callout"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "actionLabel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "onAction": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Fires when the call-to-action button is clicked."
+        },
+        "level": {
+          "type": "string",
+          "enum": ["info", "success", "warning", "error"],
+          "description": "Semantic level; sets colour and icon.",
+          "deprecated": true
+        },
+        "body": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "Markdown detail.",
+          "deprecated": true
+        }
+      },
+      "required": ["component"]
+    },
+    "EmptyState": {
+      "type": "object",
+      "description": "Empty or zero-results state with icon, title, hint and optional action: no matches, nothing scheduled, inbox zero.",
+      "properties": {
+        "component": {
+          "const": "EmptyState"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "actionLabel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "onAction": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Fires when the action button is clicked."
+        }
+      },
+      "required": ["component", "title"]
+    },
+    "CodeBlock": {
+      "type": "object",
+      "description": "Syntax-colored code with language label and copy button. Use for any code, config, command or diff snippet.",
+      "properties": {
+        "component": {
+          "const": "CodeBlock"
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "code"]
+    },
+    "Quote": {
+      "type": "object",
+      "description": "Pull quote with attribution: testimonial, review, reviewer comment.",
+      "properties": {
+        "component": {
+          "const": "Quote"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "author": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "text"]
+    },
+    "Kbd": {
+      "type": "object",
+      "description": "Keyboard shortcut chips, e.g. keys ['Cmd','K'] with a label. Use for shortcuts and how-to steps.",
+      "properties": {
+        "component": {
+          "const": "Kbd"
+        },
+        "keys": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "keys"]
+    },
+    "Link": {
+      "type": "object",
+      "description": "A link. Only http, https and mailto URLs work. It opens in a new tab.",
+      "properties": {
+        "component": {
+          "const": "Link"
+        },
+        "text": {
+          "description": "Link text",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "href": {
+          "description": "URL",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "text", "href"]
+    },
+    "LinkCard": {
+      "type": "object",
+      "description": "A preview of a URL: favicon and domain, title, description, thumbnail. A click opens it in a new tab, or sends onClick when bound. For sources, articles and products with a page.",
+      "properties": {
+        "component": {
+          "const": "LinkCard"
+        },
+        "href": {
+          "description": "The URL (http, https)",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "title": {
+          "description": "The page title",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "onClick": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Sent when the user clicks the card, instead of the link."
+        },
+        "description": {
+          "description": "One or two lines",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "image": {
+          "description": "A thumbnail URL",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "domain": {
+          "description": "Shown next to the favicon. Default: the host of href",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "favicon": {
+          "description": "Default true",
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "href", "title"]
+    },
+    "Accordion": {
+      "type": "object",
+      "description": "Collapsible items (FAQs, details, per-file notes); each has a title and either text or a child id.",
+      "properties": {
+        "component": {
+          "const": "Accordion"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "text": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/DataBinding"
+                          },
+                          {
+                            "$ref": "common_types.json#/$defs/FunctionCall"
+                          }
+                        ]
+                      },
+                      "child": {
+                        "$ref": "common_types.json#/$defs/ComponentId"
+                      }
+                    },
+                    "required": ["title"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/DataBinding"
+                  },
+                  {
+                    "$ref": "common_types.json#/$defs/FunctionCall"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        },
+        "multiple": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            },
+            {
+              "$ref": "common_types.json#/$defs/FunctionCall"
+            }
+          ]
+        }
+      },
+      "required": ["component", "items"]
+    },
     "Card": {
       "type": "object",
-      "description": "A card around one child. Inside another card it draws as a filled tile. With an action the whole card is clickable: give one that stands for a single thing with its own page (a PR, an order, a doc) an openUrl to that page.",
+      "description": "A card around one child; nested, a filled tile. With an action (openUrl to its page) the whole card is clickable.",
       "properties": {
         "component": {
           "const": "Card"
@@ -27,6 +4290,28 @@
       },
       "required": ["component", "child"]
     },
+    "Grid": {
+      "type": "object",
+      "description": "Children in equal columns, e.g. two options side by side or a set of small cards.",
+      "properties": {
+        "component": {
+          "const": "Grid"
+        },
+        "children": {
+          "$ref": "common_types.json#/$defs/ChildList"
+        },
+        "columns": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 4,
+          "description": "Columns, 2–4 (default 2). They stack when the card is narrow."
+        },
+        "weight": {
+          "$ref": "#/$defs/Weight"
+        }
+      },
+      "required": ["component", "children"]
+    },
     "Icon": {
       "type": "object",
       "description": "A small muted line icon by a basic name, or a Lucide icon as 'lucide:<name>' (e.g. 'lucide:rocket'). An accent beside a heading or label, never the content itself; no brand logos.",
@@ -39,67 +4324,7 @@
           "anyOf": [
             {
               "type": "string",
-              "enum": [
-                "accountCircle",
-                "add",
-                "arrowBack",
-                "arrowForward",
-                "attachFile",
-                "calendarToday",
-                "call",
-                "camera",
-                "check",
-                "close",
-                "delete",
-                "download",
-                "edit",
-                "event",
-                "error",
-                "fastForward",
-                "favorite",
-                "favoriteOff",
-                "folder",
-                "help",
-                "home",
-                "info",
-                "locationOn",
-                "lock",
-                "lockOpen",
-                "mail",
-                "menu",
-                "moreVert",
-                "moreHoriz",
-                "notificationsOff",
-                "notifications",
-                "pause",
-                "payment",
-                "person",
-                "phone",
-                "photo",
-                "play",
-                "print",
-                "refresh",
-                "rewind",
-                "search",
-                "send",
-                "settings",
-                "share",
-                "shoppingCart",
-                "skipNext",
-                "skipPrevious",
-                "star",
-                "starHalf",
-                "starOff",
-                "stop",
-                "upload",
-                "visibility",
-                "visibilityOff",
-                "volumeDown",
-                "volumeMute",
-                "volumeOff",
-                "volumeUp",
-                "warning"
-              ]
+              "enum": ["accountCircle", "add", "arrowBack", "arrowForward", "attachFile", "calendarToday", "call", "camera", "check", "close", "delete", "download", "edit", "event", "error", "fastForward", "favorite", "favoriteOff", "folder", "help", "home", "info", "locationOn", "lock", "lockOpen", "mail", "menu", "moreVert", "moreHoriz", "notificationsOff", "notifications", "pause", "payment", "person", "phone", "photo", "play", "print", "refresh", "rewind", "search", "send", "settings", "share", "shoppingCart", "skipNext", "skipPrevious", "star", "starHalf", "starOff", "stop", "upload", "visibility", "visibilityOff", "volumeDown", "volumeMute", "volumeOff", "volumeUp", "warning"]
             },
             {
               "type": "string",
@@ -186,7 +4411,9 @@
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "items"]
+      "required": ["component", "items"],
+      "deprecated": true,
+      "$comment": "Replaced by StatGroup. Kept so stored cards replay."
     },
     "Chart": {
       "type": "object",
@@ -197,22 +4424,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "line",
-            "area",
-            "bar",
-            "donut",
-            "barList",
-            "scatter",
-            "funnel",
-            "radar",
-            "heatmap",
-            "tracker",
-            "sparkLine",
-            "sparkArea",
-            "sparkBar",
-            "categoryBar"
-          ],
+          "enum": ["line", "area", "bar", "donut", "barList", "scatter", "funnel", "radar", "heatmap", "tracker", "sparkLine", "sparkArea", "sparkBar", "categoryBar"],
           "description": "line/area: a trend over time. bar: compare groups. donut: share of a whole (first category). barList: a ranking. scatter: x/y relation (categories = [x, y, size?], index = series). funnel: stage drop-off. radar: several attributes per series. heatmap: daily activity (index = date YYYY-MM-DD, first category = count). tracker: one block per period coloured by its `tone` field (good|bad|warn|neutral), index = tooltip. sparkLine/sparkArea/sparkBar: a tiny inline trend. categoryBar: one bar split into segments."
         },
         "data": {
@@ -241,6 +4453,23 @@
         "title": {
           "$ref": "common_types.json#/$defs/DynamicString"
         },
+        "subtitle": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "One line under the title that states the takeaway, e.g. 'Mobile overtook web in week 46'."
+        },
+        "format": {
+          "type": "string",
+          "enum": ["number", "compact", "currency", "percent"],
+          "description": "How numbers read: number (12,400), compact (12.4K), currency (with `currency`, default USD), percent (values 0-100: 12.4 means 12.4%, never fractions)."
+        },
+        "currency": {
+          "type": "string",
+          "description": "ISO code when format is currency, default USD."
+        },
+        "stacked": {
+          "type": "boolean",
+          "description": "bar and area: stack the series instead of placing them side by side."
+        },
         "unit": {
           "$ref": "common_types.json#/$defs/DynamicString",
           "description": "Appended to every value, e.g. 'ms'."
@@ -249,7 +4478,9 @@
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "type", "data", "index"]
+      "required": ["component", "type", "data", "index"],
+      "deprecated": true,
+      "$comment": "Replaced by LineChart, AreaChart, BarChart, PieChart, ScatterChart, RadarChart or Heatmap. Kept so stored cards replay."
     },
     "Statistic": {
       "type": "object",
@@ -278,6 +4509,31 @@
           "$ref": "common_types.json#/$defs/DynamicString",
           "description": "One line under the value."
         },
+        "delta": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "The change, e.g. '+12.4%' or '-3 pts'."
+        },
+        "trend": {
+          "type": "string",
+          "enum": ["up", "down", "flat"],
+          "description": "Which way the change goes; draws an arrow. The delta is green when up is good, unless tone says otherwise."
+        },
+        "values": {
+          "oneOf": [
+            {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 60,
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "$ref": "common_types.json#/$defs/DataBinding"
+            }
+          ],
+          "description": "Recent values, oldest first, drawn as a sparkline under the figure when a trend matters. 3 to 60 numbers."
+        },
         "tone": {
           "type": "string",
           "enum": ["default", "success", "warning", "error"],
@@ -287,7 +4543,9 @@
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "label", "value"]
+      "required": ["component", "label", "value"],
+      "deprecated": true,
+      "$comment": "Replaced by Stat. Kept so stored cards replay."
     },
     "Table": {
       "type": "object",
@@ -317,6 +4575,23 @@
               "align": {
                 "type": "string",
                 "enum": ["start", "center", "end"]
+              },
+              "format": {
+                "type": "string",
+                "enum": ["text", "number", "compact", "currency", "percent", "badge"],
+                "description": "How the cells read: text (default), number, compact, currency, percent (0-100), or badge (a coloured pill; colours from tones)."
+              },
+              "currency": {
+                "type": "string",
+                "description": "ISO code for currency cells, default USD."
+              },
+              "tones": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": ["default", "success", "warning", "error", "info"]
+                },
+                "description": "Badge colour per cell value, e.g. {\"Active\": \"success\", \"Overdue\": \"error\"}."
               }
             },
             "required": ["key", "label"],
@@ -346,7 +4621,9 @@
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "columns", "rows"]
+      "required": ["component", "columns", "rows"],
+      "deprecated": true,
+      "$comment": "Replaced by DataTable. Kept so stored cards replay."
     },
     "KeyValue": {
       "type": "object",
@@ -394,44 +4671,9 @@
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "items"]
-    },
-    "Progress": {
-      "type": "object",
-      "description": "How far along something is: a quota, a goal, a rollout.",
-      "properties": {
-        "component": {
-          "const": "Progress"
-        },
-        "label": {
-          "$ref": "common_types.json#/$defs/DynamicString"
-        },
-        "value": {
-          "$ref": "common_types.json#/$defs/DynamicNumber"
-        },
-        "max": {
-          "$ref": "common_types.json#/$defs/DynamicNumber",
-          "description": "Default 100."
-        },
-        "caption": {
-          "$ref": "common_types.json#/$defs/DynamicString",
-          "description": "e.g. '7.2 / 10 GB'; defaults to the percentage."
-        },
-        "tone": {
-          "type": "string",
-          "enum": ["default", "success", "warning", "error", "info"],
-          "description": "Bar colour."
-        },
-        "variant": {
-          "type": "string",
-          "enum": ["line", "circle"],
-          "description": "line (default) or a small ring."
-        },
-        "weight": {
-          "$ref": "#/$defs/Weight"
-        }
-      },
-      "required": ["component", "label", "value"]
+      "required": ["component", "items"],
+      "deprecated": true,
+      "$comment": "Replaced by KeyValueList. Kept so stored cards replay."
     },
     "Steps": {
       "type": "object",
@@ -486,7 +4728,9 @@
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "items"]
+      "required": ["component", "items"],
+      "deprecated": true,
+      "$comment": "Replaced by Timeline. Kept so stored cards replay."
     },
     "Tag": {
       "type": "object",
@@ -512,86 +4756,9 @@
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "text"]
-    },
-    "Callout": {
-      "type": "object",
-      "description": "A highlighted message with a semantic level.",
-      "properties": {
-        "component": {
-          "const": "Callout"
-        },
-        "level": {
-          "type": "string",
-          "enum": ["info", "success", "warning", "error"],
-          "description": "Semantic level; sets colour and icon."
-        },
-        "title": {
-          "$ref": "common_types.json#/$defs/DynamicString",
-          "description": "One line."
-        },
-        "body": {
-          "$ref": "common_types.json#/$defs/DynamicString",
-          "description": "Markdown detail."
-        },
-        "weight": {
-          "$ref": "#/$defs/Weight"
-        }
-      },
-      "required": ["component", "level", "title"]
-    },
-    "Avatar": {
-      "type": "object",
-      "description": "A person's, team's or thing's picture, emoji or initials.",
-      "properties": {
-        "component": {
-          "const": "Avatar"
-        },
-        "src": {
-          "$ref": "common_types.json#/$defs/DynamicString",
-          "description": "https image URL."
-        },
-        "text": {
-          "$ref": "common_types.json#/$defs/DynamicString",
-          "description": "An emoji or a name's initials, when there is no image."
-        },
-        "size": {
-          "type": "number",
-          "minimum": 16,
-          "maximum": 96,
-          "description": "Size in px. Default 32."
-        },
-        "shape": {
-          "type": "string",
-          "enum": ["circle", "square"],
-          "description": "Default 'circle'."
-        },
-        "weight": {
-          "$ref": "#/$defs/Weight"
-        }
-      },
-      "required": ["component"]
-    },
-    "Code": {
-      "type": "object",
-      "description": "A block of code with syntax highlighting and a copy button.",
-      "properties": {
-        "component": {
-          "const": "Code"
-        },
-        "code": {
-          "$ref": "common_types.json#/$defs/DynamicString",
-          "description": "The code."
-        },
-        "language": {
-          "type": "string",
-          "description": "Language for highlighting, e.g. 'ts', 'python', 'bash', 'json'."
-        },
-        "weight": {
-          "$ref": "#/$defs/Weight"
-        }
-      },
-      "required": ["component", "code"]
+      "required": ["component", "text"],
+      "deprecated": true,
+      "$comment": "Replaced by Badge. Kept so stored cards replay."
     },
     "Collapse": {
       "type": "object",
@@ -616,29 +4783,32 @@
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "title", "child"]
+      "required": ["component", "title", "child"],
+      "deprecated": true,
+      "$comment": "Replaced by Accordion. Kept so stored cards replay."
     },
-    "Grid": {
+    "Code": {
       "type": "object",
-      "description": "Children in equal columns, e.g. two options side by side or a set of small cards.",
+      "description": "A block of code with syntax highlighting and a copy button.",
       "properties": {
         "component": {
-          "const": "Grid"
+          "const": "Code"
         },
-        "children": {
-          "$ref": "common_types.json#/$defs/ChildList"
+        "code": {
+          "$ref": "common_types.json#/$defs/DynamicString",
+          "description": "The code."
         },
-        "columns": {
-          "type": "integer",
-          "minimum": 2,
-          "maximum": 4,
-          "description": "Columns, 2–4 (default 2). They stack when the card is narrow."
+        "language": {
+          "type": "string",
+          "description": "Language for highlighting, e.g. 'ts', 'python', 'bash', 'json'."
         },
         "weight": {
           "$ref": "#/$defs/Weight"
         }
       },
-      "required": ["component", "children"]
+      "required": ["component", "code"],
+      "deprecated": true,
+      "$comment": "Replaced by CodeBlock. Kept so stored cards replay."
     }
   },
   "$defs": {

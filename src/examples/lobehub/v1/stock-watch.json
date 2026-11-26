@@ -1,0 +1,231 @@
+{
+  "name": "Stock Watch",
+  "description": "A price view: a Heading, a CandlestickChart of a month of daily prices, a KeyValueList of key figures and an illustrative-data Caption.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "stock-watch",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "stock-watch",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "candles", "facts", "note"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "Halvorsen Robotics (HLVR)",
+            "eyebrow": "$180.17",
+            "subtitle": "Down 1.2% over September after a strong first week"
+          },
+          {
+            "id": "candles",
+            "component": "CandlestickChart",
+            "title": "Daily OHLC, September",
+            "format": "currency",
+            "data": {
+              "@path": "/candles"
+            }
+          },
+          {
+            "id": "facts",
+            "component": "KeyValueList",
+            "columns": 3,
+            "items": [
+              {
+                "label": "Open",
+                "value": "$182.40"
+              },
+              {
+                "label": "Day range",
+                "value": "$178.90-$182.60"
+              },
+              {
+                "label": "Volume",
+                "value": "4.2M"
+              }
+            ]
+          },
+          {
+            "id": "note",
+            "component": "Caption",
+            "text": "Illustrative data"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "stock-watch",
+        "path": "/",
+        "value": {
+          "candles": [
+            {
+              "date": "2026-09-01",
+              "open": 182.1,
+              "high": 183.0,
+              "low": 180.9,
+              "close": 181.2
+            },
+            {
+              "date": "2026-09-02",
+              "open": 181.2,
+              "high": 182.4,
+              "low": 180.1,
+              "close": 182.0
+            },
+            {
+              "date": "2026-09-03",
+              "open": 182.0,
+              "high": 184.1,
+              "low": 181.5,
+              "close": 183.6
+            },
+            {
+              "date": "2026-09-04",
+              "open": 183.6,
+              "high": 185.2,
+              "low": 183.0,
+              "close": 184.8
+            },
+            {
+              "date": "2026-09-05",
+              "open": 184.8,
+              "high": 186.0,
+              "low": 183.9,
+              "close": 185.1
+            },
+            {
+              "date": "2026-09-08",
+              "open": 185.1,
+              "high": 185.4,
+              "low": 182.7,
+              "close": 183.0
+            },
+            {
+              "date": "2026-09-09",
+              "open": 183.0,
+              "high": 184.2,
+              "low": 181.8,
+              "close": 182.2
+            },
+            {
+              "date": "2026-09-10",
+              "open": 182.2,
+              "high": 183.9,
+              "low": 181.0,
+              "close": 183.5
+            },
+            {
+              "date": "2026-09-11",
+              "open": 183.5,
+              "high": 184.0,
+              "low": 180.6,
+              "close": 181.0
+            },
+            {
+              "date": "2026-09-12",
+              "open": 181.0,
+              "high": 181.9,
+              "low": 178.8,
+              "close": 179.4
+            },
+            {
+              "date": "2026-09-15",
+              "open": 179.4,
+              "high": 181.2,
+              "low": 178.9,
+              "close": 180.8
+            },
+            {
+              "date": "2026-09-16",
+              "open": 180.8,
+              "high": 182.5,
+              "low": 180.1,
+              "close": 182.1
+            },
+            {
+              "date": "2026-09-17",
+              "open": 182.1,
+              "high": 182.8,
+              "low": 179.7,
+              "close": 180.0
+            },
+            {
+              "date": "2026-09-18",
+              "open": 180.0,
+              "high": 180.9,
+              "low": 177.6,
+              "close": 178.2
+            },
+            {
+              "date": "2026-09-19",
+              "open": 178.2,
+              "high": 179.6,
+              "low": 176.9,
+              "close": 179.1
+            },
+            {
+              "date": "2026-09-22",
+              "open": 179.1,
+              "high": 181.0,
+              "low": 178.4,
+              "close": 180.6
+            },
+            {
+              "date": "2026-09-23",
+              "open": 180.6,
+              "high": 181.7,
+              "low": 179.2,
+              "close": 179.8
+            },
+            {
+              "date": "2026-09-24",
+              "open": 179.8,
+              "high": 180.4,
+              "low": 177.5,
+              "close": 178.0
+            },
+            {
+              "date": "2026-09-25",
+              "open": 178.0,
+              "high": 179.9,
+              "low": 176.8,
+              "close": 179.5
+            },
+            {
+              "date": "2026-09-26",
+              "open": 179.5,
+              "high": 181.6,
+              "low": 179.0,
+              "close": 181.2
+            },
+            {
+              "date": "2026-09-29",
+              "open": 181.2,
+              "high": 182.0,
+              "low": 179.6,
+              "close": 180.1
+            },
+            {
+              "date": "2026-09-30",
+              "open": 180.1,
+              "high": 181.3,
+              "low": 179.3,
+              "close": 180.2
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
