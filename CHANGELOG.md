@@ -2,6 +2,12 @@
 
 # Changelog
 
+# [1.2.0](https://github.com/lobehub/lobe-a2ui/compare/v1.1.1...v1.2.0) (2026-11-26)
+
+### ✨ Features
+
+- Progressive card prompt: a catalog index up front, full schemas on demand, closes [#4](https://github.com/lobehub/lobe-a2ui/issues/4) ([74a99e5](https://github.com/lobehub/lobe-a2ui/commit/74a99e5))
+
 ## [1.1.1](https://github.com/lobehub/lobe-a2ui/compare/v1.1.0...v1.1.1) (2026-11-26)
 
 ### ⚡ Performance Improvements
