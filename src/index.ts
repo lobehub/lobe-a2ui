@@ -29,3 +29,4 @@ export {
   normalizeOperations,
   validateSurface,
 } from './validate';
+export { hasLegacyComponents, upgradeLegacyOperations } from './legacy';
