@@ -8,19 +8,27 @@ import {
 import type { A2uiExample } from './examples/types';
 import { surfaceToText } from './fallback';
 import {
+  A2UI_INDEX_EXAMPLE_IDS,
   A2UI_PROMPT_EXAMPLES,
   type A2uiDelivery,
+  type A2uiDocsAccess,
   a2uiProductRules,
+  buildA2uiDocs,
+  buildA2uiIndexPrompt,
   buildA2uiPrompt,
   loadExamples,
   pruneCatalogComponents,
   pruneCatalogFunctions,
 } from './prompt';
 import {
+  A2UI_DOCS_TOOL_DESCRIPTION,
+  A2UI_DOCS_TOOL_NAME,
+  A2UI_DOCS_TOOL_PARAMETERS,
   A2UI_TOOL_DESCRIPTION,
   A2UI_TOOL_META,
   A2UI_TOOL_NAME,
   A2UI_TOOL_PARAMETERS,
+  type A2uiDocsParams,
   type A2uiToolParams,
   type A2uiToolResult,
 } from './tool';
@@ -41,6 +49,12 @@ export interface A2uiProcessorOptions {
   examples?: A2uiExample[] | 'all' | false;
   /** The product layer before the A2UI prompt; `false` for none. Defaults to `a2uiProductRules`. */
   productRules?: string | false;
+  /**
+   * `progressive` (default): the prompt carries one line per component and two short examples, and
+   * the model reads full schemas on demand through `docs` (`readCardDocs` / `lh card guide`).
+   * `full`: the official prompt with every schema and the curated examples up front.
+   */
+  prompt?: 'full' | 'progressive';
   /** Static allowlists, like the official component and function pruning transformers. */
   prune?: { components?: readonly string[]; functions?: readonly string[] };
 }
@@ -49,6 +63,14 @@ export interface A2uiProcessor {
   /** The catalog the model is told about and checked against. */
   readonly catalog: CatalogDocument;
   readonly catalogs: readonly A2uiCatalogName[];
+  /** The full schema and smallest examples of the named components and functions. */
+  docs: (params: A2uiDocsParams | undefined) => string;
+  /** The docs tool as a host declares it (progressive prompt only needs it). */
+  readonly docsTool: {
+    description: string;
+    name: string;
+    parameters: typeof A2UI_DOCS_TOOL_PARAMETERS;
+  };
   /** The examples shown, each validated against the active catalogs. */
   readonly examples: readonly A2uiExample[];
   /** Validates and summarises a tool call: the surface to store, or the errors for the model. */
@@ -69,6 +91,20 @@ const DELIVERY: Record<'cli' | 'tool', A2uiDelivery> = {
   cli: { command: 'lh card render' },
   tool: { tool: A2UI_TOOL_NAME },
 };
+
+const DOCS: Record<'cli' | 'tool', A2uiDocsAccess> = {
+  cli: { command: 'lh card guide --components' },
+  tool: { tool: A2UI_DOCS_TOOL_NAME },
+};
+
+/** Component names an error list mentions, so a failed card comes back with their schemas. */
+const componentsInErrors = (errors: readonly string[]) => [
+  ...new Set(
+    errors.flatMap((error) =>
+      [...error.matchAll(/component '(\w+)'|component "(\w+)"/g)].map((m) => m[1] ?? m[2]),
+    ),
+  ),
+];
 
 const componentsOf = (example: A2uiExample) =>
   example.messages.flatMap((message) => {
@@ -100,12 +136,14 @@ export const createA2uiProcessor = (options: A2uiProcessorOptions = {}): A2uiPro
 
   // Examples outside the active catalogs are dropped; the rest must validate, as the official
   // processor checks its examples when it is built.
+  const progressive = (options.prompt ?? 'progressive') === 'progressive';
   const requested =
     options.examples === false
       ? []
       : options.examples === 'all'
         ? loadExamples(catalogs)
-        : (options.examples ?? A2UI_PROMPT_EXAMPLES);
+        : (options.examples ??
+          (progressive ? loadExamples(catalogs, A2UI_INDEX_EXAMPLE_IDS) : A2UI_PROMPT_EXAMPLES));
   const examples = requested.filter((example) =>
     componentsOf(example).every((name) => components.has(name)),
   );
@@ -119,16 +157,44 @@ export const createA2uiProcessor = (options: A2uiProcessorOptions = {}): A2uiPro
     typeof options.delivery === 'string' || options.delivery === undefined
       ? DELIVERY[options.delivery ?? 'tool']
       : options.delivery;
+  const docsAccess =
+    typeof options.delivery === 'string' || options.delivery === undefined
+      ? DOCS[options.delivery ?? 'tool']
+      : 'command' in options.delivery
+        ? DOCS.cli
+        : DOCS.tool;
+  // Every example of the active catalogs, for docs to pick the smallest that use a component.
+  const docsExamples = loadExamples(catalogs).filter((example) =>
+    componentsOf(example).every((name) => components.has(name)),
+  );
+  const docs = (names: readonly string[]) =>
+    buildA2uiDocs(names, { catalog, examples: docsExamples });
   let snippet: string | undefined;
 
   return {
     catalog,
     catalogs,
+    docs: (params) => {
+      const names = Array.isArray(params?.components) ? params.components.map(String) : [];
+      if (names.length === 0) return 'Name the components or functions to read, from the index.';
+      return docs(names.slice(0, 8));
+    },
+    docsTool: {
+      description: A2UI_DOCS_TOOL_DESCRIPTION,
+      name: A2UI_DOCS_TOOL_NAME,
+      parameters: A2UI_DOCS_TOOL_PARAMETERS,
+    },
     examples,
     execute: (params) => {
       const result = validate(params?.operations);
       if (!result.ok) {
-        const message = `The card was not drawn. Fix these and call ${A2UI_TOOL_NAME} again:\n- ${result.errors.join('\n- ')}`;
+        // Progressive disclosure on failure: the schemas of the components the errors name.
+        const involved = componentsInErrors(result.errors).filter((name) => components.has(name));
+        const reference =
+          progressive && involved.length > 0
+            ? `\n\nSchemas of the components involved:\n${buildA2uiDocs(involved.slice(0, 4), { catalog, examples: [] })}`
+            : '';
+        const message = `The card was not drawn. Fix these and call ${A2UI_TOOL_NAME} again:\n- ${result.errors.join('\n- ')}${reference}`;
         return {
           content: message,
           error: { body: { errors: result.errors }, message, type: 'InvalidSurface' },
@@ -150,7 +216,9 @@ export const createA2uiProcessor = (options: A2uiProcessorOptions = {}): A2uiPro
         snippet = [
           '<a2ui_guide>',
           rules,
-          buildA2uiPrompt({ catalog, delivery, examples }),
+          progressive
+            ? buildA2uiIndexPrompt({ catalog, delivery, docs: docsAccess, examples })
+            : buildA2uiPrompt({ catalog, delivery, examples }),
           '</a2ui_guide>',
         ]
           .filter(Boolean)
@@ -182,3 +250,6 @@ export const getA2uiSystemPrompt = () => getA2uiProcessor().promptSnippet;
 /** A prompt snippet for other options, e.g. `{ delivery: 'cli' }` for `lh card render`. */
 export const buildA2uiSystemPrompt = (options: A2uiProcessorOptions = {}) =>
   createA2uiProcessor(options).promptSnippet;
+
+/** The docs tool run by the default processor: full schemas and examples of the named components. */
+export const runA2uiDocsTool = (params: A2uiDocsParams | undefined) => getA2uiProcessor().docs(params);

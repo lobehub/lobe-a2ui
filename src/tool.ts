@@ -24,6 +24,30 @@ export const A2UI_TOOL_PARAMETERS = {
   type: 'object',
 } as const;
 
+/** The companion tool that reads full component docs on demand (progressive disclosure). */
+export const A2UI_DOCS_TOOL_NAME = 'readCardDocs';
+
+export const A2UI_DOCS_TOOL_DESCRIPTION =
+  'Read the full schema and a small example of the A2UI components or functions a card will use, by name from the card guide index. Call it before using a component whose props you are unsure of.';
+
+export const A2UI_DOCS_TOOL_PARAMETERS = {
+  properties: {
+    components: {
+      description: 'Component or function names from the index, e.g. ["Chart", "Table", "formatNumber"].',
+      items: { type: 'string' },
+      maxItems: 8,
+      minItems: 1,
+      type: 'array',
+    },
+  },
+  required: ['components'],
+  type: 'object',
+} as const;
+
+export interface A2uiDocsParams {
+  components: string[];
+}
+
 /** How the tool presents itself in a tool list. */
 export const A2UI_TOOL_META = {
   avatar: '🧩',

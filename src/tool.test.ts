@@ -56,7 +56,9 @@ describe('system prompt', () => {
     expect(prompt.endsWith('</a2ui_guide>')).toBe(true);
     expect(prompt).toContain('A display card needs no buttons');
     expect(prompt).toContain('call renderUI with A2UI messages');
-    expect(prompt).toContain('---BEGIN A2UI JSON SCHEMA---');
+    expect(prompt).toContain('### Components');
+    expect(prompt).toContain('call readCardDocs with the component names');
+    expect(prompt).not.toContain('---BEGIN A2UI JSON SCHEMA---');
     expect(getA2uiSystemPrompt()).toBe(prompt);
   });
 
@@ -65,5 +67,7 @@ describe('system prompt', () => {
     expect(prompt).toContain('run `lh card render` with A2UI messages');
     expect(prompt).toContain('a JSON array passed to `lh card render`');
     expect(prompt).not.toContain('renderUI');
+    expect(prompt).toContain('lh card guide --components');
+    expect(prompt).not.toContain('readCardDocs');
   });
 });

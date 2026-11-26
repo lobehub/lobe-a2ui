@@ -106,29 +106,35 @@ On top of the schema: at most 50 operations, 200 components and 64 KB per surfac
 const processor = createA2uiProcessor({
   catalogs: ['basic', 'lobehub'], // what the renderer can draw; a host that can't draw creates none
   delivery: 'tool', // or 'cli' for `lh card render`
-  examples: undefined, // curated default; 'all', false, or a list from loadExamples()
+  examples: undefined, // two short ones up front (progressive); 'all', false, or a list
+  prompt: 'progressive', // or 'full' for the official prompt with every schema up front
   prune: { components: undefined, functions: undefined }, // static allowlists
 });
 
 processor.promptSnippet; // append to the system instruction while the card tool is active
 processor.tool; // { name: 'renderUI', description, parameters, meta }
+processor.docsTool; // { name: 'readCardDocs', description, parameters }
+processor.docs({ components: ['Chart', 'Table'] }); // their full schemas and smallest examples
 processor.execute({ operations }); // { success, content, state: { surface } } or { success: false, content, error }
 processor.validate(operations); // the record, or errors against the active catalogs
 ```
 
 Examples are validated against the active catalogs when the processor is built; examples that use a catalog the host doesn't support are left out. `getA2uiProcessor()` is the default (both catalogs, `renderUI`), with `getA2uiSystemPrompt()` and `runA2uiTool()` as shorthands.
 
-The prompt snippet follows the official Direct JSON prompt generator (google/A2UI `python/a2ui_agent/src/a2ui/inference_formats/direct_json`): a short product layer (when a card helps, no filler buttons, honest figures), the workflow rules (delivery through the tool's `operations` argument or the command instead of `<a2ui-json>` tags; root first, parents before children), one schema block with the agent-to-renderer schema pruned to `createSurface` / `updateComponents` / `updateDataModel`, the common types the catalog and those messages use, and the catalog schema, then `### Examples:`. No layout recipe: structure comes from the schema descriptions and the examples.
+The prompt is progressive. The official Direct JSON generator (google/A2UI `python/a2ui_agent/src/a2ui/inference_formats/direct_json`) puts every schema and its examples in the system prompt; for the basic catalog alone that is about 41K characters before any example. Here the always-on snippet carries:
 
-Prompt size (o200k tokenizer; Claude's runs somewhat higher):
+- a short product layer (when a card helps, no filler buttons, honest figures);
+- the official workflow rules (delivery through the tool's `operations` argument or the command instead of `<a2ui-json>` tags; root first, parents before children);
+- an index with one line per component and function, derived from the catalog schema (`Chart(type: "line"|..., data: object[]|{@path}, index: string, ...) — A chart drawn with @lobehub/charts.`);
+- two short examples.
 
-| Configuration                        | Characters | Tokens  |
-| ------------------------------------ | ---------- | ------- |
-| basic + lobehub, 15 default examples | 84.8K      | ≈ 21.3K |
-| basic + lobehub, no examples         | 52.4K      | ≈ 12.5K |
-| basic + lobehub, all 53 examples     | 150.7K     | ≈ 37.8K |
-| basic only, 6 examples               | 55.7K      | ≈ 13.2K |
-| pruned to 8 components               | 36.4K      | ≈ 8.8K  |
+The full schema and the smallest examples of a component are read on demand with `readCardDocs` (`lh card guide --components` for external runtimes), and an invalid card comes back with the schemas of the components its errors name. A test keeps the always-on snippet under a third of the official basic-catalog prompt. `prompt: 'full'` restores the official all-up-front prompt.
+
+| Configuration                          | Characters |
+| -------------------------------------- | ---------- |
+| progressive (default), basic + lobehub | ≈ 11.1K    |
+| official full prompt, basic only       | ≈ 41.1K    |
+| full, basic + lobehub, 15 examples     | ≈ 84.8K    |
 
 ## What a host wires
 
@@ -136,7 +142,7 @@ A host keeps only what is its own: where an action goes, whether this person may
 
 | Need               | Export                                                                                                                           |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Prompt, tool, run  | `createA2uiProcessor` / `getA2uiProcessor`, `getA2uiSystemPrompt`, `runA2uiTool`, `A2UI_TOOL_*`                                  |
+| Prompt, tool, run  | `createA2uiProcessor` / `getA2uiProcessor`, `getA2uiSystemPrompt`, `runA2uiTool`, `runA2uiDocsTool`, `A2UI_TOOL_*`, `A2UI_DOCS_TOOL_*` |
 | Stored surfaces    | `A2uiSurfaceRecord` (with optional `state`), `toSurfaceRecords`, `isA2uiToolResult`, `surfacesFromToolResults`, `surfacesToText` |
 | Actions            | `actionToMessage` (official renderer-to-agent `action`, readable line from `userMessage`), `parseActionMessage`                  |
 | Drawing (`/react`) | `A2uiHostProvider` with `{ canAct, sendAction, locale, labels? }`; `SurfaceList` / `HostedSurface` handle submission             |

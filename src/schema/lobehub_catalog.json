@@ -8,6 +8,7 @@
   "components": {
     "Icon": {
       "type": "object",
+      "description": "An icon by a basic name, or from a larger set as '<set>:<name>': 'lucide:rocket', 'simple:github' (brand logos), 'lobehub:openai' (AI providers and models).",
       "properties": {
         "component": {
           "const": "Icon"
