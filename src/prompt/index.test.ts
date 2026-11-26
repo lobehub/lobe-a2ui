@@ -7,6 +7,7 @@ import {
   A2UI_SCHEMA_BLOCK_END,
   A2UI_SCHEMA_BLOCK_START,
   buildA2uiPrompt,
+  loadExamples,
 } from './index';
 
 const schemaSection = (prompt: string, heading: string) => {
@@ -25,7 +26,6 @@ describe('buildA2uiPrompt', () => {
     );
     expect(prompt).toContain('renderUI');
     expect(prompt).not.toContain('<a2ui-json>');
-    expect(prompt).toContain('there is no fixed template');
   });
 
   it('derives the catalog section from the merged catalog document', () => {
@@ -34,6 +34,7 @@ describe('buildA2uiPrompt', () => {
     expect(new Set(Object.keys(catalog.components))).toEqual(A2UI_COMPONENT_NAMES);
     // Descriptions live in the schema, as the catalog writes them.
     expect(catalog.components.Metrics.description).toMatch(/MetricStrip/);
+    expect(catalog.components.Card).toEqual(JSON.parse(JSON.stringify(catalog.components.Card)));
   });
 
   it('keeps only the drawing messages and the common types they and the catalog use', () => {
@@ -57,6 +58,14 @@ describe('buildA2uiPrompt', () => {
 
   it.each(A2UI_PROMPT_EXAMPLES.map((example) => [example.name, example]))(
     'shows a valid example: %s',
+    (_, example) => {
+      const result = validateSurface(example.messages);
+      expect(result.ok ? [] : result.errors).toEqual([]);
+    },
+  );
+
+  it.each(loadExamples(['lobehub']).map((example) => [example.id, example]))(
+    'ships a valid LobeHub example: %s',
     (_, example) => {
       const result = validateSurface(example.messages);
       expect(result.ok ? [] : result.errors).toEqual([]);

@@ -1,7 +1,10 @@
 import {
   Alert,
+  Avatar,
+  cssVar,
   Descriptions,
   Flexbox,
+  Highlighter,
   Image,
   Markdown,
   Progress,
@@ -14,10 +17,22 @@ import {
 import { type MetricItem, MetricStrip } from '@lobehub/ui/dashboard';
 import { useEffect, useState } from 'react';
 
-import { A2UI_LIST_LIMITS, type ITEM_STATUSES, type STEP_STATUSES } from '../../catalog';
-import { useA2uiStatusLabels } from '../host';
+import { A2UI_LIST_LIMITS } from '../../catalog';
+import { useA2uiLabels } from '../host';
 import { metricColumns } from '../metricLayout';
+import { A2uiIcon } from './icon';
 import { cell, define, Heading, rowsOf, safeUrl, styles, TONE, type Tone } from './shared';
+
+/** Semantic colours of the extensions' `tone` / `color`. */
+const COLOR: Record<string, string | undefined> = {
+  default: undefined,
+  error: cssVar.colorError,
+  info: cssVar.colorInfo,
+  success: cssVar.colorSuccess,
+  warning: cssVar.colorWarning,
+};
+
+const STEP_STATUSES = ['current', 'done', 'error', 'todo'] as const;
 
 // --- Basic catalog ---------------------------------------------------------------------------
 
@@ -126,27 +141,7 @@ export const AudioPlayerView = define('AudioPlayer', ({ props }) => {
   );
 });
 
-// --- LobeHub extensions ----------------------------------------------------------------------
-
-export const TagView = define('Tag', ({ props }) => (
-  <Tag color={props.color === 'default' ? undefined : props.color}>{String(props.text ?? '')}</Tag>
-));
-
-export const CalloutView = define('Callout', ({ props }) => (
-  <Alert
-    showIcon
-    title={<Text weight={600}>{String(props.title ?? '')}</Text>}
-    type={props.level}
-    variant="outlined"
-    description={
-      props.body ? (
-        <Markdown fontSize={13} variant="chat">
-          {String(props.body)}
-        </Markdown>
-      ) : undefined
-    }
-  />
-));
+// --- LobeHub extensions ---------------------------------------------------------------------
 
 type MetricInput = {
   delta?: string;
@@ -197,108 +192,6 @@ export const MetricsView = define('Metrics', ({ props }) => {
   );
 });
 
-const STATUS_TAG: Record<
-  (typeof ITEM_STATUSES)[number],
-  { color?: 'error' | 'info' | 'success' | 'warning' }
-> = {
-  blocked: {},
-  done: { color: 'success' },
-  human: { color: 'warning' },
-  new: { color: 'error' },
-  watch: { color: 'info' },
-  worse: { color: 'error' },
-};
-
-type ItemInput = { detail?: string; status?: string; statusLabel?: string; title: string };
-
-export const ItemsView = define('Items', ({ props }) => {
-  const labels = useA2uiStatusLabels();
-  const items = rowsOf<ItemInput>(props.items, A2UI_LIST_LIMITS.Items.items);
-  return (
-    <Flexbox gap={8} style={{ minWidth: 0 }}>
-      <Flexbox horizontal align="center" gap={6}>
-        <Text weight={600}>{String(props.title ?? '')}</Text>
-        <Tag size="small">{items.length}</Tag>
-      </Flexbox>
-      <div className={styles.items}>
-        {items.map((item, index) => {
-          const status = STATUS_TAG[item.status as keyof typeof STATUS_TAG];
-          return (
-            // eslint-disable-next-line @eslint-react/no-array-index-key
-            <Flexbox horizontal className={styles.item} gap={10} key={index}>
-              {status ? (
-                <div className={styles.status}>
-                  <Tag color={status.color} size="small">
-                    {item.statusLabel ?? labels[item.status as keyof typeof labels]}
-                  </Tag>
-                </div>
-              ) : null}
-              <Flexbox flex={1} gap={2} style={{ minWidth: 0 }}>
-                <Markdown fontSize={13} variant="chat">
-                  {String(item.title)}
-                </Markdown>
-                {item.detail ? (
-                  <Text fontSize={12} type="secondary">
-                    {item.detail}
-                  </Text>
-                ) : null}
-              </Flexbox>
-            </Flexbox>
-          );
-        })}
-      </div>
-    </Flexbox>
-  );
-});
-
-export const BarsView = define('Bars', ({ props }) => {
-  const values = (Array.isArray(props.values) ? (props.values as unknown[]) : [])
-    .slice(0, A2UI_LIST_LIMITS.Bars.values)
-    .map(Number);
-  const marks = (props.marks ?? {}) as Record<string, Tone>;
-  const labels = Array.isArray(props.labels) ? (props.labels as unknown[]).map(String) : [];
-  const max = Math.max(...values, 0) || 1;
-  const unit = props.unit ? String(props.unit) : '';
-  return (
-    <Flexbox gap={8} style={{ minWidth: 0 }}>
-      <Flexbox horizontal justify="space-between">
-        <Text weight={600}>{String(props.title ?? '')}</Text>
-        {props.caption ? (
-          <Text fontSize={12} type="secondary">
-            {String(props.caption)}
-          </Text>
-        ) : null}
-      </Flexbox>
-      <Flexbox horizontal align="flex-end" className={styles.bars} gap={3}>
-        {values.map((value, index) => (
-          <div
-            className={styles.bar}
-            // eslint-disable-next-line @eslint-react/no-array-index-key
-            key={index}
-            title={`${labels[index] ?? index}: ${value}${unit}`}
-            style={{
-              background: marks[index]
-                ? TONE[marks[index]]
-                : 'var(--lobe-color-fill-secondary, #0000000f)',
-              height: `${(value / max) * 100}%`,
-            }}
-          />
-        ))}
-      </Flexbox>
-      {labels.length > 0 ? (
-        <Flexbox horizontal justify="space-between">
-          {labels.map((label, index) => (
-            // eslint-disable-next-line @eslint-react/no-array-index-key
-            <Text fontSize={11} key={index} type="secondary">
-              {label}
-            </Text>
-          ))}
-        </Flexbox>
-      ) : null}
-    </Flexbox>
-  );
-});
-
 type TableColumnInput = { align?: 'center' | 'end' | 'start'; key: string; label?: string };
 
 export const TableView = define('Table', ({ props }) => {
@@ -306,12 +199,14 @@ export const TableView = define('Table', ({ props }) => {
     (column) => typeof column.key === 'string',
   );
   const rows = rowsOf<Record<string, unknown>>(props.rows, A2UI_LIST_LIMITS.Table.rows);
+  const labels = useA2uiLabels();
   if (columns.length === 0) return null;
   return (
     <Flexbox className={styles.table} gap={8}>
       <Heading>{props.title}</Heading>
       <Table
         dataSource={rows}
+        locale={{ emptyText: labels.empty }}
         pagination={false}
         rowHoverable={false}
         rowKey={(_, index) => String(index)}
@@ -365,8 +260,7 @@ export const KeyValueView = define('KeyValue', ({ props }) => {
 export const ProgressView = define('Progress', ({ props }) => {
   const max = Number(props.max ?? 100) || 100;
   const percent = Math.max(0, Math.min(100, Math.round((Number(props.value ?? 0) / max) * 100)));
-  const tone = props.tone as Tone | undefined;
-  const color = tone && tone !== 'neutral' ? TONE[tone] : undefined;
+  const color = COLOR[props.tone as string];
   const caption = props.caption ? String(props.caption) : `${percent}%`;
   if (props.variant === 'circle')
     return (
@@ -425,3 +319,82 @@ export const StepsView = define('Steps', ({ props }) => {
     </Flexbox>
   );
 });
+
+export const StatisticView = define('Statistic', ({ props }) => (
+  <Flexbox gap={4} style={{ minWidth: 0 }}>
+    <Text fontSize={13} type="secondary">
+      {String(props.label ?? '')}
+    </Text>
+    <Text
+      className={styles.figure}
+      fontSize={28}
+      style={{ color: COLOR[props.tone as string], lineHeight: 1.2 }}
+      weight={600}
+    >
+      {props.prefix ? String(props.prefix) : null}
+      {String(props.value ?? '')}
+      {props.suffix ? (
+        <Text as="span" fontSize={14} type="secondary" weight={400}>
+          {` ${String(props.suffix)}`}
+        </Text>
+      ) : null}
+    </Text>
+    {props.caption ? (
+      <Text fontSize={12} type="secondary">
+        {String(props.caption)}
+      </Text>
+    ) : null}
+  </Flexbox>
+));
+
+export const TagView = define('Tag', ({ props }) => (
+  <Tag
+    color={props.color === 'default' ? undefined : props.color}
+    icon={props.icon ? <A2uiIcon name={String(props.icon)} size={14} /> : undefined}
+  >
+    {String(props.text ?? '')}
+  </Tag>
+));
+
+export const CalloutView = define('Callout', ({ props }) => (
+  <Alert
+    showIcon
+    title={<Text weight={600}>{String(props.title ?? '')}</Text>}
+    type={props.level}
+    variant="outlined"
+    description={
+      props.body ? (
+        <Markdown fontSize={13} variant="chat">
+          {String(props.body)}
+        </Markdown>
+      ) : undefined
+    }
+  />
+));
+
+export const AvatarView = define('Avatar', ({ props }) => {
+  const src = safeUrl(props.src);
+  const text = props.text ? String(props.text) : undefined;
+  if (!src && !text) return null;
+  return (
+    <Avatar
+      avatar={src ?? text}
+      fallbackVariant="text"
+      shape={props.shape === 'square' ? 'square' : 'circle'}
+      size={Number(props.size ?? 32)}
+      title={text}
+    />
+  );
+});
+
+export const CodeView = define('Code', ({ props }) => (
+  <Highlighter
+    copyable
+    language={String(props.language ?? 'txt')}
+    showLanguage={!!props.language}
+    style={{ minWidth: 0 }}
+    variant="filled"
+  >
+    {String(props.code ?? '')}
+  </Highlighter>
+));

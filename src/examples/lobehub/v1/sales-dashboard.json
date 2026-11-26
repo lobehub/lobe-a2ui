@@ -1,0 +1,188 @@
+{
+  "name": "Sales Dashboard",
+  "description": "A dashboard: Statistics in a Grid, then Tabs that switch between a bar Chart, a donut and a ranked barList; a categoryBar splits revenue by region.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "sales-dashboard",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "sales-dashboard",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["title", "stats", "split", "tabs"]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "#### Q3 sales"
+          },
+          {
+            "id": "stats",
+            "component": "Grid",
+            "columns": 3,
+            "children": ["s1", "s2", "s3"]
+          },
+          {
+            "id": "s1",
+            "component": "Statistic",
+            "label": "Revenue",
+            "prefix": "$",
+            "value": "1.28M",
+            "caption": "+12% vs Q2",
+            "tone": "success"
+          },
+          {
+            "id": "s2",
+            "component": "Statistic",
+            "label": "Orders",
+            "value": "8,412"
+          },
+          {
+            "id": "s3",
+            "component": "Statistic",
+            "label": "Refund rate",
+            "value": "3.1",
+            "suffix": "%",
+            "tone": "warning"
+          },
+          {
+            "id": "split",
+            "component": "Chart",
+            "type": "categoryBar",
+            "title": "Revenue by region",
+            "data": {
+              "@path": "/regions"
+            },
+            "index": "region",
+            "categories": ["share"],
+            "unit": "%"
+          },
+          {
+            "id": "tabs",
+            "component": "Tabs",
+            "tabs": [
+              {
+                "title": "By month",
+                "child": "byMonth"
+              },
+              {
+                "title": "By channel",
+                "child": "byChannel"
+              },
+              {
+                "title": "Top products",
+                "child": "top"
+              }
+            ]
+          },
+          {
+            "id": "byMonth",
+            "component": "Chart",
+            "type": "bar",
+            "data": {
+              "@path": "/months"
+            },
+            "index": "month",
+            "categories": ["online", "retail"]
+          },
+          {
+            "id": "byChannel",
+            "component": "Chart",
+            "type": "donut",
+            "data": {
+              "@path": "/channels"
+            },
+            "index": "channel",
+            "categories": ["revenue"]
+          },
+          {
+            "id": "top",
+            "component": "Chart",
+            "type": "barList",
+            "data": {
+              "@path": "/products"
+            },
+            "index": "name",
+            "categories": ["units"]
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "sales-dashboard",
+        "path": "/",
+        "value": {
+          "regions": [
+            {
+              "region": "Americas",
+              "share": 46
+            },
+            {
+              "region": "EMEA",
+              "share": 32
+            },
+            {
+              "region": "APAC",
+              "share": 22
+            }
+          ],
+          "months": [
+            {
+              "month": "Jul",
+              "online": 310,
+              "retail": 120
+            },
+            {
+              "month": "Aug",
+              "online": 352,
+              "retail": 131
+            },
+            {
+              "month": "Sep",
+              "online": 398,
+              "retail": 140
+            }
+          ],
+          "channels": [
+            {
+              "channel": "Web",
+              "revenue": 61
+            },
+            {
+              "channel": "Stores",
+              "revenue": 27
+            },
+            {
+              "channel": "Partners",
+              "revenue": 12
+            }
+          ],
+          "products": [
+            {
+              "name": "Desk Pro",
+              "units": 1240
+            },
+            {
+              "name": "Chair X",
+              "units": 980
+            },
+            {
+              "name": "Lamp 2",
+              "units": 610
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

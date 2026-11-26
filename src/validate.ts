@@ -92,6 +92,7 @@ const surfaceIdsOf = (operations: A2uiOperation[]) =>
 
 const MEDIA_PROPS: Record<string, string[]> = {
   AudioPlayer: ['url'],
+  Avatar: ['src'],
   Image: ['url'],
   Video: ['url', 'posterUrl'],
 };
@@ -138,7 +139,7 @@ const safetyErrors = (component: Record<string, unknown>, model: Record<string, 
     if (isRecord(component.name) && typeof component.name.svgPath === 'string') {
       if (!SVG_PATH.test(component.name.svgPath)) errors.push(`${label}: svgPath is not path data`);
     } else if (typeof iconName === 'string') {
-      const error = iconError(component.set as string | undefined, iconName);
+      const error = iconError(iconName);
       if (error) errors.push(`${label}: ${error}`);
     }
   }
@@ -150,7 +151,29 @@ const safetyErrors = (component: Record<string, unknown>, model: Record<string, 
  * merged catalog, then the safety limits. Returns the record to store, or the errors to hand back
  * to the Agent so it can fix its call. Accepts operations as an array or a JSON string.
  */
-export const validateSurface = (raw: unknown): ValidateSurfaceResult => {
+export interface ValidateSurfaceOptions {
+  /** The components the active catalogs offer; defaults to the whole catalog. */
+  components?: ReadonlySet<string>;
+  /** The functions the active catalogs offer; defaults to all of them. */
+  functions?: ReadonlySet<string>;
+}
+
+/** Every `@call` name in a value. */
+const calledFunctions = (value: unknown, found = new Set<string>()) => {
+  if (Array.isArray(value)) for (const item of value) calledFunctions(item, found);
+  else if (isRecord(value)) {
+    const call = value['@call'] ?? value.call;
+    if (typeof call === 'string') found.add(call);
+    for (const item of Object.values(value)) calledFunctions(item, found);
+  }
+  return found;
+};
+
+export const validateSurface = (
+  raw: unknown,
+  options: ValidateSurfaceOptions = {},
+): ValidateSurfaceResult => {
+  const allowed = options.components ?? A2UI_COMPONENT_NAMES;
   const parsed = parseOperations(raw);
   if (!Array.isArray(parsed) || parsed.length === 0)
     return { errors: ['operations must be a non-empty array of A2UI messages'], ok: false };
@@ -177,12 +200,18 @@ export const validateSurface = (raw: unknown): ValidateSurfaceResult => {
     errors.push(`At most ${A2UI_LIMITS.components} components per surface`);
   for (const component of components) {
     const name = component.component;
-    if (typeof name !== 'string' || !A2UI_COMPONENT_NAMES.has(name)) {
+    if (typeof name !== 'string' || !allowed.has(name)) {
       errors.push(
-        `Unknown component "${String(name)}" (${String(component.id)}). Use one of: ${[...A2UI_COMPONENT_NAMES].join(', ')}`,
+        `Unknown component "${String(name)}" (${String(component.id)}). Use one of: ${[...allowed].join(', ')}`,
       );
       continue;
     }
+    if (options.functions)
+      for (const call of calledFunctions(component))
+        if (!call.startsWith('@') && !options.functions.has(call))
+          errors.push(
+            `${name} ${String(component.id)}: unknown function "${call}". Use one of: ${[...options.functions].join(', ')}`,
+          );
     errors.push(...safetyErrors(component, model));
   }
   if (components.length > 0 && !components.some((component) => component.id === 'root'))

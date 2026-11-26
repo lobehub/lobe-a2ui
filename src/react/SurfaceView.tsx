@@ -79,7 +79,7 @@ export const SurfaceView = memo<SurfaceViewProps>(({ record, state, onAction }) 
   useEffect(() => {
     if (!processor || !onAction) return;
     const subscription = processor.model.onAction.subscribe((action) =>
-      onAction({ context: action.context, name: action.name, surfaceId: action.surfaceId }),
+      onAction(action as A2uiActionPayload),
     );
     return () => subscription.unsubscribe();
   }, [processor, onAction]);

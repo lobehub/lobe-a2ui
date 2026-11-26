@@ -2,14 +2,15 @@ import basicCatalog from './schema/basic_catalog.json';
 import lobehubCatalog from './schema/lobehub_catalog.json';
 
 /**
- * LobeHub's A2UI catalog: the official A2UI 1.0 basic catalog, unchanged, plus LobeHub's
- * extensions, both as A2UI catalog documents (JSON Schema with the descriptions a model reads).
+ * LobeHub's A2UI catalog: the official A2UI 1.0 basic catalog, unchanged, plus a small extension
+ * catalog in the same format for what the basic catalog can't draw.
  *
- * `schema/basic_catalog.json` is google/A2UI `catalogs/basic/v1/catalog.json` verbatim.
- * `schema/lobehub_catalog.json` adds Metrics, Callout, Items, Bars, Chart, Table, KeyValue,
- * Progress, Steps, Grid and Tag, and extends two basic components: Card with a header, Icon with
- * the Lucide, Simple Icons and LobeHub Icons sets. Validation, the renderer and the prompt all read
- * the merged document, so they can't drift apart.
+ * `schema/basic_catalog.json` is google/A2UI `catalogs/basic/v1/catalog.json` verbatim: every
+ * component, prop and function. `schema/lobehub_catalog.json` adds neutral building blocks
+ * (Chart, Metrics, Statistic, Table, KeyValue, Progress, Steps, Tag, Callout, Avatar, Code,
+ * Collapse, Grid) whose every word comes from the Agent, and lets Icon names reach the Lucide,
+ * Simple Icons and LobeHub Icons sets (`lucide:rocket`, `simple:github`, `lobehub:OpenAI`). Validation, the renderer and the
+ * prompt all read the merged document, so they can't drift apart.
  */
 export type CatalogDocument = {
   $defs?: Record<string, unknown>;
@@ -97,12 +98,6 @@ const propertyOf = (component: string, ...path: string[]): Schema | undefined =>
     return node.properties?.[key];
   }, LOBEHUB_CATALOG_DOCUMENT.components[component] as Schema);
 
-export const ITEM_STATUSES = propertyOf('Items', 'items', '[]', 'status')!.enum as readonly (
-  'blocked' | 'done' | 'human' | 'new' | 'watch' | 'worse'
-)[];
-export const STEP_STATUSES = propertyOf('Steps', 'items', '[]', 'status')!.enum as readonly (
-  'current' | 'done' | 'error' | 'todo'
-)[];
 export const CHART_TYPES = propertyOf('Chart', 'type')!.enum as readonly string[];
 
 /**
@@ -110,10 +105,8 @@ export const CHART_TYPES = propertyOf('Chart', 'type')!.enum as readonly string[
  * list binds to with `{"@path": ...}` is checked against the same numbers.
  */
 export const A2UI_LIST_LIMITS: Record<string, Record<string, number>> = {
-  Bars: { values: 200 },
   Chart: { data: 200 },
   Grid: { children: 12 },
-  Items: { items: 30 },
   KeyValue: { items: 30 },
   Metrics: { items: 8 },
   Steps: { items: 20 },

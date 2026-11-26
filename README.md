@@ -2,7 +2,7 @@
 
 [A2UI](https://github.com/google/A2UI) surfaces drawn with [`@lobehub/ui`](https://github.com/lobehub/lobe-ui) and [`@lobehub/charts`](https://github.com/lobehub/lobe-charts).
 
-An Agent describes a surface as A2UI 1.0 messages; this package validates them against LobeHub's catalog, turns them into text where they can't be drawn, writes the system prompt that teaches a model the catalog, and draws them in the product's own design.
+An Agent describes a surface as A2UI 1.0 messages; this package validates them against LobeHub's catalog, turns them into text where they can't be drawn, writes the prompt that teaches a model the catalog, and draws them in the product's own design.
 
 ## Entries
 
@@ -18,7 +18,7 @@ The root entry has no React dependency, so a server validates, stores and prompt
 The catalog is two A2UI catalog documents (JSON Schema, with the descriptions a model reads), merged:
 
 - `src/schema/basic_catalog.json`: the official A2UI 1.0 basic catalog, verbatim from google/A2UI `catalogs/basic/v1/catalog.json`.
-- `src/schema/lobehub_catalog.json`: LobeHub's extensions in the same format. It adds components and extends two basic ones (Card with a header, Icon with three icon sets); every official prop stays.
+- `src/schema/lobehub_catalog.json`: LobeHub's extension catalog in the same format: neutral building blocks, and Icon names that also reach three icon sets. Every official component and prop stays as the basic catalog defines it.
 
 Validation, rendering and the prompt all read the merged document (`A2UI_CATALOG_DOCUMENT`): web_core derives each component's validator from its JSON Schema (`Catalog.fromJson`), so the server checks exactly what the renderer reads, and the prompt shows the same schema.
 
@@ -55,66 +55,93 @@ Any component may be the root. `SurfaceView` frames the surface in a `Surface` c
 | `and`, `or`, `not`, `@index`                                                | web_core                                                                      |
 | `openUrl`                                                                   | ours: https only, new tab with `noopener,noreferrer`; validation rejects http |
 
-All 43 official examples (`test/fixtures/official-examples`, from `catalogs/basic/v1/examples`) validate and render in the tests.
+All 43 official examples (`src/examples/basic/v1`, from `catalogs/basic/v1/examples`) validate and render in the tests.
 
-### LobeHub extensions
+### LobeHub extension catalog
 
-| Component  | Drawn with                       | For                                                                                                                    |
-| ---------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `Metrics`  | dashboard `MetricStrip`          | 1–8 headline figures, one row while readable, balanced rows when not                                                   |
-| `Chart`    | `@lobehub/charts`                | line, area, bar, donut, barList, scatter, funnel, radar, heatmap, tracker, sparkLine, sparkArea, sparkBar, categoryBar |
-| `Table`    | `Table`                          | comparisons and schedules (≤ 8 columns, ≤ 50 rows)                                                                     |
-| `KeyValue` | `Descriptions`                   | facts about one thing (≤ 30 pairs)                                                                                     |
-| `Progress` | `Progress` (line or circle)      | a quota, a goal, a rollout                                                                                             |
-| `Steps`    | `Steps` (vertical or horizontal) | a plan, an itinerary, a timeline (≤ 20)                                                                                |
-| `Grid`     | `Grid`                           | 2–4 equal columns that stack when narrow                                                                               |
-| `Callout`  | `Alert`                          | a verdict, an incident, a blocker                                                                                      |
-| `Items`    | status rows                      | findings or tasks with a status (≤ 30)                                                                                 |
-| `Bars`     | bars                             | a short series with marked points                                                                                      |
-| `Tag`      | `Tag`                            | a short status, often a Card badge                                                                                     |
+`src/schema/lobehub_catalog.json` (catalog id `https://lobehub.com/a2ui/catalog/v1`) adds neutral building blocks in the official catalog format. Every word they show comes from the Agent; props only set data, tone, size and layout.
+
+| Component   | Drawn with              | Props                                                                                                                                                                                        |
+| ----------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Chart`     | `@lobehub/charts`       | `type` (line, area, bar, donut, barList, scatter, funnel, radar, heatmap, tracker, sparkLine, sparkArea, sparkBar, categoryBar), `data` (≤ 200 rows), `index`, `categories`, `title`, `unit` |
+| `Metrics`   | dashboard `MetricStrip` | `items[{label, value, delta, direction, tone, hint}]` (≤ 8), `variant`                                                                                                                       |
+| `Statistic` | `Text`                  | `label`, `value`, `prefix`, `suffix`, `caption`, `tone`                                                                                                                                      |
+| `Table`     | `Table`                 | `columns[{key, label, align}]` (≤ 8), `rows` (≤ 50), `title`, `caption`                                                                                                                      |
+| `KeyValue`  | `Descriptions`          | `items[{label, value}]` (≤ 30), `columns`, `title`                                                                                                                                           |
+| `Progress`  | `Progress`              | `label`, `value`, `max`, `caption`, `tone`, `variant` (line, circle)                                                                                                                         |
+| `Steps`     | `Steps`                 | `items[{title, detail, meta, status}]` (≤ 20), `orientation`, `title`                                                                                                                        |
+| `Tag`       | `Tag`                   | `text`, `color`, `icon`                                                                                                                                                                      |
+| `Callout`   | `Alert`                 | `level`, `title`, `body`                                                                                                                                                                     |
+| `Avatar`    | `Avatar`                | `src` (https), `text` (emoji or initials), `size`, `shape`                                                                                                                                   |
+| `Code`      | `Highlighter`           | `code`, `language`                                                                                                                                                                           |
+| `Collapse`  | `Accordion`             | `title`, `child`, `defaultOpen`                                                                                                                                                              |
+| `Grid`      | `Grid`                  | `children` (≤ 12), `columns` (2–4, stack when narrow)                                                                                                                                        |
+| `Icon`      | basic Icon, plus sets   | `name` also takes `lucide:<name>`, `simple:<brand>`, `lobehub:<provider>`                                                                                                                    |
+
+### Examples
+
+Like google/A2UI's `catalogs/<name>/<version>/examples`, every catalog ships complete example surfaces: `src/examples/basic/v1` holds the 43 official basic examples verbatim, `src/examples/lobehub/v1` ten LobeHub surfaces of different shapes that use every extension component and chart type. `loadExamples(catalogs, ids?)` reads them; tests validate and render every one.
 
 ### Icons
 
-`Icon` takes the basic names, or `set` + `name`:
+`Icon.name` keeps the basic names and adds three sets with a prefix:
 
-| `set`     | Names                                         | Package                          |
-| --------- | --------------------------------------------- | -------------------------------- |
-| `lucide`  | Lucide names, kebab-case (`trending-up`)      | `lucide-react` (peer)            |
-| `simple`  | Simple Icons brand slugs (`github`, `notion`) | `@icons-pack/react-simple-icons` |
-| `lobehub` | AI providers and models (`OpenAI`, `Claude`)  | `@lobehub/icons` (peer)          |
+| Prefix     | Names                                           | Package                          |
+| ---------- | ----------------------------------------------- | -------------------------------- |
+| `lucide:`  | Lucide names, kebab-case (`lucide:trending-up`) | `lucide-react` (peer)            |
+| `simple:`  | Simple Icons brand slugs (`simple:github`)      | `@icons-pack/react-simple-icons` |
+| `lobehub:` | AI providers and models (`lobehub:OpenAI`)      | `@lobehub/icons` (peer)          |
 
-plus `size`, `color` (`brand` uses the brand's colour) and, for `lobehub`, `variant` (`mono`, `color`, `avatar`). Unknown names fail validation with close suggestions. Nothing is bundled eagerly: each set's name → loader table is a lazy chunk, and each icon its own chunk, so a card downloads only the icons it shows. The name lists the validator checks (`src/icons/names.ts`) and the loader tables are generated from the installed packages by `node scripts/icons.mjs`.
+Icons inherit the text colour. Unknown names fail validation with close suggestions. Nothing is bundled eagerly: each set's name → loader table is a lazy chunk and each icon its own chunk. The name lists the validator checks (`src/icons/names.ts`) and the loader tables are generated from the installed packages by `node scripts/icons.mjs`.
 
 ### Safety
 
-On top of the schema: at most 50 operations, 200 components and 64 KB per surface; bound lists capped like literal ones (Chart 200 rows, Table 50, …); media (`Image`, `Video`, `AudioPlayer`) and `openUrl` must be https, checked again at render for bound data; `svgPath` must be path data; HTML in text isn't rendered.
+On top of the schema: at most 50 operations, 200 components and 64 KB per surface; bound lists capped like literal ones (Chart 200 rows, Table 50, …); media (`Image`, `Video`, `AudioPlayer`, `Avatar`) and `openUrl` must be https (stricter than the guide's http/data allowance), checked again at render for bound data; `svgPath` must be path data; HTML in text isn't rendered.
+
+## Processor
+
+`createA2uiProcessor(options)` mirrors the official SDK's `A2uiRequestProcessor`: a host builds one from the catalogs its renderer supports and gets everything it wires:
+
+```ts
+const processor = createA2uiProcessor({
+  catalogs: ['basic', 'lobehub'], // what the renderer can draw; a host that can't draw creates none
+  delivery: 'tool', // or 'cli' for `lh card render`
+  examples: undefined, // curated default; 'all', false, or a list from loadExamples()
+  prune: { components: undefined, functions: undefined }, // static allowlists
+});
+
+processor.promptSnippet; // append to the system instruction while the card tool is active
+processor.tool; // { name: 'renderUI', description, parameters, meta }
+processor.execute({ operations }); // { success, content, state: { surface } } or { success: false, content, error }
+processor.validate(operations); // the record, or errors against the active catalogs
+```
+
+Examples are validated against the active catalogs when the processor is built; examples that use a catalog the host doesn't support are left out. `getA2uiProcessor()` is the default (both catalogs, `renderUI`), with `getA2uiSystemPrompt()` and `runA2uiTool()` as shorthands.
+
+The prompt snippet follows the official Direct JSON prompt generator (google/A2UI `python/a2ui_agent/src/a2ui/inference_formats/direct_json`): a short product layer (when a card helps, no filler buttons, honest figures), the workflow rules (delivery through the tool's `operations` argument or the command instead of `<a2ui-json>` tags; root first, parents before children), one schema block with the agent-to-renderer schema pruned to `createSurface` / `updateComponents` / `updateDataModel`, the common types the catalog and those messages use, and the catalog schema, then `### Examples:`. No layout recipe: structure comes from the schema descriptions and the examples.
+
+Prompt size (o200k tokenizer; Claude's runs somewhat higher):
+
+| Configuration                        | Characters | Tokens  |
+| ------------------------------------ | ---------- | ------- |
+| basic + lobehub, 15 default examples | 84.8K      | ≈ 21.3K |
+| basic + lobehub, no examples         | 52.4K      | ≈ 12.5K |
+| basic + lobehub, all 53 examples     | 150.7K     | ≈ 37.8K |
+| basic only, 6 examples               | 55.7K      | ≈ 13.2K |
+| pruned to 8 components               | 36.4K      | ≈ 8.8K  |
 
 ## What a host wires
 
-A host keeps only what is its own: where an action goes, whether this person may act, and the reader's language. Everything else comes from the package, so a prompt, catalog, validation or rendering change needs only a dependency bump.
+A host keeps only what is its own: where an action goes, whether this person may act, and the reader's language.
 
-| Need               | Export                                                                                                                                                |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| System prompt      | `getA2uiSystemPrompt()` (product rules + generated A2UI prompt, for the `renderUI` tool); `buildA2uiSystemPrompt({ delivery, components, examples })` |
-| Prompt pieces      | `buildA2uiPrompt`, `a2uiProductRules(delivery)`, `a2uiWorkflowRules(delivery)`, `A2UI_LAYOUT_GUIDANCE`, `A2UI_PROMPT_EXAMPLES`                        |
-| Tool contract      | `A2UI_TOOL_IDENTIFIER` (`lobe-a2ui`), `A2UI_TOOL_NAME` (`renderUI`), `A2UI_TOOL_DESCRIPTION`, `A2UI_TOOL_PARAMETERS`, `A2UI_TOOL_META`                |
-| Running the tool   | `runA2uiTool({ operations })` → `{ success, content, state: { surface } }` or `{ success: false, content, error }`; `validateSurface` underneath      |
-| Stored surfaces    | `A2uiSurfaceRecord` (with optional `state`), `toSurfaceRecords`, `isA2uiToolResult`, `surfacesFromToolResults`, `surfacesToText`, `surfaceToText`     |
-| Actions            | `actionToMessage`, `parseActionMessage`                                                                                                               |
-| Drawing (`/react`) | `A2uiHostProvider` with `{ canAct, sendAction, locale, labels? }`; `SurfaceList` / `HostedSurface` (submission state handled); `SurfaceView` (bare)   |
+| Need               | Export                                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Prompt, tool, run  | `createA2uiProcessor` / `getA2uiProcessor`, `getA2uiSystemPrompt`, `runA2uiTool`, `A2UI_TOOL_*`                                  |
+| Stored surfaces    | `A2uiSurfaceRecord` (with optional `state`), `toSurfaceRecords`, `isA2uiToolResult`, `surfacesFromToolResults`, `surfacesToText` |
+| Actions            | `actionToMessage` (official renderer-to-agent `action`, readable line from `userMessage`), `parseActionMessage`                  |
+| Drawing (`/react`) | `A2uiHostProvider` with `{ canAct, sendAction, locale, labels? }`; `SurfaceList` / `HostedSurface` handle submission             |
 
-`delivery` words the prompt for a tool (`{ tool: 'renderUI' }`, the default) or a command (`{ command: 'lh card render' }`). Built-in labels ship in en-US and zh-CN (others fall back to English) and are picked by `locale`, which also formats numbers and dates.
-
-```ts
-// Tool manifest and runtime
-import {
-  A2UI_TOOL_DESCRIPTION,
-  A2UI_TOOL_NAME,
-  A2UI_TOOL_PARAMETERS,
-  getA2uiSystemPrompt,
-  runA2uiTool,
-} from '@lobehub/a2ui';
-```
+Package-owned words are only interface chrome (a filterable choice list's placeholder, an empty table), in en-US and zh-CN, picked by `locale`, which also formats numbers and dates.
 
 ```tsx
 import { A2uiHostProvider, SurfaceList } from '@lobehub/a2ui/react';
@@ -123,10 +150,6 @@ import { A2uiHostProvider, SurfaceList } from '@lobehub/a2ui/react';
   <SurfaceList surfaces={surfaces} />
 </A2uiHostProvider>;
 ```
-
-## Prompt
-
-`buildA2uiPrompt()` ports the official Direct JSON prompt generator (google/A2UI `python/a2ui_agent/src/a2ui/inference_formats/direct_json`): the workflow rules (delivery through the tool's `operations` argument or a command instead of `<a2ui-json>` tags), then one schema block with the agent-to-renderer schema pruned to `createSurface` / `updateComponents` / `updateDataModel`, the common types the catalog and those messages use, and the merged catalog schema, then seven examples of differently shaped surfaces (four official, three LobeHub), then layout guidance. `buildA2uiSystemPrompt()` puts LobeHub's product rules (when a card helps, no filler buttons, actions, honesty) in front.
 
 `@lobehub/ui`, `@lobehub/charts`, `@lobehub/icons`, `lucide-react`, `react` and `react-dom` are peer dependencies.
 

@@ -1,36 +1,33 @@
 {
   "name": "Plan Comparison",
-  "description": "Options compared across attributes: a Table carries the comparison, a Grid of small Cards gives each option's reasoning, and lucide icons mark pros and cons.",
+  "description": "Options compared across attributes: a Table carries the comparison, and a Grid of two Cards gives the reasoning with Lucide icons.",
   "messages": [
     {
       "version": "1.0",
       "createSurface": {
-        "surfaceId": "plan-compare",
+        "surfaceId": "plan-comparison",
         "catalogId": "https://lobehub.com/a2ui/catalog/v1"
       }
     },
     {
       "version": "1.0",
       "updateComponents": {
-        "surfaceId": "plan-compare",
+        "surfaceId": "plan-comparison",
         "components": [
           {
             "id": "root",
             "component": "Card",
-            "title": "Pro is the better fit for 14 seats",
-            "badge": "pick",
             "child": "body"
-          },
-          {
-            "id": "pick",
-            "component": "Tag",
-            "text": "Pick Pro",
-            "color": "success"
           },
           {
             "id": "body",
             "component": "Column",
-            "children": ["table", "reasons"]
+            "children": ["title", "table", "reasons"]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "#### Pro fits a 14-person team best"
           },
           {
             "id": "table",
@@ -87,8 +84,28 @@
           {
             "id": "pros",
             "component": "Card",
-            "title": "Why Pro",
-            "child": "prosText"
+            "child": "prosBody"
+          },
+          {
+            "id": "prosBody",
+            "component": "Column",
+            "children": ["prosHead", "prosText"]
+          },
+          {
+            "id": "prosHead",
+            "component": "Row",
+            "children": ["prosIcon", "prosTitle"],
+            "align": "center"
+          },
+          {
+            "id": "prosIcon",
+            "component": "Icon",
+            "name": "lucide:circle-check"
+          },
+          {
+            "id": "prosTitle",
+            "component": "Text",
+            "text": "**Why Pro**"
           },
           {
             "id": "prosText",
@@ -98,26 +115,33 @@
           {
             "id": "cons",
             "component": "Card",
-            "title": "Watch out",
-            "child": "consRow"
+            "child": "consBody"
           },
           {
-            "id": "consRow",
+            "id": "consBody",
+            "component": "Column",
+            "children": ["consHead", "consText"]
+          },
+          {
+            "id": "consHead",
             "component": "Row",
-            "align": "center",
-            "children": ["consIcon", "consText"]
+            "children": ["consIcon", "consTitle"],
+            "align": "center"
           },
           {
             "id": "consIcon",
             "component": "Icon",
-            "set": "lucide",
-            "name": "shield-alert",
-            "color": "warning"
+            "name": "lucide:shield-alert"
+          },
+          {
+            "id": "consTitle",
+            "component": "Text",
+            "text": "**Watch out**"
           },
           {
             "id": "consText",
             "component": "Text",
-            "text": "SSO only on Team. Revisit at 20 seats."
+            "text": "SSO is only on Team. Revisit at 20 seats."
           }
         ]
       }

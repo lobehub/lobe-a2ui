@@ -75,3 +75,16 @@ export const normalizeSimpleName = (name: string) =>
     .trim()
     .toLowerCase()
     .replaceAll(/[^\da-z]/g, '');
+
+export type A2uiIconSet = 'lobehub' | 'lucide' | 'simple';
+export const ICON_SETS: readonly A2uiIconSet[] = ['lucide', 'simple', 'lobehub'];
+
+/** An Icon name: a basic name, or `<set>:<name>` from a larger set. */
+export const parseIconName = (
+  value: string,
+): { name: string; set: A2uiIconSet } | { basic: string } => {
+  const match = /^(\w+):(.+)$/.exec(value.trim());
+  if (match && (ICON_SETS as readonly string[]).includes(match[1]))
+    return { name: match[2], set: match[1] as A2uiIconSet };
+  return { basic: value.trim() };
+};

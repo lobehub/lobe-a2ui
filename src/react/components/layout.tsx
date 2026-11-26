@@ -1,4 +1,4 @@
-import { Divider, Flexbox, Grid, Modal, Tabs } from '@lobehub/ui';
+import { Accordion, Divider, Flexbox, Grid, Modal, Tabs, Text } from '@lobehub/ui';
 import { Surface } from '@lobehub/ui/dashboard';
 import { useState } from 'react';
 
@@ -6,18 +6,11 @@ import { A2UI_LIST_LIMITS } from '../../catalog';
 import { ALIGN, childrenOf, define, JUSTIFY, styles } from './shared';
 
 /**
- * A Card is a @lobehub/ui Surface: with a title, description or badge it gets the product's card
- * heading and a padded body; nested, it draws as an inner outlined card.
+ * A Card is a @lobehub/ui Surface with a padded body. As the root it is the surface's card;
+ * nested, it draws as an inner outlined card, as the basic catalog's guide suggests.
  */
 export const CardView = define('Card', ({ props, buildChild }) => (
-  <Surface
-    padded
-    description={props.description ? String(props.description) : undefined}
-    extra={props.badge ? buildChild(props.badge) : undefined}
-    title={props.title ? String(props.title) : undefined}
-  >
-    {buildChild(props.child)}
-  </Surface>
+  <Surface padded>{buildChild(props.child)}</Surface>
 ));
 
 export const ColumnView = define('Column', ({ props, buildChild }) => (
@@ -59,13 +52,6 @@ export const ListView = define('List', ({ props, buildChild }) => {
     </Flexbox>
   );
 });
-
-export const GridView = define('Grid', ({ props, buildChild }) => (
-  // Equal columns while each stays at least 200px wide; fewer, then one, on narrow cards.
-  <Grid gap={12} maxItemWidth={200} rows={props.columns ?? 2}>
-    {childrenOf(props.children, buildChild).slice(0, A2UI_LIST_LIMITS.Grid.children)}
-  </Grid>
-));
 
 type TabInput = { child: string; title?: unknown };
 
@@ -115,3 +101,25 @@ export const DividerView = define('Divider', ({ props }) =>
     <Divider style={{ margin: 0 }} />
   ),
 );
+
+export const GridView = define('Grid', ({ props, buildChild }) => (
+  // Equal columns while each stays at least 200px wide; fewer, then one, on narrow cards.
+  <Grid gap={12} maxItemWidth={200} rows={props.columns ?? 2}>
+    {childrenOf(props.children, buildChild).slice(0, A2UI_LIST_LIMITS.Grid.children)}
+  </Grid>
+));
+
+/** A section that opens from its header (@lobehub/ui Accordion with one item). */
+export const CollapseView = define('Collapse', ({ props, buildChild }) => (
+  <Accordion
+    defaultValue={props.defaultOpen ? ['content'] : []}
+    variant="outlined"
+    items={[
+      {
+        children: buildChild(props.child),
+        key: 'content',
+        title: <Text weight={500}>{String(props.title ?? '')}</Text>,
+      },
+    ]}
+  />
+));

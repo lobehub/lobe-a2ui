@@ -19,6 +19,7 @@ import { cssVar, Flexbox, Text } from '@lobehub/ui';
 import type { ReactNode } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../catalog';
+import { useA2uiHost } from '../host';
 import { define, rowsOf } from './shared';
 
 const SERIES_CHARTS = { area: AreaChart, bar: BarChart, line: LineChart } as const;
@@ -40,7 +41,14 @@ const TRACKER_COLOR: Record<string, string> = {
 
 type Row = Record<string, unknown>;
 
+/** Month names in the reader's language: the heatmap's only words besides the Agent's. */
+const monthNames = (locale: string | undefined) =>
+  Array.from({ length: 12 }, (_, month) =>
+    new Intl.DateTimeFormat(locale, { month: 'short' }).format(new Date(Date.UTC(2024, month, 15))),
+  );
+
 const drawChart = (
+  locale: string | undefined,
   type: string,
   rows: Row[],
   index: string,
@@ -164,6 +172,7 @@ const drawChart = (
 
 /** Every chart @lobehub/charts draws, from one rows-and-fields model. */
 export const ChartView = define('Chart', ({ props }) => {
+  const locale = useA2uiHost()?.locale;
   const rows = rowsOf<Row>(props.data, A2UI_LIST_LIMITS.Chart.data);
   const index = String(props.index ?? '');
   const categories = (Array.isArray(props.categories) ? props.categories : [])
@@ -178,7 +187,7 @@ export const ChartView = define('Chart', ({ props }) => {
   return (
     <Flexbox flex={1} gap={8} style={{ minWidth: 0 }}>
       {props.title ? <Text weight={600}>{String(props.title)}</Text> : null}
-      {drawChart(String(props.type), rows, index, categories, format)}
+      {drawChart(locale, String(props.type), rows, index, categories, format)}
     </Flexbox>
   );
 });

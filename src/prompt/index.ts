@@ -1,13 +1,8 @@
 import { A2UI_CATALOG_DOCUMENT, A2UI_CATALOG_ID, type CatalogDocument } from '../catalog';
+import { A2UI_EXAMPLES } from '../examples';
+import type { A2uiExample } from '../examples/types';
 import agentToRenderer from '../schema/agent_to_renderer.json';
 import commonTypes from '../schema/common_types.json';
-import dailyReport from './examples/daily-report.json';
-import financialDataGrid from './examples/financial-data-grid.json';
-import flightStatus from './examples/flight-status.json';
-import planCompare from './examples/plan-compare.json';
-import recipeCard from './examples/recipe-card.json';
-import softwarePurchase from './examples/software-purchase.json';
-import tripDay from './examples/trip-day.json';
 
 /**
  * The A2UI prompt, ported from the official Direct JSON prompt generator
@@ -19,22 +14,47 @@ import tripDay from './examples/trip-day.json';
 
 type Json = Record<string, unknown>;
 
-export interface A2uiPromptExample {
-  description?: string;
-  messages: Json[];
-  name: string;
-}
+/** @deprecated Use `A2uiExample`. */
+export type A2uiPromptExample = Pick<A2uiExample, 'description' | 'messages' | 'name'>;
+export { A2UI_EXAMPLES } from '../examples';
+export type { A2uiExample } from '../examples/types';
 
-/** Varied surfaces: official basic-catalog examples and LobeHub ones that use the extensions. */
-export const A2UI_PROMPT_EXAMPLES: A2uiPromptExample[] = [
-  dailyReport,
-  planCompare,
-  tripDay,
-  flightStatus,
-  recipeCard,
-  financialDataGrid,
-  softwarePurchase,
-] as A2uiPromptExample[];
+/**
+ * The example surfaces of the given catalogs, like the official SDK's `load_examples` reading
+ * `catalogs/<name>/<version>/examples`: all of them, or only the given ids.
+ */
+export const loadExamples = (
+  catalogs: readonly string[] = ['basic', 'lobehub'],
+  ids?: readonly string[],
+): A2uiExample[] =>
+  catalogs
+    .flatMap((catalog) => A2UI_EXAMPLES[catalog as keyof typeof A2UI_EXAMPLES] ?? [])
+    .filter((example) => !ids || ids.includes(example.id));
+
+/**
+ * The examples the prompt shows by default: a varied subset, since every example costs tokens
+ * (`loadExamples()` returns all 53). Official basic surfaces first, then LobeHub's, which show
+ * the extension components in differently shaped cards.
+ */
+export const A2UI_PROMPT_EXAMPLE_IDS = [
+  'flight-status',
+  'recipe-card',
+  'financial-data-grid',
+  'user-profile',
+  'software-purchase',
+  'child-list-template',
+  'service-health',
+  'plan-comparison',
+  'trip-day',
+  'team-profile',
+  'sales-dashboard',
+  'code-answer',
+  'release-pipeline',
+  'model-comparison',
+  'signup-funnel',
+] as const;
+
+export const A2UI_PROMPT_EXAMPLES: A2uiExample[] = loadExamples(undefined, A2UI_PROMPT_EXAMPLE_IDS);
 
 /** The messages an Agent sends to draw one card. */
 export const A2UI_PROMPT_MESSAGES = [
@@ -129,7 +149,25 @@ export const pruneCommonTypesSchema = (schema: Json, ...referencing: unknown[]):
   return { ...schema, $defs: reachableDefs((schema.$defs ?? {}) as Json, roots) };
 };
 
-/** A catalog with only `components` (and the unions rebuilt to match). */
+/** `FunctionPruningTransformer`: a catalog with only `functions` (and `anyFunction` rebuilt). */
+export const pruneCatalogFunctions = (
+  catalog: CatalogDocument,
+  functions: readonly string[],
+): CatalogDocument => {
+  const kept = Object.fromEntries(
+    Object.entries(catalog.functions ?? {}).filter(([name]) => functions.includes(name)),
+  );
+  return {
+    ...catalog,
+    $defs: {
+      ...catalog.$defs,
+      anyFunction: { oneOf: Object.keys(kept).map((name) => ({ $ref: `#/functions/${name}` })) },
+    },
+    functions: kept,
+  };
+};
+
+/** `ComponentPruningTransformer`: a catalog with only `components` (and the unions rebuilt). */
 export const pruneCatalogComponents = (
   catalog: CatalogDocument,
   components: readonly string[],
@@ -161,34 +199,16 @@ const onCatalog = (messages: Json[]) =>
       : message;
   });
 
-/**
- * How to shape a surface, on top of the schema: the layout follows the content. Hosts add their
- * own rules (when to draw at all, buttons, tone) through `guidance`.
- */
-export const A2UI_LAYOUT_GUIDANCE = `### Designing the surface
-- Design the layout for this content; there is no fixed template and no required section order. Any component can be the root: a Card with a header, a Column, a Row, a Grid, Tabs or a List. The product frames the root in its card surface, so don't nest a Card just to get a border.
-- Pick each component for the shape of what it shows, and include only the parts the content has:
-  comparing options across attributes → Table (one row per option), or a Grid of Cards when each option needs its own words;
-  plan, schedule, itinerary, timeline → Steps (times in meta); a dense timetable → Table;
-  facts about one thing (profile, spec, order) → KeyValue, or Image/Icon + Text in a Row;
-  quota, goal, completion → Progress; headline figures → Metrics (one item for a single key number);
-  trend → Chart line/area; share → Chart donut; ranking → Chart barList; daily activity → Chart heatmap; uptime → Chart tracker;
-  verdict or incident → Callout, or a Tag as the Card badge; findings with a status → Items;
-  media → Image, Video, AudioPlayer; several views of one subject → Tabs; secondary detail → Modal;
-  people, links, results → List or Column of Rows (Icon or Image + Text); input → TextField, CheckBox, ChoicePicker, Slider, DateTimeInput with a Button.
-- Say the conclusion first: in the Card title or badge, or the first Text.
-- Icons: basic names, or set "lucide" (any Lucide name), "simple" (brand logos by slug) and "lobehub" (AI providers and models).
-- Text is markdown: "#### " starts a heading; use formatString, formatNumber, formatCurrency, formatDate and pluralize instead of building strings by hand.
-- Media and links must be https. Show only figures you were given or measured; say so on the surface when something is an estimate or an example.`;
-
 export interface BuildA2uiPromptOptions {
+  /** The catalog to describe; defaults to the merged LobeHub catalog. */
+  catalog?: CatalogDocument;
   /** Components to describe; defaults to the whole catalog. */
   components?: readonly string[];
   /** How the host receives a surface. Defaults to the `renderUI` tool. */
   delivery?: A2uiDelivery;
-  /** Few-shot examples; `false` for none. Defaults to `A2UI_PROMPT_EXAMPLES`. */
-  examples?: A2uiPromptExample[] | false;
-  /** Text after the examples. Defaults to `A2UI_LAYOUT_GUIDANCE`; hosts usually append their own rules. */
+  /** Few-shot examples: a list, `'all'` for every example, or `false` for none. Defaults to `A2UI_PROMPT_EXAMPLES`. */
+  examples?: A2uiPromptExample[] | 'all' | false;
+  /** Text after the examples, if any. */
   guidance?: string;
 }
 
@@ -198,9 +218,8 @@ export interface BuildA2uiPromptOptions {
  * types the catalog and those messages use, and the catalog schema), then the examples.
  */
 export const buildA2uiPrompt = (options: BuildA2uiPromptOptions = {}): string => {
-  const catalog = options.components
-    ? pruneCatalogComponents(A2UI_CATALOG_DOCUMENT, options.components)
-    : A2UI_CATALOG_DOCUMENT;
+  const base = options.catalog ?? A2UI_CATALOG_DOCUMENT;
+  const catalog = options.components ? pruneCatalogComponents(base, options.components) : base;
   const messages = pruneMessagesSchema(agentToRenderer as Json, A2UI_PROMPT_MESSAGES);
   const common = pruneCommonTypesSchema(commonTypes as Json, catalog, messages);
 
@@ -212,12 +231,16 @@ export const buildA2uiPrompt = (options: BuildA2uiPromptOptions = {}): string =>
     A2UI_SCHEMA_BLOCK_END,
   ].join('\n\n');
 
-  const examples = options.examples === false ? [] : (options.examples ?? A2UI_PROMPT_EXAMPLES);
+  const examples =
+    options.examples === false
+      ? []
+      : options.examples === 'all'
+        ? loadExamples()
+        : (options.examples ?? A2UI_PROMPT_EXAMPLES);
   const exampleBlock =
     examples.length > 0
       ? [
-          '### Examples',
-          'Each is the messages array for a differently shaped surface. Learn the vocabulary from them; never copy their layout.',
+          '### Examples:',
           ...examples.map(
             (example, index) =>
               `Example ${index + 1}: ${example.name}${example.description ? ` — ${example.description}` : ''}\n${compact(onCatalog(example.messages))}`,
@@ -225,56 +248,13 @@ export const buildA2uiPrompt = (options: BuildA2uiPromptOptions = {}): string =>
         ].join('\n\n')
       : '';
 
-  return [
-    a2uiWorkflowRules(options.delivery),
-    schema,
-    exampleBlock,
-    options.guidance ?? A2UI_LAYOUT_GUIDANCE,
-  ]
+  return [a2uiWorkflowRules(options.delivery), schema, exampleBlock, options.guidance]
     .filter(Boolean)
     .join('\n\n');
 };
 
-/**
- * When a card helps and the product rules every LobeHub host shares: display-first, no filler
- * buttons, how actions come back, honesty about figures.
- */
-export const a2uiProductRules = (
-  delivery: A2uiDelivery = A2UI_DEFAULT_DELIVERY,
-) => `You can answer with a card instead of, or next to, text: ${drawText(delivery)} with A2UI 1.0 messages for one surface. It renders in the conversation, in the product's own design, for everyone in it.
-
-WHEN A CARD HELPS
-- Display (the common case): information a person takes in at a glance: reports, digests, status reviews, metrics, trends, rankings, comparisons, schedules, plans, profiles, recipes, incident summaries. Here the card is the answer.
-- Input: asking for several inputs at once (choices, numbers, dates, short text). A single yes/no question is plain text.
-- Not for prose, explanations, or anything a few sentences answer. Never wrap ordinary text in a card.
-- One card per answer. Put a sentence of text before it only if it adds something; for a report, the card alone is usually enough.
-
-PRODUCT RULES
-- Design each card for its content. Two different requests should rarely produce the same structure; choose components by the shape of the information, not a habit.
-- A display card needs no buttons. Add a Button only for a real next step the person would take right now and that you can carry out when they click it; never add "OK", "Got it", "Details" or "Let me know" buttons. Links to full reports belong in Text as markdown links.
-- At most one primary Button per card; put buttons in a Row with justify "end" at the bottom.
-- When the person clicks a button, you receive its event name and its context as their next message. To send what they filled in, bind it in the context: "action": {"event": {"name": "submit", "context": {"prefs": {"@path": "/prefs"}}}}.
-- Show only figures you were given or measured. If something is an estimate or an example, say so on the card.`;
-
-export interface BuildA2uiSystemPromptOptions extends BuildA2uiPromptOptions {
-  /** Product rules before the A2UI prompt; `false` to leave them out. Defaults to `a2uiProductRules`. */
-  productRules?: string | false;
-}
-
-/**
- * The complete system prompt a LobeHub host gives an Agent that draws cards: the product rules,
- * then the generated A2UI prompt (rules, schema, examples, layout guidance), in one block.
- */
-export const buildA2uiSystemPrompt = (options: BuildA2uiSystemPromptOptions = {}): string => {
-  const rules =
-    options.productRules === false
-      ? ''
-      : (options.productRules ?? a2uiProductRules(options.delivery));
-  return ['<a2ui_guide>', rules, buildA2uiPrompt(options), '</a2ui_guide>']
-    .filter(Boolean)
-    .join('\n\n');
-};
-
-let systemPrompt: string | undefined;
-/** `buildA2uiSystemPrompt()` with the defaults (the `renderUI` tool), built once. */
-export const getA2uiSystemPrompt = () => (systemPrompt ??= buildA2uiSystemPrompt());
+/** The product layer on top of the A2UI prompt: when a card helps, and three rules. */
+export const a2uiProductRules = (delivery: A2uiDelivery = A2UI_DEFAULT_DELIVERY) =>
+  `You can answer with a card instead of, or next to, text: ${drawText(delivery)} with A2UI messages for one surface. Use one for information a person takes in at a glance, or to ask for several inputs at once; not for prose a few sentences answer.
+- A display card needs no buttons: add one only for a real next step you can carry out when it is clicked.
+- Show only figures you were given or measured; say so on the card when something is an estimate or an example.`;

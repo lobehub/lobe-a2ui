@@ -1,0 +1,193 @@
+{
+  "name": "Signup Funnel",
+  "description": "A conversion story: a funnel Chart for drop-off, then a Row of small cards each pairing a figure with a sparkline (sparkLine, sparkArea, sparkBar).",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "signup-funnel",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "signup-funnel",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["title", "funnel", "trends"]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "#### Signup funnel, last 7 days"
+          },
+          {
+            "id": "funnel",
+            "component": "Chart",
+            "type": "funnel",
+            "data": [
+              {
+                "stage": "Visit",
+                "users": 12400
+              },
+              {
+                "stage": "Signup",
+                "users": 3100
+              },
+              {
+                "stage": "Activated",
+                "users": 1480
+              },
+              {
+                "stage": "Paid",
+                "users": 310
+              }
+            ],
+            "index": "stage",
+            "categories": ["users"]
+          },
+          {
+            "id": "trends",
+            "component": "Grid",
+            "columns": 3,
+            "children": ["t1", "t2", "t3"]
+          },
+          {
+            "id": "t1",
+            "component": "Card",
+            "child": "t1b"
+          },
+          {
+            "id": "t1b",
+            "component": "Column",
+            "children": ["t1s", "t1c"]
+          },
+          {
+            "id": "t1s",
+            "component": "Statistic",
+            "label": "Visits",
+            "value": "12.4k"
+          },
+          {
+            "id": "t1c",
+            "component": "Chart",
+            "type": "sparkLine",
+            "data": {
+              "@path": "/daily"
+            },
+            "index": "day",
+            "categories": ["visits"]
+          },
+          {
+            "id": "t2",
+            "component": "Card",
+            "child": "t2b"
+          },
+          {
+            "id": "t2b",
+            "component": "Column",
+            "children": ["t2s", "t2c"]
+          },
+          {
+            "id": "t2s",
+            "component": "Statistic",
+            "label": "Signups",
+            "value": "3.1k"
+          },
+          {
+            "id": "t2c",
+            "component": "Chart",
+            "type": "sparkArea",
+            "data": {
+              "@path": "/daily"
+            },
+            "index": "day",
+            "categories": ["signups"]
+          },
+          {
+            "id": "t3",
+            "component": "Card",
+            "child": "t3b"
+          },
+          {
+            "id": "t3b",
+            "component": "Column",
+            "children": ["t3s", "t3c"]
+          },
+          {
+            "id": "t3s",
+            "component": "Statistic",
+            "label": "Paid",
+            "value": "310"
+          },
+          {
+            "id": "t3c",
+            "component": "Chart",
+            "type": "sparkBar",
+            "data": {
+              "@path": "/daily"
+            },
+            "index": "day",
+            "categories": ["paid"]
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "signup-funnel",
+        "path": "/",
+        "value": {
+          "daily": [
+            {
+              "day": "Mon",
+              "visits": 1600,
+              "signups": 410,
+              "paid": 38
+            },
+            {
+              "day": "Tue",
+              "visits": 1750,
+              "signups": 430,
+              "paid": 41
+            },
+            {
+              "day": "Wed",
+              "visits": 1820,
+              "signups": 460,
+              "paid": 47
+            },
+            {
+              "day": "Thu",
+              "visits": 1700,
+              "signups": 440,
+              "paid": 44
+            },
+            {
+              "day": "Fri",
+              "visits": 1900,
+              "signups": 470,
+              "paid": 52
+            },
+            {
+              "day": "Sat",
+              "visits": 1650,
+              "signups": 420,
+              "paid": 45
+            },
+            {
+              "day": "Sun",
+              "visits": 1980,
+              "signups": 470,
+              "paid": 43
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

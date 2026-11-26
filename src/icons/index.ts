@@ -1,9 +1,13 @@
-import { BASIC_ICON_TO_LUCIDE, normalizeLucideName, normalizeSimpleName } from './basic';
+import {
+  type A2uiIconSet,
+  BASIC_ICON_TO_LUCIDE,
+  normalizeLucideName,
+  normalizeSimpleName,
+  parseIconName,
+} from './basic';
 import { LOBEHUB_NAMES, LUCIDE_NAMES, SIMPLE_NAMES } from './names';
 
-export { BASIC_ICON_TO_LUCIDE } from './basic';
-
-export type A2uiIconSet = 'lobehub' | 'lucide' | 'simple';
+export { type A2uiIconSet, BASIC_ICON_TO_LUCIDE, ICON_SETS, parseIconName } from './basic';
 
 const sets: Record<A2uiIconSet, string> = {
   lobehub: LOBEHUB_NAMES,
@@ -38,15 +42,15 @@ const suggest = (set: A2uiIconSet, name: string) => {
     .slice(0, 5);
 };
 
-/** Why an icon can't be drawn, or undefined when it can. */
-export const iconError = (set: string | undefined, name: string): string | undefined => {
-  if (set === undefined) {
-    if (name in BASIC_ICON_TO_LUCIDE) return undefined;
-    return `"${name}" is not a basic icon name. Use one of the basic names, or set "set" to "lucide", "simple" or "lobehub"`;
+/** Why an Icon name can't be drawn, or undefined when it can. */
+export const iconError = (value: string): string | undefined => {
+  const parsed = parseIconName(value);
+  if ('basic' in parsed) {
+    if (parsed.basic in BASIC_ICON_TO_LUCIDE) return undefined;
+    return `"${value}" is not a basic icon name. Use a basic name, or "lucide:<name>", "simple:<brand>" or "lobehub:<provider>"`;
   }
-  if (set !== 'lucide' && set !== 'simple' && set !== 'lobehub')
-    return `Unknown icon set "${set}". Use "lucide", "simple" or "lobehub"`;
+  const { name, set } = parsed;
   if (iconNames(set).has(normalizeIconName(set, name))) return undefined;
-  const close = suggest(set, name);
+  const close = suggest(set, name).map((candidate) => `${set}:${candidate}`);
   return `No ${set} icon named "${name}"${close.length > 0 ? `. Did you mean: ${close.join(', ')}?` : ''}`;
 };

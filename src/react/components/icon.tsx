@@ -1,8 +1,12 @@
-import { cssVar } from '@lobehub/ui';
 import type { ComponentType, CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
 
-import { BASIC_ICON_TO_LUCIDE, normalizeLucideName, normalizeSimpleName } from '../../icons/basic';
+import {
+  BASIC_ICON_TO_LUCIDE,
+  normalizeLucideName,
+  normalizeSimpleName,
+  parseIconName,
+} from '../../icons/basic';
 import type { IconLoader } from '../icons/types';
 import { define } from './shared';
 
@@ -55,85 +59,34 @@ const useIcon = (set: IconSet, name: string) => {
   return icon;
 };
 
-const COLORS: Record<string, string | undefined> = {
-  default: undefined,
-  error: cssVar.colorError,
-  primary: cssVar.colorPrimary,
-  secondary: cssVar.colorTextSecondary,
-  success: cssVar.colorSuccess,
-  warning: cssVar.colorWarning,
-};
-
 export interface A2uiIconProps {
-  color?: string;
+  /** A basic Icon name, or `<set>:<name>` (`lucide:rocket`, `simple:github`, `lobehub:OpenAI`). */
   name: string;
-  set?: IconSet;
   size?: number;
-  variant?: 'avatar' | 'color' | 'mono';
 }
 
-/** One icon from the basic names or a set, drawn once its chunk arrives; a box holds its place. */
-export const A2uiIcon = ({ name, set, size = 20, color, variant }: A2uiIconProps) => {
-  const resolvedSet: IconSet = set ?? 'lucide';
-  const resolvedName =
-    set === 'simple'
-      ? normalizeSimpleName(name)
-      : set === 'lobehub'
-        ? name.trim()
+/**
+ * One icon, drawn once its chunk arrives; a box holds its place. It inherits the text colour, as
+ * the basic catalog's guide asks, so it reads on any background.
+ */
+export const A2uiIcon = ({ name, size = 24 }: A2uiIconProps) => {
+  const parsed = parseIconName(name);
+  const set: IconSet = 'basic' in parsed ? 'lucide' : parsed.set;
+  const resolved =
+    'basic' in parsed
+      ? (BASIC_ICON_TO_LUCIDE[parsed.basic] ?? parsed.basic)
+      : set === 'simple'
+        ? normalizeSimpleName(parsed.name)
         : set === 'lucide'
-          ? normalizeLucideName(name)
-          : (BASIC_ICON_TO_LUCIDE[name] ?? name);
-  const Icon = useIcon(resolvedSet, resolvedName);
-  const style: CSSProperties = {
-    color: color === 'brand' ? undefined : COLORS[color ?? 'default'],
-    flex: 'none',
-    height: size,
-    width: size,
-  };
+          ? normalizeLucideName(parsed.name)
+          : parsed.name.trim();
+  const Icon = useIcon(set, resolved);
+  const style: CSSProperties = { flex: 'none', height: size, width: size };
   if (!Icon) return <span aria-hidden style={{ ...style, display: 'inline-block' }} />;
-
-  if (resolvedSet === 'lobehub') {
-    const Compound = Icon as ComponentType<any> & Record<string, ComponentType<any>>;
-    const Variant =
-      variant === 'avatar'
-        ? Compound.Avatar
-        : variant === 'color' || color === 'brand'
-          ? (Compound.Color ?? Compound)
-          : Compound;
-    return <Variant aria-label={name} size={size} style={style} />;
-  }
-  if (resolvedSet === 'simple')
-    return (
-      <Icon
-        aria-label={name}
-        color={color === 'brand' ? 'default' : 'currentColor'}
-        size={size}
-        style={style}
-      />
-    );
-  return <Icon aria-label={name} size={size} strokeWidth={2} style={style} />;
+  if (set === 'simple')
+    return <Icon aria-label={name} color="currentColor" size={size} style={style} />;
+  return <Icon aria-label={name} size={size} style={style} />;
 };
-
-const SvgPathIcon = ({
-  path,
-  size = 20,
-  color,
-}: {
-  color?: string;
-  path: string;
-  size?: number;
-}) => (
-  <svg
-    aria-hidden
-    fill="currentColor"
-    height={size}
-    style={{ color: COLORS[color ?? 'default'], flex: 'none' }}
-    viewBox="0 0 24 24"
-    width={size}
-  >
-    <path d={path} />
-  </svg>
-);
 
 const SVG_PATH = /^[\d\s+,.ACEHLMQSTVZ-]*$/i;
 
@@ -141,16 +94,17 @@ export const IconView = define('Icon', ({ props }) => {
   const name = props.name;
   if (name && typeof name === 'object' && typeof name.svgPath === 'string')
     return SVG_PATH.test(name.svgPath) ? (
-      <SvgPathIcon color={props.color} path={name.svgPath} size={props.size} />
+      <svg
+        aria-hidden
+        fill="currentColor"
+        height={24}
+        style={{ flex: 'none' }}
+        viewBox="0 0 24 24"
+        width={24}
+      >
+        <path d={name.svgPath} />
+      </svg>
     ) : null;
   if (typeof name !== 'string' || !name) return null;
-  return (
-    <A2uiIcon
-      color={props.color}
-      name={name}
-      set={props.set}
-      size={props.size}
-      variant={props.variant}
-    />
-  );
+  return <A2uiIcon name={name} />;
 });

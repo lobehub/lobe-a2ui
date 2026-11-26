@@ -1,0 +1,150 @@
+{
+  "name": "Model Comparison",
+  "description": "Models compared: LobeHub Icons name each model, a radar Chart compares strengths, and a scatter Chart plots cost against quality.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "model-comparison",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "model-comparison",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["title", "models", "strengths", "cost", "note"]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "#### Which model for support replies?"
+          },
+          {
+            "id": "models",
+            "component": "Row",
+            "children": ["m1", "m1t", "m2", "m2t", "m3", "m3t"],
+            "align": "center"
+          },
+          {
+            "id": "m1",
+            "component": "Icon",
+            "name": "lobehub:OpenAI"
+          },
+          {
+            "id": "m1t",
+            "component": "Text",
+            "text": "GPT"
+          },
+          {
+            "id": "m2",
+            "component": "Icon",
+            "name": "lobehub:Claude"
+          },
+          {
+            "id": "m2t",
+            "component": "Text",
+            "text": "Claude"
+          },
+          {
+            "id": "m3",
+            "component": "Icon",
+            "name": "lobehub:DeepSeek"
+          },
+          {
+            "id": "m3t",
+            "component": "Text",
+            "text": "DeepSeek"
+          },
+          {
+            "id": "strengths",
+            "component": "Chart",
+            "type": "radar",
+            "title": "Strengths (1–10)",
+            "data": {
+              "@path": "/strengths"
+            },
+            "index": "axis",
+            "categories": ["GPT", "Claude", "DeepSeek"]
+          },
+          {
+            "id": "cost",
+            "component": "Chart",
+            "type": "scatter",
+            "title": "Cost vs. quality",
+            "data": {
+              "@path": "/points"
+            },
+            "index": "model",
+            "categories": ["cost", "quality", "volume"]
+          },
+          {
+            "id": "note",
+            "component": "Text",
+            "text": "Scores are an example from our internal eval set.",
+            "variant": "caption"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "model-comparison",
+        "path": "/",
+        "value": {
+          "strengths": [
+            {
+              "axis": "Tone",
+              "GPT": 8,
+              "Claude": 9,
+              "DeepSeek": 7
+            },
+            {
+              "axis": "Accuracy",
+              "GPT": 9,
+              "Claude": 8,
+              "DeepSeek": 8
+            },
+            {
+              "axis": "Speed",
+              "GPT": 7,
+              "Claude": 7,
+              "DeepSeek": 9
+            },
+            {
+              "axis": "Cost",
+              "GPT": 5,
+              "Claude": 6,
+              "DeepSeek": 9
+            }
+          ],
+          "points": [
+            {
+              "model": "GPT",
+              "cost": 10,
+              "quality": 88,
+              "volume": 3
+            },
+            {
+              "model": "Claude",
+              "cost": 9,
+              "quality": 90,
+              "volume": 2
+            },
+            {
+              "model": "DeepSeek",
+              "cost": 2,
+              "quality": 81,
+              "volume": 4
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

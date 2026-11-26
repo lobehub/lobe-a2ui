@@ -1,37 +1,46 @@
 {
-  "name": "Daily Report",
-  "description": "A daily service report: verdict in the Card header, headline figures, a trend, and what needs a person. No buttons: the card is the answer.",
+  "name": "Service Health",
+  "description": "A status report: the verdict in a heading row with a Tag, headline figures in Metrics, the trend as a line Chart, and the incident as a Callout. No buttons: the card is the answer.",
   "messages": [
     {
       "version": "1.0",
       "createSurface": {
-        "surfaceId": "daily-report",
+        "surfaceId": "service-health",
         "catalogId": "https://lobehub.com/a2ui/catalog/v1"
       }
     },
     {
       "version": "1.0",
       "updateComponents": {
-        "surfaceId": "daily-report",
+        "surfaceId": "service-health",
         "components": [
           {
             "id": "root",
-            "component": "Card",
-            "title": "API health: degraded since 14:00",
-            "description": "Nov 25 · 3,214 requests",
-            "badge": "status",
-            "child": "body"
+            "component": "Column",
+            "children": ["header", "figures", "latency", "incident"]
+          },
+          {
+            "id": "header",
+            "component": "Row",
+            "children": ["icon", "title", "status"],
+            "align": "center"
+          },
+          {
+            "id": "icon",
+            "component": "Icon",
+            "name": "lucide:activity"
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "#### API health: degraded since 14:00",
+            "weight": 1
           },
           {
             "id": "status",
             "component": "Tag",
             "text": "Degraded",
             "color": "warning"
-          },
-          {
-            "id": "body",
-            "component": "Column",
-            "children": ["figures", "latency", "incident", "followups"]
           },
           {
             "id": "figures",
@@ -57,24 +66,7 @@
             "component": "Callout",
             "level": "warning",
             "title": "Provider timeouts after the 14:00 deploy",
-            "body": "Rollback is staged; error rate is still 3x the baseline."
-          },
-          {
-            "id": "followups",
-            "component": "Items",
-            "title": "Follow-ups",
-            "items": [
-              {
-                "status": "human",
-                "title": "Approve the rollback",
-                "detail": "Waiting on on-call"
-              },
-              {
-                "status": "watch",
-                "title": "Queue depth",
-                "detail": "Back under 1k"
-              }
-            ]
+            "body": "Rollback is staged; the error rate is still 3x the baseline."
           }
         ]
       }
@@ -82,7 +74,7 @@
     {
       "version": "1.0",
       "updateDataModel": {
-        "surfaceId": "daily-report",
+        "surfaceId": "service-health",
         "path": "/",
         "value": {
           "metrics": [
@@ -90,40 +82,43 @@
               "label": "Error rate",
               "value": "2.4%",
               "delta": "+1.6pt",
+              "direction": "up",
               "tone": "bad"
             },
             {
               "label": "P95",
               "value": "1.8s",
               "delta": "+0.7s",
+              "direction": "up",
               "tone": "bad"
             },
             {
               "label": "Requests",
               "value": "3,214",
               "delta": "+4%",
+              "direction": "up",
               "tone": "neutral"
             }
           ],
           "latency": [
             {
-              "hour": "12",
+              "hour": "12:00",
               "p95": 1.0
             },
             {
-              "hour": "13",
+              "hour": "13:00",
               "p95": 1.1
             },
             {
-              "hour": "14",
+              "hour": "14:00",
               "p95": 2.3
             },
             {
-              "hour": "15",
+              "hour": "15:00",
               "p95": 2.0
             },
             {
-              "hour": "16",
+              "hour": "16:00",
               "p95": 1.8
             }
           ]

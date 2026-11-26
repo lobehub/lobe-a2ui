@@ -1,6 +1,3 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -12,6 +9,7 @@ import {
   BASIC_CATALOG_DOCUMENT,
 } from './catalog';
 import { surfaceToText } from './fallback';
+import { loadExamples } from './prompt';
 import { validateSurface } from './validate';
 
 const report = [
@@ -19,14 +17,9 @@ const report = [
   {
     updateComponents: {
       components: [
-        {
-          child: 'col',
-          component: 'Card',
-          description: '3,214 requests',
-          id: 'root',
-          title: 'DC daily check',
-        },
-        { children: ['m', 'p1', 'go'], component: 'Column', id: 'col' },
+        { child: 'col', component: 'Card', id: 'root' },
+        { children: ['h', 'm', 'p1', 'go'], component: 'Column', id: 'col' },
+        { component: 'Text', id: 'h', text: '#### DC daily check' },
         { component: 'Metrics', id: 'm', items: { '@path': '/metrics' } },
         { component: 'Callout', id: 'p1', level: 'error', title: 'P1 · balance exhausted' },
         {
@@ -63,7 +56,7 @@ describe('validateSurface', () => {
       A2UI_CATALOG_ID,
     );
     expect(surfaceToText(result.record)).toBe(
-      'DC daily check · 3,214 requests · error-log 225 +62% · P1 · balance exhausted · Rotate key',
+      'DC daily check · error-log 225 +62% · P1 · balance exhausted · Rotate key',
     );
   });
 
@@ -146,7 +139,7 @@ describe('Chart', () => {
       {
         updateComponents: {
           components: [
-            { child: 'c', component: 'Card', id: 'root', title: 'Latency' },
+            { child: 'c', component: 'Card', id: 'root' },
             {
               categories: ['p95'],
               component: 'Chart',
@@ -169,7 +162,7 @@ describe('Chart', () => {
       { hour: '01', p95: 1.6 },
     ]);
     expect(result.ok).toBe(true);
-    expect(result.ok && surfaceToText(result.record)).toBe('Latency · Hourly P95');
+    expect(result.ok && surfaceToText(result.record)).toBe('Hourly P95');
   });
 
   it('refuses a chart with more rows than a picture can carry', () => {
@@ -179,11 +172,7 @@ describe('Chart', () => {
 });
 
 describe('official A2UI basic catalog', () => {
-  const dir = join(__dirname, '../test/fixtures/official-examples');
-  const examples = readdirSync(dir).map((file) => ({
-    file,
-    ...(JSON.parse(readFileSync(join(dir, file), 'utf8')) as { messages: unknown[] }),
-  }));
+  const examples = loadExamples(['basic']).map((example) => ({ ...example, file: example.id }));
 
   it('ships the basic catalog verbatim and keeps every official component, prop and function', () => {
     expect(BASIC_CATALOG_DOCUMENT.catalogId).toBe(
@@ -210,6 +199,8 @@ describe('official A2UI basic catalog', () => {
     );
     expect(A2UI_BASIC_COMPONENT_NAMES).toHaveLength(18);
   });
+
+  it('ships all 43 official examples', () => expect(examples).toHaveLength(43));
 
   it.each(examples.map((example) => [example.file, example]))(
     'accepts the official example %s',
@@ -269,6 +260,8 @@ describe('LobeHub extensions and safety', () => {
     ]);
     expect(wide.ok).toBe(false);
     const grid = surface([{ children: ['a'], columns: 6, component: 'Grid', id: 'root' }]);
+    const items = surface([{ component: 'Items', id: 'root', items: [], title: 'x' }]);
+    expect(!items.ok && items.errors[0]).toMatch(/Unknown component "Items"/);
     expect(grid.ok).toBe(false);
     const chart = surface([{ component: 'Chart', data: [], id: 'root', index: 'x', type: 'pie' }]);
     expect(chart.ok).toBe(false);
@@ -324,30 +317,23 @@ describe('LobeHub extensions and safety', () => {
     const ok = surface([
       { children: ['a', 'b', 'c', 'd', 'e'], component: 'Row', id: 'root' },
       { component: 'Icon', id: 'a', name: 'home' },
-      { component: 'Icon', id: 'b', name: 'trending-up', set: 'lucide' },
-      { component: 'Icon', id: 'c', name: 'TrendingUp', set: 'lucide' },
-      { component: 'Icon', id: 'd', name: 'github', set: 'simple' },
-      {
-        color: 'brand',
-        component: 'Icon',
-        id: 'e',
-        name: 'openai',
-        set: 'lobehub',
-        variant: 'avatar',
-      },
+      { component: 'Icon', id: 'b', name: 'lucide:trending-up' },
+      { component: 'Icon', id: 'c', name: 'lucide:TrendingUp' },
+      { component: 'Icon', id: 'd', name: 'simple:github' },
+      { component: 'Icon', id: 'e', name: 'lobehub:openai' },
     ]);
     expect(ok.ok ? [] : ok.errors).toEqual([]);
 
-    const unknown = surface([
-      { component: 'Icon', id: 'root', name: 'trending-upp', set: 'lucide' },
-    ]);
+    const unknown = surface([{ component: 'Icon', id: 'root', name: 'lucide:trending-upp' }]);
     expect(!unknown.ok && unknown.errors[0]).toMatch(
-      /No lucide icon named "trending-upp"\. Did you mean: .*trending-up/,
+      /No lucide icon named "trending-upp"\. Did you mean: .*lucide:trending-up/,
     );
     const basic = surface([{ component: 'Icon', id: 'root', name: 'rocket' }]);
     expect(!basic.ok && basic.errors[0]).toMatch(/not a basic icon name/);
-    const brand = surface([{ component: 'Icon', id: 'root', name: 'nosuchbrand', set: 'simple' }]);
+    const brand = surface([{ component: 'Icon', id: 'root', name: 'simple:nosuchbrand' }]);
     expect(brand.ok).toBe(false);
+    const extra = surface([{ component: 'Icon', id: 'root', name: 'home', set: 'lucide' }]);
+    expect(extra.ok).toBe(false);
     const svg = surface([
       { component: 'Icon', id: 'root', name: { svgPath: 'M0 0"/><script>alert(1)</script>' } },
     ]);

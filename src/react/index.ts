@@ -5,8 +5,6 @@ export {
   A2uiHostProvider,
   type A2uiLabels,
   a2uiLabels,
-  type A2uiStatusLabels,
-  DEFAULT_STATUS_LABELS,
   resolveA2uiLocale,
   useA2uiHost,
   useA2uiLabels,

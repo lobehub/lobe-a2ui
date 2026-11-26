@@ -89,19 +89,13 @@ const strings = (component: Component, model: Record<string, unknown>): string[]
     case 'Card': {
       return [...text(component.title), ...text(component.description)];
     }
-    case 'Callout': {
-      return [...text(component.title), ...text(component.body)];
-    }
     case 'Metrics': {
       return list(component.items).map((item) =>
         [item.label, item.value, item.delta].filter((part) => part !== undefined).join(' '),
       );
     }
-    case 'Items': {
-      return [
-        ...text(component.title),
-        ...list(component.items).map((item) => clean(String(item.title ?? ''))),
-      ];
+    case 'Callout': {
+      return [...text(component.title), ...text(component.body)];
     }
     case 'Table': {
       const keys = list(component.columns)
@@ -138,6 +132,21 @@ const strings = (component: Component, model: Record<string, unknown>): string[]
         ...list(component.items).map((item) => [...text(item.meta), ...text(item.title)].join(' ')),
       ];
     }
+    case 'Statistic': {
+      return [
+        [
+          ...text(component.label),
+          [component.prefix, component.value, component.suffix]
+            .map((part) => text(part)[0] ?? '')
+            .join(''),
+        ]
+          .filter(Boolean)
+          .join(' '),
+      ];
+    }
+    case 'Collapse': {
+      return [...text(component.title)];
+    }
     case 'Tabs': {
       return list(component.tabs).flatMap((tab) => text(tab.title));
     }
@@ -150,7 +159,6 @@ const strings = (component: Component, model: Record<string, unknown>): string[]
     }
     case 'Text':
     case 'Tag':
-    case 'Bars':
     case 'Chart': {
       return [...text(component.text), ...text(component.title)];
     }

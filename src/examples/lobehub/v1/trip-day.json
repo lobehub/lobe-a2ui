@@ -1,6 +1,6 @@
 {
   "name": "Trip Day",
-  "description": "A schedule: Steps carry the timeline, KeyValue the booking facts, Progress the budget; the root is a Column, not a fixed recipe.",
+  "description": "A schedule: Steps carry the timeline, KeyValue the booking facts, Progress the budget; a brand logo from Simple Icons heads it.",
   "messages": [
     {
       "version": "1.0",
@@ -22,15 +22,13 @@
           {
             "id": "header",
             "component": "Row",
-            "align": "center",
-            "children": ["logo", "title"]
+            "children": ["logo", "title"],
+            "align": "center"
           },
           {
             "id": "logo",
             "component": "Icon",
-            "set": "simple",
-            "name": "japanairlines",
-            "color": "brand"
+            "name": "simple:japanairlines"
           },
           {
             "id": "title",
@@ -77,7 +75,7 @@
           {
             "id": "budget",
             "component": "Progress",
-            "label": "Budget",
+            "label": "Budget used",
             "value": {
               "@path": "/spent"
             },
@@ -91,7 +89,7 @@
                 "currency": "JPY"
               }
             },
-            "tone": "good"
+            "tone": "success"
           }
         ]
       }

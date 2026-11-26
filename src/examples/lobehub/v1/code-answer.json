@@ -1,0 +1,53 @@
+{
+  "name": "Code Answer",
+  "description": "An answer with code: a short explanation, a Code block, and the details tucked into a Collapse.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "code-answer",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "code-answer",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "body"
+          },
+          {
+            "id": "body",
+            "component": "Column",
+            "children": ["lead", "code", "more"]
+          },
+          {
+            "id": "lead",
+            "component": "Text",
+            "text": "Debounce the search input so the API runs once the person stops typing:"
+          },
+          {
+            "id": "code",
+            "component": "Code",
+            "language": "ts",
+            "code": "const debounced = useDebounce(query, 300);\nuseEffect(() => {\n  if (debounced) search(debounced);\n}, [debounced]);"
+          },
+          {
+            "id": "more",
+            "component": "Collapse",
+            "title": "Why 300 ms?",
+            "child": "moreText"
+          },
+          {
+            "id": "moreText",
+            "component": "Text",
+            "text": "Long enough to skip intermediate keystrokes, short enough to feel instant. Tune it with real typing data."
+          }
+        ]
+      }
+    }
+  ]
+}

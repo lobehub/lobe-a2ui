@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildA2uiSystemPrompt, getA2uiSystemPrompt } from './prompt';
-import { A2UI_TOOL_NAME, A2UI_TOOL_PARAMETERS, runA2uiTool } from './tool';
+import { buildA2uiSystemPrompt, getA2uiSystemPrompt, runA2uiTool } from './processor';
+import { A2UI_TOOL_NAME, A2UI_TOOL_PARAMETERS } from './tool';
 
 describe('runA2uiTool', () => {
   it('stores a valid card and tells the model what it drew', () => {
@@ -10,8 +10,10 @@ describe('runA2uiTool', () => {
         {
           updateComponents: {
             components: [
-              { child: 'body', component: 'Card', id: 'root', title: 'Offsite plan' },
-              { component: 'Text', id: 'body', text: 'Hike and a camp dinner' },
+              { child: 'body', component: 'Card', id: 'root' },
+              { children: ['h', 'b'], component: 'Column', id: 'body' },
+              { component: 'Text', id: 'h', text: '#### Offsite plan' },
+              { component: 'Text', id: 'b', text: 'Hike and a camp dinner' },
             ],
             surfaceId: 'plan',
           },
@@ -53,14 +55,14 @@ describe('system prompt', () => {
     expect(prompt.startsWith('<a2ui_guide>')).toBe(true);
     expect(prompt.endsWith('</a2ui_guide>')).toBe(true);
     expect(prompt).toContain('A display card needs no buttons');
-    expect(prompt).toContain('call renderUI with A2UI 1.0 messages');
+    expect(prompt).toContain('call renderUI with A2UI messages');
     expect(prompt).toContain('---BEGIN A2UI JSON SCHEMA---');
     expect(getA2uiSystemPrompt()).toBe(prompt);
   });
 
   it('words delivery for a command instead of a tool', () => {
-    const prompt = buildA2uiSystemPrompt({ delivery: { command: 'lh card render' } });
-    expect(prompt).toContain('run `lh card render` with A2UI 1.0 messages');
+    const prompt = buildA2uiSystemPrompt({ delivery: 'cli' });
+    expect(prompt).toContain('run `lh card render` with A2UI messages');
     expect(prompt).toContain('a JSON array passed to `lh card render`');
     expect(prompt).not.toContain('renderUI');
   });

@@ -8,13 +8,14 @@ import { isHttpsUrl } from '../../url';
 import { ChartView } from './chart';
 import {
   AudioPlayerView,
-  BarsView,
+  AvatarView,
   CalloutView,
+  CodeView,
   ImageView,
-  ItemsView,
   KeyValueView,
   MetricsView,
   ProgressView,
+  StatisticView,
   StepsView,
   TableView,
   TagView,
@@ -32,6 +33,7 @@ import {
 } from './input';
 import {
   CardView,
+  CollapseView,
   ColumnView,
   DividerView,
   GridView,
@@ -65,17 +67,19 @@ export const LOBE_COMPONENTS = [
   SliderView,
   DateTimeInputView,
   // LobeHub extensions
-  TagView,
-  MetricsView,
-  CalloutView,
-  ItemsView,
-  BarsView,
-  ChartView,
+  StatisticView,
   TableView,
   KeyValueView,
   ProgressView,
   StepsView,
+  TagView,
+  CalloutView,
+  AvatarView,
+  CodeView,
+  CollapseView,
   GridView,
+  MetricsView,
+  ChartView,
 ];
 
 /**

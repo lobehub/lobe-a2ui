@@ -19,11 +19,18 @@ export interface A2uiSurfaceRecord {
   version: string;
 }
 
-/** What a person did on a surface: the button's event name and the data model it carried. */
+/**
+ * What a person did on a surface: the official A2UI renderer-to-agent `action`, with the event's
+ * name, its context after resolving bindings, and the optional `userMessage` the Agent wrote.
+ */
 export interface A2uiActionPayload {
   context?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   name: string;
+  sourceComponentId?: string;
   surfaceId: string;
+  timestamp?: string;
+  userMessage?: string;
 }
 
 /** A surface's lifecycle once drawn. Submitted surfaces turn read-only. */

@@ -1,6 +1,4 @@
-import { surfaceToText } from './fallback';
 import type { A2uiSurfaceRecord } from './types';
-import { validateSurface } from './validate';
 
 /**
  * The card tool's contract, for any host that exposes it to a model: its name, description and
@@ -51,24 +49,3 @@ export type A2uiToolResult =
       error: { body: { errors: string[] }; message: string; type: 'InvalidSurface' };
       success: false;
     };
-
-/**
- * Runs the card tool: validates the messages and returns the surface to store with a summary for
- * the model, or the errors the model must fix before calling again.
- */
-export const runA2uiTool = (params: A2uiToolParams | undefined): A2uiToolResult => {
-  const result = validateSurface(params?.operations);
-  if (!result.ok) {
-    const message = `The card was not drawn. Fix these and call ${A2UI_TOOL_NAME} again:\n- ${result.errors.join('\n- ')}`;
-    return {
-      content: message,
-      error: { body: { errors: result.errors }, message, type: 'InvalidSurface' },
-      success: false,
-    };
-  }
-  return {
-    content: `Card drawn and shown to the user: ${surfaceToText(result.record, { max: 300 }) || result.record.surfaceId}. Do not repeat its content in text.`,
-    state: { surface: result.record },
-    success: true,
-  };
-};

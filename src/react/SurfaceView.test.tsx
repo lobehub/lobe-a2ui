@@ -1,16 +1,13 @@
 /**
  * @vitest-environment happy-dom
  */
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
 import { ConfigProvider } from '@lobehub/ui';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { A2UI_PROMPT_EXAMPLES } from '../prompt';
+import { loadExamples } from '../prompt';
 import { validateSurface } from '../validate';
 import { A2uiIcon } from './components';
 import { A2uiHostProvider, resolveA2uiLocale } from './host';
@@ -28,9 +25,11 @@ const record = () => {
     {
       updateComponents: {
         components: [
-          { badge: 'tag', child: 'col', component: 'Card', id: 'root', title: 'Offsite' },
+          { child: 'col', component: 'Card', id: 'root' },
+          { children: ['head', 'metrics', 'go'], component: 'Column', id: 'col' },
+          { children: ['title', 'tag'], component: 'Row', id: 'head' },
+          { component: 'Text', id: 'title', text: 'Offsite' },
           { component: 'Tag', id: 'tag', text: 'Best match' },
-          { children: ['metrics', 'go'], component: 'Column', id: 'col' },
           { component: 'Metrics', id: 'metrics', items: { '@path': '/metrics' } },
           {
             action: { event: { context: { people: { '@path': '/people' } }, name: 'book' } },
@@ -75,11 +74,9 @@ describe('SurfaceView', () => {
 
     fireEvent.click(screen.getByText('Book it'));
     await vi.waitFor(() =>
-      expect(onAction).toHaveBeenCalledWith({
-        context: { people: 18 },
-        name: 'book',
-        surfaceId: 'plan',
-      }),
+      expect(onAction).toHaveBeenCalledWith(
+        expect.objectContaining({ context: { people: 18 }, name: 'book', surfaceId: 'plan' }),
+      ),
     );
   });
 
@@ -95,9 +92,8 @@ describe('SurfaceView', () => {
 });
 
 describe('every component', () => {
-  const dir = join(__dirname, '../../test/fixtures/official-examples');
-  const examples = readdirSync(dir).map(
-    (file) => [file, JSON.parse(readFileSync(join(dir, file), 'utf8')).messages] as const,
+  const examples = loadExamples(['basic']).map(
+    (example) => [example.id, example.messages] as const,
   );
 
   it.each(examples)('draws the official example %s', async (_, messages) => {
@@ -109,17 +105,20 @@ describe('every component', () => {
     expect(container.textContent?.length).toBeGreaterThan(0);
   });
 
-  it.each(A2UI_PROMPT_EXAMPLES.map((example) => [example.name, example.messages] as const))(
-    'draws the prompt example %s',
-    async (name, messages) => {
+  it.each(loadExamples(['lobehub']).map((example) => [example.id, example.messages] as const))(
+    'draws the LobeHub example %s',
+    async (id, messages) => {
       const result = validateSurface(messages);
       if (!result.ok) throw new Error(result.errors.join());
-      render(<SurfaceView record={result.record} />, { wrapper });
-      if (name === 'Plan Comparison') {
-        expect(await screen.findByText('Pro is the better fit for 14 seats')).toBeTruthy();
+      const { container } = render(<SurfaceView record={result.record} />, { wrapper });
+      await vi.waitFor(() =>
+        expect(container.querySelector('.lobe-dashboard-surface')).toBeTruthy(),
+      );
+      if (id === 'plan-comparison') {
+        expect(await screen.findByText('Pro fits a 14-person team best')).toBeTruthy();
         expect(screen.getByText('$19')).toBeTruthy();
       }
-      if (name === 'Trip Day') {
+      if (id === 'trip-day') {
         expect(await screen.findByText('teamLab Planets')).toBeTruthy();
         expect(screen.getByText('Hotel')).toBeTruthy();
       }
@@ -130,9 +129,9 @@ describe('every component', () => {
     const { container } = render(
       <>
         <A2uiIcon name="home" />
-        <A2uiIcon name="trending-up" set="lucide" />
-        <A2uiIcon name="github" set="simple" />
-        <A2uiIcon name="openai" set="lobehub" />
+        <A2uiIcon name="lucide:trending-up" />
+        <A2uiIcon name="simple:github" />
+        <A2uiIcon name="lobehub:openai" />
       </>,
       { wrapper },
     );
@@ -168,17 +167,19 @@ describe('text safety', () => {
 });
 
 describe('host', () => {
-  const items = () => {
+  const form = () => {
     const result = validateSurface([
       {
         updateComponents: {
           components: [
-            { children: ['items', 'go'], component: 'Column', id: 'root' },
+            { children: ['table', 'pick', 'go'], component: 'Column', id: 'root' },
+            { columns: [{ key: 'a', label: 'A' }], component: 'Table', id: 'table', rows: [] },
             {
-              component: 'Items',
-              id: 'items',
-              items: [{ status: 'human', title: 'Approve' }],
-              title: 'Todo',
+              component: 'ChoicePicker',
+              filterable: true,
+              id: 'pick',
+              options: [{ label: 'One', value: '1' }],
+              value: { '@path': '/pick' },
             },
             { action: { event: { name: 'ok' } }, child: 'goL', component: 'Button', id: 'go' },
             { component: 'Text', id: 'goL', text: 'Approve now' },
@@ -192,46 +193,46 @@ describe('host', () => {
     return result.record;
   };
 
-  it('shows built-in labels in the host locale, with overrides', async () => {
+  it('shows the package-owned chrome in the host locale, with overrides', async () => {
     const { unmount } = render(
       <A2uiHostProvider value={{ canAct: false, locale: 'zh-TW', sendAction: vi.fn() }}>
-        <SurfaceList surfaces={[items()]} />
+        <SurfaceList surfaces={[form()]} />
       </A2uiHostProvider>,
       { wrapper },
     );
-    expect(await screen.findByText('需人工')).toBeTruthy();
+    expect(await screen.findByPlaceholderText('筛选')).toBeTruthy();
     unmount();
     render(
       <A2uiHostProvider
-        value={{ canAct: false, labels: { status: { human: 'You' } }, sendAction: vi.fn() }}
+        value={{ canAct: false, labels: { filter: 'Search' }, sendAction: vi.fn() }}
       >
-        <SurfaceList surfaces={[items()]} />
+        <SurfaceList surfaces={[form()]} />
       </A2uiHostProvider>,
       { wrapper },
     );
-    expect(await screen.findByText('You')).toBeTruthy();
+    expect(await screen.findByPlaceholderText('Search')).toBeTruthy();
   });
 
   it('sends actions through the host and turns the surface read-only once accepted', async () => {
-    const sendAction = vi.fn(async () => true);
+    const sendAction = vi.fn(async (_action: unknown) => true);
     const { container } = render(
       <A2uiHostProvider value={{ canAct: true, sendAction }}>
-        <SurfaceList surfaces={[items()]} />
+        <SurfaceList surfaces={[form()]} />
       </A2uiHostProvider>,
       { wrapper },
     );
     fireEvent.click(await screen.findByText('Approve now'));
     await vi.waitFor(() => expect(sendAction).toHaveBeenCalledTimes(1));
+    expect(sendAction.mock.calls[0][0]).toMatchObject({ name: 'ok', sourceComponentId: 'go' });
     await vi.waitFor(() => expect(container.querySelector('[aria-disabled="true"]')).toBeTruthy());
     fireEvent.click(screen.getByText('Approve now'));
     expect(sendAction).toHaveBeenCalledTimes(1);
   });
 
   it('starts read-only when the stored record says it was submitted', async () => {
-    const sendAction = vi.fn(async () => true);
     const { container } = render(
-      <A2uiHostProvider value={{ canAct: true, sendAction }}>
-        <SurfaceList surfaces={[{ ...items(), state: { status: 'submitted' } }]} />
+      <A2uiHostProvider value={{ canAct: true, sendAction: vi.fn(async () => true) }}>
+        <SurfaceList surfaces={[{ ...form(), state: { status: 'submitted' } }]} />
       </A2uiHostProvider>,
       { wrapper },
     );
