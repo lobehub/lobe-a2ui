@@ -2,6 +2,12 @@
 
 # Changelog
 
+## [1.1.1](https://github.com/lobehub/lobe-a2ui/compare/v1.1.0...v1.1.1) (2026-11-26)
+
+### ⚡ Performance Improvements
+
+- Draw icons from CDN SVGs and ship light entry points, closes [#3](https://github.com/lobehub/lobe-a2ui/issues/3) ([8d88ef1](https://github.com/lobehub/lobe-a2ui/commit/8d88ef1))
+
 # [1.1.0](https://github.com/lobehub/lobe-a2ui/compare/v1.0.1...v1.1.0) (2026-11-26)
 
 ### ✨ Features
