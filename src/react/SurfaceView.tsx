@@ -3,7 +3,7 @@ import { MessageProcessor } from '@a2ui/web_core';
 import { Catalog } from '@a2ui/web_core/v1_0';
 import { createStaticStyles, cx, Flexbox, Text } from '@lobehub/ui';
 import { Surface } from '@lobehub/ui/dashboard';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import { A2UI_CATALOG_ID, A2UI_VERSION } from '../constants';
 import type { A2uiActionPayload, A2uiSurfaceRecord, A2uiSurfaceState } from '../types';
@@ -113,13 +113,24 @@ SurfaceView.displayName = 'A2uiSurfaceView';
 export const HostedSurface = memo<{ record: A2uiSurfaceRecord }>(({ record }) => {
   const host = useA2uiHost();
   const [local, setLocal] = useState<A2uiSurfaceState>();
+  // Set synchronously, so a second click while the first is sending, or before the surface
+  // re-renders read-only, sends nothing; cleared if the host refused, so the person can retry.
+  const busy = useRef(false);
   const state = local ?? record.state;
   const open = state?.status !== 'submitted';
   const onAction = useMemo(
     () =>
       host?.canAct && open
         ? async (action: A2uiActionPayload) => {
-            if (await host.sendAction(action, record))
+            if (busy.current) return;
+            busy.current = true;
+            let accepted = false;
+            try {
+              accepted = await host.sendAction(action, record);
+            } finally {
+              busy.current = accepted;
+            }
+            if (accepted)
               setLocal({ action, status: 'submitted', submittedAt: new Date().toISOString() });
           }
         : undefined,

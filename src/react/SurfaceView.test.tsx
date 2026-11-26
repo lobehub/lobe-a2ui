@@ -235,6 +235,24 @@ describe('host', () => {
     expect(sendAction).toHaveBeenCalledTimes(1);
   });
 
+  it('sends one action when a button is clicked twice before the host answers', async () => {
+    let accept: (value: boolean) => void = () => {};
+    const sendAction = vi.fn(() => new Promise<boolean>((resolve) => (accept = resolve)));
+    render(
+      <A2uiHostProvider value={{ canAct: true, sendAction }}>
+        <SurfaceList surfaces={[form()]} />
+      </A2uiHostProvider>,
+      { wrapper },
+    );
+    const button = await screen.findByText('Approve now');
+    fireEvent.click(button);
+    fireEvent.click(button);
+    await vi.waitFor(() => expect(sendAction).toHaveBeenCalledTimes(1));
+    accept(true);
+    fireEvent.click(button);
+    expect(sendAction).toHaveBeenCalledTimes(1);
+  });
+
   it('starts read-only when the stored record says it was submitted', async () => {
     const { container } = render(
       <A2uiHostProvider value={{ canAct: true, sendAction: vi.fn(async () => true) }}>
