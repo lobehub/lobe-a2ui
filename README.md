@@ -18,7 +18,7 @@ The root entry has no React dependency, so a server validates, stores and prompt
 The catalog is two A2UI catalog documents (JSON Schema, with the descriptions a model reads), merged:
 
 - `src/schema/basic_catalog.json`: the official A2UI 1.0 basic catalog, verbatim from google/A2UI `catalogs/basic/v1/catalog.json`.
-- `src/schema/lobehub_catalog.json`: LobeHub's extension catalog in the same format: neutral building blocks, and Icon names that also reach three icon sets. Every official component and prop stays as the basic catalog defines it.
+- `src/schema/lobehub_catalog.json`: LobeHub's extension catalog in the same format: neutral building blocks, and Icon names that also reach a bundled set of Lucide icons. Every official component and prop stays as the basic catalog defines it.
 
 Validation, rendering and the prompt all read the merged document (`A2UI_CATALOG_DOCUMENT`): web_core derives each component's validator from its JSON Schema (`Catalog.fromJson`), so the server checks exactly what the renderer reads, and the prompt shows the same schema.
 
@@ -26,27 +26,27 @@ Any component may be the root. `SurfaceView` frames the surface in a `Surface` c
 
 ### Official basic catalog coverage
 
-| Component     | Props                                                                                                   | Drawn with (`@lobehub/ui` unless noted)                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Text          | `text`, `variant` (`body`, `caption`), `weight`                                                         | `Markdown`; a one-line `#`–`#####` heading as `Text` at heading size; caption as small secondary `Text`                       |
-| Image         | `url`, `description`, `fit` (all 5), `variant` (all 6), `weight`                                        | `Image`: icon 24, avatar 40 round, smallFeature 100, mediumFeature ≤ 300 high, largeFeature ≤ 400 high, header 200 high cover |
-| Icon          | `name` (all 59 basic names, `svgPath`, binding), `weight`                                               | Lucide icon of the same meaning (lazy); `svgPath` as a 24-box SVG path                                                        |
-| Video         | `url`, `posterUrl`, `weight`                                                                            | `Video` with controls, full width                                                                                             |
-| AudioPlayer   | `url`, `description`, `weight`                                                                          | native `<audio controls>`, full width, description above                                                                      |
-| Row           | `children` (list or template), `justify` (all 7), `align` (all 4), `weight`                             | `Flexbox horizontal`, wraps                                                                                                   |
-| Column        | `children`, `justify`, `align`, `weight`                                                                | `Flexbox`                                                                                                                     |
-| List          | `children`, `direction` (`vertical`, `horizontal`), `align`, `weight`                                   | scrolling `Flexbox`; horizontal hides the scrollbar and caps child width                                                      |
-| Card          | `child`, `weight` (+ LobeHub `title`, `description`, `badge`)                                           | dashboard `Surface` (header from `Surface` heading); nested cards draw as inner outlines                                      |
-| Tabs          | `tabs[{title, child}]`, `weight`                                                                        | `Tabs`, only the active child drawn                                                                                           |
-| Modal         | `trigger`, `content`, `weight`                                                                          | trigger inline; `Modal` with close on cancel                                                                                  |
-| Divider       | `axis` (`horizontal`, `vertical`), `weight`                                                             | `Divider`; vertical as a 1px rule                                                                                             |
-| Button        | `child`, `variant` (`default`, `primary`, `borderless`), `action`, `@checks`, `weight`                  | `Button`: primary → `primary`, default → `fill`, borderless → `text`; disabled while checks fail                              |
-| TextField     | `label`, `value`, `placeholder`, `variant` (all 4), `@checks`, `weight`                                 | `Input` / `TextArea` (longText) / password (obscured) / number; check messages under the field                                |
-| CheckBox      | `label`, `value`, `@checks`, `weight`                                                                   | `Checkbox`                                                                                                                    |
-| ChoicePicker  | `label`, `options`, `value`, `variant` (both), `displayStyle` (both), `filterable`, `@checks`, `weight` | checkbox list (multiple), `RadioGroup` (exclusive), chips as round `Button`s; filterable adds an `Input` filter               |
-| Slider        | `label`, `min`, `max`, `value`, `steps`, `@checks`, `weight`                                            | `Slider` with the current value                                                                                               |
-| DateTimeInput | `label`, `value`, `enableDate`, `enableTime`, `min`, `max`, `@checks`, `weight`                         | `Input` of type date / time / datetime-local; values read and written as ISO 8601                                             |
-| (all)         | `accessibility` (`label`, `description`)                                                                | set by web_core on each component's element                                                                                   |
+| Component     | Props                                                                                                   | Drawn with (`@lobehub/ui` unless noted)                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Text          | `text`, `variant` (`body`, `caption`), `weight`                                                         | `Markdown`; a one-line `#`–`#####` heading as `Text` at heading size; caption as small secondary `Text` with inline `code` and **bold** |
+| Image         | `url`, `description`, `fit` (all 5), `variant` (all 6), `weight`                                        | `Image`: icon 24, avatar 40 round, smallFeature 100, mediumFeature ≤ 300 high, largeFeature ≤ 400 high, header 200 high cover           |
+| Icon          | `name` (all 59 basic names, `svgPath`, binding), `weight`                                               | Lucide icon of the same meaning (bundled, one lazy chunk); `svgPath` as a 24-box SVG path                                               |
+| Video         | `url`, `posterUrl`, `weight`                                                                            | `Video` with controls, full width                                                                                                       |
+| AudioPlayer   | `url`, `description`, `weight`                                                                          | native `<audio controls>`, full width, description above                                                                                |
+| Row           | `children` (list or template), `justify` (all 7), `align` (all 4), `weight`                             | `Flexbox horizontal`, wraps                                                                                                             |
+| Column        | `children`, `justify`, `align`, `weight`                                                                | `Flexbox`                                                                                                                               |
+| List          | `children`, `direction` (`vertical`, `horizontal`), `align`, `weight`                                   | scrolling `Flexbox`; horizontal hides the scrollbar and caps child width                                                                |
+| Card          | `child`, `weight` (+ LobeHub `title`, `description`, `badge`)                                           | dashboard `Surface` (header from `Surface` heading); nested cards draw as filled tiles, no border                                       |
+| Tabs          | `tabs[{title, child}]`, `weight`                                                                        | `Tabs`, only the active child drawn                                                                                                     |
+| Modal         | `trigger`, `content`, `weight`                                                                          | trigger inline; `Modal` with close on cancel                                                                                            |
+| Divider       | `axis` (`horizontal`, `vertical`), `weight`                                                             | `Divider`; vertical as a 1px rule                                                                                                       |
+| Button        | `child`, `variant` (`default`, `primary`, `borderless`), `action`, `@checks`, `weight`                  | `Button`: primary → `primary`, default → `fill`, borderless → `text`; disabled while checks fail                                        |
+| TextField     | `label`, `value`, `placeholder`, `variant` (all 4), `@checks`, `weight`                                 | `Input` / `TextArea` (longText) / password (obscured) / number; check messages under the field                                          |
+| CheckBox      | `label`, `value`, `@checks`, `weight`                                                                   | `Checkbox`                                                                                                                              |
+| ChoicePicker  | `label`, `options`, `value`, `variant` (both), `displayStyle` (both), `filterable`, `@checks`, `weight` | checkbox list (multiple), `RadioGroup` (exclusive), chips as round `Button`s; filterable adds an `Input` filter                         |
+| Slider        | `label`, `min`, `max`, `value`, `steps`, `@checks`, `weight`                                            | `Slider` with the current value                                                                                                         |
+| DateTimeInput | `label`, `value`, `enableDate`, `enableTime`, `min`, `max`, `@checks`, `weight`                         | `Input` of type date / time / datetime-local; values read and written as ISO 8601                                                       |
+| (all)         | `accessibility` (`label`, `description`)                                                                | set by web_core on each component's element                                                                                             |
 
 | Function                                                                    | Implementation                                                                |
 | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
@@ -76,7 +76,7 @@ All 43 official examples (`src/examples/basic/v1`, from `catalogs/basic/v1/examp
 | `Code`      | `Highlighter`           | `code`, `language`                                                                                                                                                                           |
 | `Collapse`  | `Accordion`             | `title`, `child`, `defaultOpen`                                                                                                                                                              |
 | `Grid`      | `Grid`                  | `children` (≤ 12), `columns` (2–4, stack when narrow)                                                                                                                                        |
-| `Icon`      | basic Icon, plus sets   | `name` also takes `lucide:<name>`, `simple:<brand>`, `lobehub:<provider>`                                                                                                                    |
+| `Icon`      | basic Icon, plus sets   | `name` also takes `lucide:<name>` from the bundled set                                                                                                                                       |
 
 ### Examples
 
@@ -84,15 +84,13 @@ Like google/A2UI's `catalogs/<name>/<version>/examples`, every catalog ships com
 
 ### Icons
 
-`Icon.name` keeps the basic names and adds three sets with a prefix:
+`Icon.name` keeps the 59 basic names and adds `lucide:<name>` (kebab-case, `lucide:trending-up`) from a fixed set of about 210 Lucide icons listed in `src/icons/names.ts`. The set ships inside the renderer (`src/react/icons/lucide.ts`, imported from `lucide-react`, a peer) as one lazy chunk that loads the first time a card shows an icon: no icon is fetched from a CDN, and hosts that never draw one don't load it. It is about 20 KB gzipped.
 
-| Prefix     | Names                                           | Package                          |
-| ---------- | ----------------------------------------------- | -------------------------------- |
-| `lucide:`  | Lucide names, kebab-case (`lucide:trending-up`) | `lucide-react` (peer)            |
-| `simple:`  | Simple Icons brand slugs (`simple:github`)      | `@icons-pack/react-simple-icons` |
-| `lobehub:` | AI providers and models (`lobehub:OpenAI`)      | `@lobehub/icons` (peer)          |
+Icons are muted line icons in the secondary text colour, an accent beside a heading or label. There are no brand logos. Names outside the set fail validation with close suggestions; stored cards that name one draw nothing in its place instead of an empty gap. To add an icon, add its name to `names.ts` and its import to `lucide.ts`; a test keeps the two in step.
 
-Icons inherit the text colour. Unknown names fail validation with close suggestions. Nothing is bundled eagerly: each set's name → loader table is a lazy chunk and each icon its own chunk. The name lists the validator checks (`src/icons/names.ts`) and the loader tables are generated from the installed packages by `node scripts/icons.mjs`.
+### Chart colours
+
+Series take four colours in a fixed order, a step per theme: blue, orange, aqua, yellow (light `#2a78d6 #eb6834 #1baf7a #eda100`, dark `#3987e5 #d95926 #199e70 #c98500`). Neighbours stay apart for colour-blind readers, and charts with more than one series keep their legend. Bars leave a third of each slot empty; a tracker with up to 60 blocks fills the card's width as a slim bar.
 
 ### Safety
 
@@ -140,12 +138,12 @@ The full schema and the smallest examples of a component are read on demand with
 
 A host keeps only what is its own: where an action goes, whether this person may act, and the reader's language.
 
-| Need               | Export                                                                                                                           |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Need               | Export                                                                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Prompt, tool, run  | `createA2uiProcessor` / `getA2uiProcessor`, `getA2uiSystemPrompt`, `runA2uiTool`, `runA2uiDocsTool`, `A2UI_TOOL_*`, `A2UI_DOCS_TOOL_*` |
-| Stored surfaces    | `A2uiSurfaceRecord` (with optional `state`), `toSurfaceRecords`, `isA2uiToolResult`, `surfacesFromToolResults`, `surfacesToText` |
-| Actions            | `actionToMessage` (official renderer-to-agent `action`, readable line from `userMessage`), `parseActionMessage`                  |
-| Drawing (`/react`) | `A2uiHostProvider` with `{ canAct, sendAction, locale, labels? }`; `SurfaceList` / `HostedSurface` handle submission             |
+| Stored surfaces    | `A2uiSurfaceRecord` (with optional `state`), `toSurfaceRecords`, `isA2uiToolResult`, `surfacesFromToolResults`, `surfacesToText`       |
+| Actions            | `actionToMessage` (official renderer-to-agent `action`, readable line from `userMessage`), `parseActionMessage`                        |
+| Drawing (`/react`) | `A2uiHostProvider` with `{ canAct, sendAction, locale, labels? }`; `SurfaceList` / `HostedSurface` handle submission                   |
 
 Package-owned words are only interface chrome (a filterable choice list's placeholder, an empty table), in en-US and zh-CN, picked by `locale`, which also formats numbers and dates.
 
@@ -157,7 +155,7 @@ import { A2uiHostProvider, SurfaceList } from '@lobehub/a2ui/react';
 </A2uiHostProvider>;
 ```
 
-`@lobehub/ui`, `@lobehub/charts`, `@lobehub/icons`, `lucide-react`, `react` and `react-dom` are peer dependencies.
+`@lobehub/ui`, `@lobehub/charts`, `lucide-react`, `react` and `react-dom` are peer dependencies.
 
 ## License
 

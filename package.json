@@ -83,7 +83,6 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@lobehub/charts": "^6.0.1",
-    "@lobehub/icons-static-svg": "1.106.0",
     "@lobehub/lint": "^2.1.6",
     "@lobehub/ui": "^6.21.0",
     "@testing-library/react": "^16.3.3",
@@ -96,7 +95,7 @@
     "happy-dom": "^20.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "lucide-static": "1.80.0",
+    "lucide-react": "^1.80.0",
     "motion": "^14.14.0",
     "prettier": "^3.9.10",
     "react": "^19.3.0",
@@ -104,7 +103,6 @@
     "remark": "^15.0.1",
     "remark-cli": "^12.0.1",
     "semantic-release": "^21.1.2",
-    "simple-icons": "16.38.1",
     "tsdown": "^0.23.1",
     "typescript": "^5.9.3",
     "vitest": "~1.2.2"
@@ -112,6 +110,7 @@
   "peerDependencies": {
     "@lobehub/charts": "^6.0.0",
     "@lobehub/ui": "^6.21.0",
+    "lucide-react": "^1.55.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

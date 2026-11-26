@@ -13,6 +13,7 @@ export {
   ICON_SETS,
   iconError,
   iconNames,
+  LUCIDE_NAMES,
   normalizeIconName,
   parseIconName,
 } from './icons';

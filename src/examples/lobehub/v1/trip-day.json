@@ -28,7 +28,7 @@
           {
             "id": "logo",
             "component": "Icon",
-            "name": "simple:japanairlines"
+            "name": "lucide:plane"
           },
           {
             "id": "title",

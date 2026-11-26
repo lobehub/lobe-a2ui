@@ -3,18 +3,18 @@
   "$id": "https://lobehub.com/a2ui/catalog/lobehub.json",
   "protocolVersion": "1.0",
   "title": "LobeHub A2UI Extensions",
-  "description": "LobeHub's extensions on top of the A2UI basic catalog: neutral building blocks drawn with @lobehub/ui and @lobehub/charts. Every word shown comes from the Agent; props only set data, tone, size and layout. Icon names also reach the Lucide, Simple Icons and LobeHub Icons sets.",
+  "description": "LobeHub's extensions on top of the A2UI basic catalog: neutral building blocks drawn with @lobehub/ui and @lobehub/charts. Every word shown comes from the Agent; props only set data, tone, size and layout. Icon names also reach a bundled set of Lucide icons.",
   "catalogId": "https://lobehub.com/a2ui/catalog/v1",
   "components": {
     "Icon": {
       "type": "object",
-      "description": "An icon by a basic name, or from a larger set as '<set>:<name>': 'lucide:rocket', 'simple:github' (brand logos), 'lobehub:openai' (AI providers and models).",
+      "description": "A small muted line icon by a basic name, or a Lucide icon as 'lucide:<name>' (e.g. 'lucide:rocket'). An accent beside a heading or label, never the content itself; no brand logos.",
       "properties": {
         "component": {
           "const": "Icon"
         },
         "name": {
-          "description": "The name of the icon to display: a basic name, '<set>:<name>' from the lucide, simple or lobehub set, or an svgPath.",
+          "description": "The name of the icon to display: a basic name, 'lucide:<name>', or an svgPath.",
           "anyOf": [
             {
               "type": "string",
@@ -82,8 +82,8 @@
             },
             {
               "type": "string",
-              "pattern": "^(lucide|simple|lobehub):[A-Za-z0-9][A-Za-z0-9._-]*$",
-              "description": "An icon from a larger set, written '<set>:<name>': 'lucide:<Lucide name in kebab-case>' (e.g. 'lucide:trending-up'), 'simple:<Simple Icons brand slug>' (e.g. 'simple:github'), 'lobehub:<AI provider or model id>' (e.g. 'lobehub:OpenAI'). Unknown names are rejected."
+              "pattern": "^lucide:[A-Za-z0-9][A-Za-z0-9._-]*$",
+              "description": "A Lucide icon, written 'lucide:<name>'. Only these names are bundled; others are rejected: activity alarm-clock archive arrow-down arrow-down-right arrow-left arrow-right arrow-up arrow-up-right award badge-check ban battery bell bell-off book book-open bookmark bot box brain briefcase bug building building-2 cake calculator calendar calendar-check calendar-days camera car chart-area chart-bar chart-column chart-line chart-pie check check-check chevron-right circle circle-alert circle-check circle-dot circle-help circle-pause circle-play circle-user-round circle-x clipboard-list clock cloud cloud-rain cloud-sun code coffee coins compass copy cpu credit-card crown database dollar-sign download droplet ellipsis ellipsis-vertical eye eye-off fast-forward file file-text film filter fingerprint-pattern flag flame flask-conical folder gauge gift git-branch git-commit-horizontal git-merge git-pull-request git-pull-request-arrow globe graduation-cap hammer hand-heart hard-drive hash headphones heart heart-off heart-pulse history hourglass house image inbox info key keyboard languages laptop layers layout-dashboard leaf lightbulb link list list-checks list-todo loader lock lock-open log-in mail map map-pin medal megaphone menu message-circle message-square mic monitor moon mountain music newspaper package palette paperclip pause pencil percent phone phone-call piggy-bank pin plane play plug plus printer puzzle receipt refresh-cw repeat rewind rocket rss save scale school search send server settings share-2 shield shield-alert shield-check shopping-bag shopping-cart skip-back skip-forward smartphone smile sparkles square star star-half star-off store sun tag target terminal thermometer thumbs-down thumbs-up ticket timer trash-2 tree-pine trending-down trending-up triangle-alert trophy truck tv umbrella upload user-round users utensils video volume-1 volume-2 volume-off volume-x wallet wand-sparkles wifi wind workflow wrench x zap"
             },
             {
               "type": "object",
@@ -485,7 +485,7 @@
         },
         "icon": {
           "type": "string",
-          "description": "Optional Icon name shown before the text (a basic name or '<set>:<name>')."
+          "description": "Optional Icon name shown before the text (a basic name or 'lucide:<name>')."
         },
         "weight": {
           "$ref": "#/$defs/Weight"

@@ -9,6 +9,7 @@ import { A2UI_CATALOG_ID, A2UI_VERSION } from '../constants';
 import { upgradeLegacyOperations } from '../legacy';
 import type { A2uiActionPayload, A2uiSurfaceRecord, A2uiSurfaceState } from '../types';
 import { createLobeFunctions, LOBE_COMPONENTS } from './components';
+import { CardDepthContext } from './components/shared';
 import { useA2uiHost } from './host';
 
 /** One rendering catalog per locale: formatNumber, formatDate and the rest read it. */
@@ -98,7 +99,9 @@ export const SurfaceView = memo<SurfaceViewProps>(({ record, state, onAction }) 
         <A2uiSurface surface={surface as never} />
       ) : (
         <Surface padded>
-          <A2uiSurface surface={surface as never} />
+          <CardDepthContext value={1}>
+            <A2uiSurface surface={surface as never} />
+          </CardDepthContext>
         </Surface>
       )}
     </div>

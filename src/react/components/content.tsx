@@ -15,7 +15,7 @@ import {
   Video,
 } from '@lobehub/ui';
 import { type MetricItem, MetricStrip } from '@lobehub/ui/dashboard';
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
 import { useA2uiLabels } from '../host';
@@ -39,6 +39,31 @@ const STEP_STATUSES = ['current', 'done', 'error', 'todo'] as const;
 const HEADING = /^(#{1,6})\s+(\S[^\n]*)$/;
 const HEADING_SIZE = [24, 20, 18, 16, 14, 14];
 
+const INLINE = /(`[^`\n]+`|\*\*[^*\n]+\*\*)/g;
+
+/** A caption's inline Markdown: `code` and **bold**; anything else stays as written. */
+const inline = (text: string): ReactNode[] => {
+  let at = 0;
+  return text.split(INLINE).map((part) => {
+    // Keyed by where the part starts in the text: stable, and unique even when parts repeat.
+    const key = at;
+    at += part.length;
+    if (part.length > 2 && part.startsWith('`') && part.endsWith('`'))
+      return (
+        <code className={styles.code} key={key}>
+          {part.slice(1, -1)}
+        </code>
+      );
+    if (part.length > 4 && part.startsWith('**') && part.endsWith('**'))
+      return (
+        <Text as="strong" fontSize={12} key={key} weight={500}>
+          {part.slice(2, -2)}
+        </Text>
+      );
+    return part;
+  });
+};
+
 /** Markdown text; a one-line heading draws as a heading, a caption smaller and muted. */
 export const TextView = define('Text', ({ props }) => {
   const text = String(props.text ?? '');
@@ -51,8 +76,8 @@ export const TextView = define('Text', ({ props }) => {
     );
   if (props.variant === 'caption')
     return (
-      <Text as="div" fontSize={12} type="secondary">
-        {text}
+      <Text as="div" fontSize={12} style={{ lineHeight: 1.6 }} type="secondary">
+        {inline(text)}
       </Text>
     );
   // Auto width: stretched in a Column, its own width in a Row.
@@ -184,8 +209,14 @@ export const MetricsView = define('Metrics', ({ props }) => {
           direction: item.direction,
           hint: item.hint,
           label: item.label,
-          value: item.value,
-          valueTone: item.tone === 'bad' ? 'danger' : undefined,
+          // Good news is green; bad and warn take the strip's own tones.
+          value:
+            item.tone === 'good' ? (
+              <span style={{ color: TONE.good }}>{item.value}</span>
+            ) : (
+              item.value
+            ),
+          valueTone: item.tone === 'bad' ? 'danger' : item.tone === 'warn' ? 'warning' : undefined,
         }))}
       />
     </div>
@@ -350,7 +381,9 @@ export const StatisticView = define('Statistic', ({ props }) => (
 export const TagView = define('Tag', ({ props }) => (
   <Tag
     color={props.color === 'default' ? undefined : props.color}
-    icon={props.icon ? <A2uiIcon name={String(props.icon)} size={14} /> : undefined}
+    icon={
+      props.icon ? <A2uiIcon color="currentColor" name={String(props.icon)} size={12} /> : undefined
+    }
   >
     {String(props.text ?? '')}
   </Tag>

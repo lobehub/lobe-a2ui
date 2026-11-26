@@ -1,86 +1,72 @@
-import { genCdnUrl, useCdnFn } from '@lobehub/ui';
-import type { CSSProperties } from 'react';
-import { useState } from 'react';
+import { cssVar } from '@lobehub/ui';
+import { createElement, useEffect, useState } from 'react';
 
-import {
-  BASIC_ICON_TO_LUCIDE,
-  normalizeLucideName,
-  normalizeSimpleName,
-  parseIconName,
-} from '../../icons/basic';
-import { ICON_PACKAGES } from '../../icons/packages';
+import { iconNames } from '../../icons';
+import { BASIC_ICON_TO_LUCIDE, normalizeLucideName, parseIconName } from '../../icons/basic';
+import type { LUCIDE_ICONS } from '../icons/lucide';
 import { define } from './shared';
 
-type IconSet = 'lobehub' | 'lucide' | 'simple';
+type IconMap = typeof LUCIDE_ICONS;
 
 /**
- * Icons are fetched from the host's CDN as plain SVG (`ICON_PACKAGES`), so no icon is bundled: the
- * renderer adds no chunk per icon, and a card downloads only the icons it shows.
+ * The bundled Lucide icons load as one chunk the first time a card shows an icon: hosts that never
+ * draw one don't pay for them, and no icon is fetched from a CDN.
  */
-const PACKAGES = ICON_PACKAGES;
+let icons: IconMap | undefined;
+let loading: Promise<IconMap> | undefined;
+const loadIcons = () =>
+  (loading ??= import('../icons/lucide').then((module) => (icons = module.LUCIDE_ICONS)));
 
-const fileOf = (set: IconSet, name: string) =>
-  // LobeHub ids are PascalCase ('OpenAI'); their files are lowercase ('openai.svg').
-  set === 'lobehub' ? name.trim().toLowerCase() : name;
-
-type CdnFn = ReturnType<typeof useCdnFn>;
-
-const iconUrl = (cdn: CdnFn | undefined, set: IconSet, file: string) => {
-  const api = { ...PACKAGES[set], path: `icons/${file}.svg` };
-  return cdn ? cdn(api) : genCdnUrl(api);
+const useIcons = () => {
+  const [loaded, setLoaded] = useState(icons);
+  useEffect(() => {
+    if (!loaded) loadIcons().then(setLoaded, () => {});
+  }, [loaded]);
+  return loaded;
 };
 
-/** A single-colour icon that takes the text colour, as the basic catalog's guide asks. */
-const MaskIcon = ({ label, size, url }: { label: string; size: number; url: string }) => {
-  const mask = `url("${url}") center / contain no-repeat`;
-  const style: CSSProperties = {
-    WebkitMask: mask,
-    backgroundColor: 'currentColor',
-    display: 'inline-block',
-    flex: 'none',
-    height: size,
-    mask,
-    width: size,
-  };
-  return <span aria-label={label} role="img" style={style} />;
+/** The kebab-case Lucide name an Icon name stands for, or undefined if it isn't bundled. */
+const lucideKey = (name: string) => {
+  const parsed = parseIconName(name);
+  const key =
+    'basic' in parsed
+      ? (BASIC_ICON_TO_LUCIDE[parsed.basic] ?? normalizeLucideName(parsed.basic))
+      : normalizeLucideName(parsed.name);
+  return iconNames().has(key) ? key : undefined;
 };
 
 export interface A2uiIconProps {
-  /** A basic Icon name, or `<set>:<name>` (`lucide:rocket`, `simple:github`, `lobehub:OpenAI`). */
+  /** Overrides the muted text colour icons take by default. */
+  color?: string;
+  /** A basic Icon name, or `lucide:<name>` (`lucide:rocket`). */
   name: string;
   size?: number;
 }
 
 /**
- * One icon, drawn from its SVG on the CDN. Lucide and Simple Icons inherit the text colour; a
- * LobeHub brand icon shows its colour version when there is one, else the single-colour one.
+ * One icon from the bundled Lucide set. A name outside the set draws nothing rather than an empty
+ * gap; while the set loads, a known name holds its square so the line doesn't shift.
  */
-export const A2uiIcon = ({ name, size = 24 }: A2uiIconProps) => {
-  const cdn = useCdnFn() as CdnFn | undefined;
-  const [colorFailed, setColorFailed] = useState(false);
-  const parsed = parseIconName(name);
-  const set: IconSet = 'basic' in parsed ? 'lucide' : parsed.set;
-  const resolved =
-    'basic' in parsed
-      ? (BASIC_ICON_TO_LUCIDE[parsed.basic] ?? parsed.basic)
-      : set === 'simple'
-        ? normalizeSimpleName(parsed.name)
-        : set === 'lucide'
-          ? normalizeLucideName(parsed.name)
-          : parsed.name;
-  const file = fileOf(set, resolved);
-  if (set === 'lobehub' && !colorFailed)
+export const A2uiIcon = ({ color, name, size = 18 }: A2uiIconProps) => {
+  const loaded = useIcons();
+  const key = lucideKey(name);
+  if (!key) return null;
+  const Icon = loaded?.[key];
+  if (!Icon)
     return (
-      <img
-        alt={name}
-        height={size}
-        src={iconUrl(cdn, set, `${file}-color`)}
-        style={{ flex: 'none' }}
-        width={size}
-        onError={() => setColorFailed(true)}
+      <span
+        aria-hidden
+        style={{ display: 'inline-block', flex: 'none', height: size, width: size }}
       />
     );
-  return <MaskIcon label={name} size={size} url={iconUrl(cdn, set, file)} />;
+  // A lookup into a static map, not a component made during render.
+  return createElement(Icon, {
+    'aria-label': name,
+    'role': 'img',
+    size,
+    'strokeWidth': 1.75,
+    'style': { color: color ?? cssVar.colorTextSecondary, flex: 'none' },
+  });
 };
 
 const SVG_PATH = /^[\d\s+,.ACEHLMQSTVZ-]*$/i;
@@ -92,14 +78,14 @@ export const IconView = define('Icon', ({ props }) => {
       <svg
         aria-hidden
         fill="currentColor"
-        height={24}
-        style={{ flex: 'none' }}
+        height={18}
+        style={{ color: cssVar.colorTextSecondary, flex: 'none' }}
         viewBox="0 0 24 24"
-        width={24}
+        width={18}
       >
         <path d={name.svgPath} />
       </svg>
     ) : null;
-  if (typeof name !== 'string' || !name) return null;
+  if (typeof name !== 'string' || !name || !lucideKey(name)) return null;
   return <A2uiIcon name={name} />;
 });

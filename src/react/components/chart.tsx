@@ -15,7 +15,7 @@ import {
   SparkLineChart,
   Tracker,
 } from '@lobehub/charts';
-import { cssVar, Flexbox, Text } from '@lobehub/ui';
+import { cssVar, Flexbox, Text, useThemeMode } from '@lobehub/ui';
 import type { ReactNode } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
@@ -31,6 +31,15 @@ const SPARK_CHARTS = {
 /** Chat-width cards: tall enough to read a trend, short enough not to crowd the reply. */
 const CHART_HEIGHT = 180;
 const MAX_SERIES = 4;
+
+/**
+ * Series colours in a fixed order, a step per theme: blue, orange, aqua, yellow. Checked for
+ * colour-blind separation between neighbours; quieter than the antd preset the charts default to.
+ */
+const SERIES_COLORS = {
+  dark: ['#3987e5', '#d95926', '#199e70', '#c98500'],
+  light: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100'],
+};
 
 const TRACKER_COLOR: Record<string, string> = {
   bad: cssVar.colorError,
@@ -54,6 +63,7 @@ const drawChart = (
   index: string,
   categories: string[],
   format: (value: number) => string,
+  colors: string[],
 ): ReactNode => {
   const first = categories[0];
   const named = () =>
@@ -67,27 +77,34 @@ const drawChart = (
           <DonutChart
             showLabel
             category={first}
+            colors={colors}
             data={rows}
             index={index}
             style={{ flex: 'none', height: 120, width: 120 }}
             valueFormatter={format}
           />
-          <Legend categories={rows.map((row) => String(row[index] ?? ''))} />
+          <Legend categories={rows.map((row) => String(row[index] ?? ''))} colors={colors} />
         </Flexbox>
       );
     }
     case 'barList': {
-      return <BarList data={named()} valueFormatter={format} />;
+      return <BarList color={colors[0]} data={named()} valueFormatter={format} />;
     }
     case 'funnel': {
       return (
-        <FunnelChart data={named()} style={{ height: CHART_HEIGHT }} valueFormatter={format} />
+        <FunnelChart
+          color={colors[0]}
+          data={named()}
+          style={{ height: CHART_HEIGHT }}
+          valueFormatter={format}
+        />
       );
     }
     case 'radar': {
       return (
         <RadarChart
           categories={categories}
+          colors={colors}
           data={rows}
           index={index}
           showLegend={categories.length > 1}
@@ -102,6 +119,7 @@ const drawChart = (
         <ScatterChart
           showLegend
           category={index}
+          colors={colors}
           data={rows}
           size={size}
           style={{ height: CHART_HEIGHT }}
@@ -127,8 +145,14 @@ const drawChart = (
     }
     case 'tracker': {
       const field = first ?? 'tone';
+      // Few blocks share the full width as a slim bar; many keep the narrow default blocks.
+      const fill = rows.length <= 60;
       return (
         <Tracker
+          blockGap={fill ? 3 : 2}
+          blockHeight={fill ? 20 : 28}
+          blockWidth={fill ? '100%' : 8}
+          width="100%"
           data={rows.map((row) => ({
             color: TRACKER_COLOR[String(row[field] ?? 'neutral')] ?? TRACKER_COLOR.neutral,
             tooltip: String(row[index] ?? ''),
@@ -137,7 +161,13 @@ const drawChart = (
       );
     }
     case 'categoryBar': {
-      return <CategoryBar showLabels={false} values={rows.map((row) => Number(row[first] ?? 0))} />;
+      return (
+        <CategoryBar
+          colors={colors}
+          showLabels={false}
+          values={rows.map((row) => Number(row[first] ?? 0))}
+        />
+      );
     }
     case 'sparkArea':
     case 'sparkBar':
@@ -146,6 +176,7 @@ const drawChart = (
       return (
         <Spark
           categories={categories}
+          colors={colors}
           data={rows}
           index={index}
           style={{ height: 40, width: '100%' }}
@@ -157,6 +188,7 @@ const drawChart = (
       return (
         <Series
           categories={categories}
+          colors={colors}
           data={rows}
           height={CHART_HEIGHT}
           index={index}
@@ -164,6 +196,7 @@ const drawChart = (
           startEndOnly={rows.length > 12}
           valueFormatter={format}
           yAxisWidth={44}
+          {...(type === 'bar' ? { barCategoryGap: '32%' } : {})}
         />
       );
     }
@@ -173,6 +206,7 @@ const drawChart = (
 /** Every chart @lobehub/charts draws, from one rows-and-fields model. */
 export const ChartView = define('Chart', ({ props }) => {
   const locale = useA2uiHost()?.locale;
+  const { isDarkMode } = useThemeMode();
   const rows = rowsOf<Row>(props.data, A2UI_LIST_LIMITS.Chart.data);
   const index = String(props.index ?? '');
   const categories = (Array.isArray(props.categories) ? props.categories : [])
@@ -187,7 +221,15 @@ export const ChartView = define('Chart', ({ props }) => {
   return (
     <Flexbox flex={1} gap={8} style={{ minWidth: 0 }}>
       {props.title ? <Text weight={600}>{String(props.title)}</Text> : null}
-      {drawChart(locale, String(props.type), rows, index, categories, format)}
+      {drawChart(
+        locale,
+        String(props.type),
+        rows,
+        index,
+        categories,
+        format,
+        SERIES_COLORS[isDarkMode ? 'dark' : 'light'],
+      )}
     </Flexbox>
   );
 });

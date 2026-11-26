@@ -69,15 +69,9 @@ export const normalizeLucideName = (name: string) =>
     .replaceAll(/[\s_]+/g, '-')
     .toLowerCase();
 
-/** A Simple Icons slug: lowercase letters and digits. */
-export const normalizeSimpleName = (name: string) =>
-  name
-    .trim()
-    .toLowerCase()
-    .replaceAll(/[^\da-z]/g, '');
-
-export type A2uiIconSet = 'lobehub' | 'lucide' | 'simple';
-export const ICON_SETS: readonly A2uiIconSet[] = ['lucide', 'simple', 'lobehub'];
+/** Icons come from Lucide only: they are bundled, and brand logos would have to be fetched. */
+export type A2uiIconSet = 'lucide';
+export const ICON_SETS: readonly A2uiIconSet[] = ['lucide'];
 
 /** An Icon name: a basic name, or `<set>:<name>` from a larger set. */
 export const parseIconName = (

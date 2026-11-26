@@ -1,6 +1,6 @@
 {
   "name": "Model Comparison",
-  "description": "Models compared: LobeHub Icons name each model, a radar Chart compares strengths, and a scatter Chart plots cost against quality.",
+  "description": "Models compared: Tags name each model, a radar Chart compares strengths, and a scatter Chart plots cost against quality.",
   "messages": [
     {
       "version": "1.0",
@@ -27,37 +27,22 @@
           {
             "id": "models",
             "component": "Row",
-            "children": ["m1", "m1t", "m2", "m2t", "m3", "m3t"],
+            "children": ["m1t", "m2t", "m3t"],
             "align": "center"
           },
           {
-            "id": "m1",
-            "component": "Icon",
-            "name": "lobehub:OpenAI"
-          },
-          {
             "id": "m1t",
-            "component": "Text",
+            "component": "Tag",
             "text": "GPT"
           },
           {
-            "id": "m2",
-            "component": "Icon",
-            "name": "lobehub:Claude"
-          },
-          {
             "id": "m2t",
-            "component": "Text",
+            "component": "Tag",
             "text": "Claude"
           },
           {
-            "id": "m3",
-            "component": "Icon",
-            "name": "lobehub:DeepSeek"
-          },
-          {
             "id": "m3t",
-            "component": "Text",
+            "component": "Tag",
             "text": "DeepSeek"
           },
           {

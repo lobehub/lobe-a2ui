@@ -3,20 +3,35 @@ import { Surface } from '@lobehub/ui/dashboard';
 import { useState } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
-import { ALIGN, childrenOf, define, JUSTIFY, styles } from './shared';
+import {
+  ALIGN,
+  CardDepthContext,
+  childrenOf,
+  define,
+  JUSTIFY,
+  styles,
+  useCardDepth,
+} from './shared';
 
 /**
- * A Card is a @lobehub/ui Surface with a padded body. As the root it is the surface's card;
- * nested, it draws as an inner outlined card, as the basic catalog's guide suggests.
+ * A Card as the root is the surface's card: a @lobehub/ui Surface with a padded body. Inside
+ * another card it is a filled tile with no border, so a grid of cards reads as groups in one card
+ * rather than boxes in a box.
  */
-export const CardView = define('Card', ({ props, buildChild }) => (
-  <Surface padded>{buildChild(props.child)}</Surface>
-));
+export const CardView = define('Card', ({ props, buildChild }) => {
+  const depth = useCardDepth();
+  const child = <CardDepthContext value={depth + 1}>{buildChild(props.child)}</CardDepthContext>;
+  return depth === 0 ? (
+    <Surface padded>{child}</Surface>
+  ) : (
+    <div className={styles.tile}>{child}</div>
+  );
+});
 
 export const ColumnView = define('Column', ({ props, buildChild }) => (
   <Flexbox
     align={ALIGN[(props.align ?? 'stretch') as keyof typeof ALIGN]}
-    gap={12}
+    gap={useCardDepth() > 1 ? 8 : 12}
     justify={JUSTIFY[(props.justify ?? 'start') as keyof typeof JUSTIFY]}
     style={{ minWidth: 0 }}
   >

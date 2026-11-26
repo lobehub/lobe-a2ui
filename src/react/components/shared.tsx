@@ -1,9 +1,16 @@
 import { createComponentImplementation } from '@a2ui/react';
 import { createStaticStyles, cssVar, Text } from '@lobehub/ui';
-import type { ReactNode } from 'react';
+import { createContext, type ReactNode, use } from 'react';
 
 import { componentApi } from '../../schemaCatalog';
 import { isHttpsUrl } from '../../url';
+
+/**
+ * How deep in cards a component sits: 0 outside any card, 1 on the surface's own card, 2+ inside a
+ * nested Card. Nested cards draw as quiet filled tiles with tighter spacing, not another border.
+ */
+export const CardDepthContext = createContext(0);
+export const useCardDepth = () => use(CardDepthContext);
 
 export type BuildChild = (id: string, basePath?: string) => ReactNode;
 type ChildRef = string | { basePath: string; id: string };
@@ -111,6 +118,24 @@ export const styles = createStaticStyles(({ css, cssVar: token }) => ({
       flex: none;
       max-width: 280px;
     }
+  `,
+  // A nested Card: a filled tile, so cards in a card read as groups, not boxes in a box.
+  tile: css`
+    min-width: 0;
+    padding-block: 12px;
+    padding-inline: 14px;
+    border-radius: ${token.borderRadiusLG};
+    background: ${token.colorFillTertiary};
+  `,
+  code: css`
+    padding-block: 1px;
+    padding-inline: 4px;
+    border-radius: 4px;
+
+    font-family: ${token.fontFamilyCode};
+    font-size: 0.92em;
+
+    background: ${token.colorFillSecondary};
   `,
   item: css`
     padding-block: 8px;

@@ -313,25 +313,27 @@ describe('LobeHub extensions and safety', () => {
     expect(!link.ok && link.errors).toContain('Button root: openUrl needs an https url');
   });
 
-  it('checks icon names in every set and suggests close ones', () => {
+  it('checks icon names against the bundled set and suggests close ones', () => {
     const ok = surface([
-      { children: ['a', 'b', 'c', 'd', 'e'], component: 'Row', id: 'root' },
+      { children: ['a', 'b', 'c'], component: 'Row', id: 'root' },
       { component: 'Icon', id: 'a', name: 'home' },
       { component: 'Icon', id: 'b', name: 'lucide:trending-up' },
       { component: 'Icon', id: 'c', name: 'lucide:TrendingUp' },
-      { component: 'Icon', id: 'd', name: 'simple:github' },
-      { component: 'Icon', id: 'e', name: 'lobehub:openai' },
     ]);
     expect(ok.ok ? [] : ok.errors).toEqual([]);
 
     const unknown = surface([{ component: 'Icon', id: 'root', name: 'lucide:trending-upp' }]);
     expect(!unknown.ok && unknown.errors[0]).toMatch(
-      /No lucide icon named "trending-upp"\. Did you mean: .*lucide:trending-up/,
+      /No lucide icon named "trending-upp" in the card set\. Did you mean: .*lucide:trending-up/,
     );
     const basic = surface([{ component: 'Icon', id: 'root', name: 'rocket' }]);
     expect(!basic.ok && basic.errors[0]).toMatch(/not a basic icon name/);
-    const brand = surface([{ component: 'Icon', id: 'root', name: 'simple:nosuchbrand' }]);
-    expect(brand.ok).toBe(false);
+    for (const name of ['simple:github', 'lobehub:openai']) {
+      const brand = surface([{ component: 'Icon', id: 'root', name }]);
+      expect(brand.ok).toBe(false);
+    }
+    const unbundled = surface([{ component: 'Icon', id: 'root', name: 'lucide:a-arrow-down' }]);
+    expect(!unbundled.ok && unbundled.errors[0]).toMatch(/in the card set/);
     const extra = surface([{ component: 'Icon', id: 'root', name: 'home', set: 'lucide' }]);
     expect(extra.ok).toBe(false);
     const svg = surface([

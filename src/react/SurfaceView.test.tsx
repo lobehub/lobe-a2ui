@@ -2,15 +2,17 @@
  * @vitest-environment happy-dom
  */
 import { ConfigProvider } from '@lobehub/ui';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { LUCIDE_NAMES } from '../icons';
 import { loadExamples } from '../prompt';
 import { validateSurface } from '../validate';
 import { A2uiIcon } from './components';
 import { A2uiHostProvider, resolveA2uiLocale } from './host';
+import { LUCIDE_ICONS } from './icons/lucide';
 import { SurfaceList, SurfaceView } from './SurfaceView';
 
 afterEach(cleanup);
@@ -125,25 +127,30 @@ describe('every component', () => {
     },
   );
 
-  it('draws icons from each set as SVG files on the CDN, bundling none', () => {
+  it('draws icons from the bundled Lucide set, with no network request', async () => {
     const { container } = render(
       <>
         <A2uiIcon name="home" />
         <A2uiIcon name="lucide:trending-up" />
+        <A2uiIcon name="lucide:TrendingUp" />
         <A2uiIcon name="simple:github" />
-        <A2uiIcon name="lobehub:OpenAI" />
+        <A2uiIcon name="lucide:no-such-icon" />
       </>,
       { wrapper },
     );
-    const masks = [...container.querySelectorAll<HTMLElement>('[role="img"]')].map(
-      (icon) => icon.style.mask || icon.style.webkitMask,
-    );
-    expect(masks[0]).toMatch(/lucide-static[@/][\d.]+\/(files\/)?icons\/house\.svg/);
-    expect(masks[1]).toMatch(/lucide-static[@/][\d.]+\/(files\/)?icons\/trending-up\.svg/);
-    expect(masks[2]).toMatch(/simple-icons[@/][\d.]+\/(files\/)?icons\/github\.svg/);
-    expect(container.querySelector('img')?.getAttribute('src')).toMatch(
-      /@lobehub\/icons-static-svg[@/][\d.]+\/(files\/)?icons\/openai-color\.svg/,
-    );
+    await waitFor(() => expect(container.querySelectorAll('svg[role="img"]')).toHaveLength(3));
+    const icons = [...container.querySelectorAll('svg[role="img"]')];
+    // Basic and lucide names draw inline SVG; brand and unknown names draw nothing at all.
+    expect(icons.map((icon) => icon.getAttribute('aria-label'))).toEqual([
+      'home',
+      'lucide:trending-up',
+      'lucide:TrendingUp',
+    ]);
+    expect(container.querySelector('img, [style*="mask"]')).toBeNull();
+  });
+
+  it('bundles every Lucide name the validator accepts', () => {
+    expect(Object.keys(LUCIDE_ICONS).sort()).toEqual(LUCIDE_NAMES.split(' ').sort());
   });
 });
 
