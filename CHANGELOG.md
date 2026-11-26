@@ -2,6 +2,12 @@
 
 # Changelog
 
+## [1.2.1](https://github.com/lobehub/lobe-a2ui/compare/v1.2.0...v1.2.1) (2026-11-26)
+
+### 🐛 Bug Fixes
+
+- Draw cards stored before 1.1 instead of falling back to their text, closes [#5](https://github.com/lobehub/lobe-a2ui/issues/5) ([b38bd14](https://github.com/lobehub/lobe-a2ui/commit/b38bd14))
+
 # [1.2.0](https://github.com/lobehub/lobe-a2ui/compare/v1.1.1...v1.2.0) (2026-11-26)
 
 ### ✨ Features
