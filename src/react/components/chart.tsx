@@ -20,6 +20,7 @@ import type { ReactNode } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
 import { useA2uiHost } from '../host';
+import { formatNumber, isNumberFormat } from './format';
 import { define, rowsOf } from './shared';
 
 const SERIES_CHARTS = { area: AreaChart, bar: BarChart, line: LineChart } as const;
@@ -54,6 +55,8 @@ const drawChart = (
   index: string,
   categories: string[],
   format: (value: number) => string,
+  colors: string[] | undefined,
+  stacked: boolean,
 ): ReactNode => {
   const first = categories[0];
   const named = () =>
@@ -67,27 +70,34 @@ const drawChart = (
           <DonutChart
             showLabel
             category={first}
+            colors={colors}
             data={rows}
             index={index}
             style={{ flex: 'none', height: 120, width: 120 }}
             valueFormatter={format}
           />
-          <Legend categories={rows.map((row) => String(row[index] ?? ''))} />
+          <Legend categories={rows.map((row) => String(row[index] ?? ''))} colors={colors} />
         </Flexbox>
       );
     }
     case 'barList': {
-      return <BarList data={named()} valueFormatter={format} />;
+      return <BarList color={colors?.[0]} data={named()} valueFormatter={format} />;
     }
     case 'funnel': {
       return (
-        <FunnelChart data={named()} style={{ height: CHART_HEIGHT }} valueFormatter={format} />
+        <FunnelChart
+          color={colors?.[0]}
+          data={named()}
+          style={{ height: CHART_HEIGHT }}
+          valueFormatter={format}
+        />
       );
     }
     case 'radar': {
       return (
         <RadarChart
           categories={categories}
+          colors={colors}
           data={rows}
           index={index}
           showLegend={categories.length > 1}
@@ -102,6 +112,7 @@ const drawChart = (
         <ScatterChart
           showLegend
           category={index}
+          colors={colors}
           data={rows}
           size={size}
           style={{ height: CHART_HEIGHT }}
@@ -127,8 +138,14 @@ const drawChart = (
     }
     case 'tracker': {
       const field = first ?? 'tone';
+      // Few blocks share the full width as a slim bar; many keep the narrow default blocks.
+      const fill = rows.length <= 60;
       return (
         <Tracker
+          blockGap={fill ? 3 : 2}
+          blockHeight={fill ? 20 : 28}
+          blockWidth={fill ? '100%' : 8}
+          width="100%"
           data={rows.map((row) => ({
             color: TRACKER_COLOR[String(row[field] ?? 'neutral')] ?? TRACKER_COLOR.neutral,
             tooltip: String(row[index] ?? ''),
@@ -137,7 +154,13 @@ const drawChart = (
       );
     }
     case 'categoryBar': {
-      return <CategoryBar showLabels={false} values={rows.map((row) => Number(row[first] ?? 0))} />;
+      return (
+        <CategoryBar
+          colors={colors}
+          showLabels={false}
+          values={rows.map((row) => Number(row[first] ?? 0))}
+        />
+      );
     }
     case 'sparkArea':
     case 'sparkBar':
@@ -146,6 +169,7 @@ const drawChart = (
       return (
         <Spark
           categories={categories}
+          colors={colors}
           data={rows}
           index={index}
           style={{ height: 40, width: '100%' }}
@@ -157,6 +181,7 @@ const drawChart = (
       return (
         <Series
           categories={categories}
+          colors={colors}
           data={rows}
           height={CHART_HEIGHT}
           index={index}
@@ -164,6 +189,8 @@ const drawChart = (
           startEndOnly={rows.length > 12}
           valueFormatter={format}
           yAxisWidth={44}
+          {...(type === 'bar' ? { barCategoryGap: '32%' } : {})}
+          {...(stacked && (type === 'bar' || type === 'area') ? { stack: true } : {})}
         />
       );
     }
@@ -179,15 +206,36 @@ export const ChartView = define('Chart', ({ props }) => {
     .map(String)
     .slice(0, props.type === 'scatter' ? 3 : MAX_SERIES);
   const unit = props.unit ? String(props.unit) : '';
-  const format = (value: number) => `${value.toLocaleString()}${unit}`;
+  const numberFormat = isNumberFormat(props.format) ? props.format : undefined;
+  const currency = props.currency ? String(props.currency) : undefined;
+  const format = (value: number) =>
+    `${numberFormat ? formatNumber(value, numberFormat, locale, currency) : value.toLocaleString(locale)}${unit}`;
   if (rows.length === 0) return null;
   if (categories.length === 0 && props.type !== 'tracker') return null;
 
   // Charts side by side in a Row share its width.
   return (
     <Flexbox flex={1} gap={8} style={{ minWidth: 0 }}>
-      {props.title ? <Text weight={600}>{String(props.title)}</Text> : null}
-      {drawChart(locale, String(props.type), rows, index, categories, format)}
+      {props.title || props.subtitle ? (
+        <Flexbox gap={2}>
+          {props.title ? <Text weight={600}>{String(props.title)}</Text> : null}
+          {props.subtitle ? (
+            <Text fontSize={12} type="secondary">
+              {String(props.subtitle)}
+            </Text>
+          ) : null}
+        </Flexbox>
+      ) : null}
+      {drawChart(
+        locale,
+        String(props.type),
+        rows,
+        index,
+        categories,
+        format,
+        undefined,
+        props.stacked === true,
+      )}
     </Flexbox>
   );
 });

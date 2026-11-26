@@ -1,6 +1,6 @@
 {
   "name": "Code Answer",
-  "description": "An answer with code: a short explanation, a Code block, and the details tucked into a Collapse.",
+  "description": "A how-to: a Heading, a short Markdown explanation, a CodeBlock with its file name and a Kbd shortcut.",
   "messages": [
     {
       "version": "1.0",
@@ -16,35 +16,32 @@
         "components": [
           {
             "id": "root",
-            "component": "Card",
-            "child": "body"
-          },
-          {
-            "id": "body",
             "component": "Column",
-            "children": ["lead", "code", "more"]
+            "children": ["head", "why", "code", "keys"]
           },
           {
-            "id": "lead",
-            "component": "Text",
-            "text": "Debounce the search input so the API runs once the person stops typing:"
+            "id": "head",
+            "component": "Heading",
+            "text": "Debounce a search box in React",
+            "subtitle": "Wait 300 ms after the last keystroke before you query"
+          },
+          {
+            "id": "why",
+            "component": "Markdown",
+            "text": "Keep the input **controlled** and debounce only the query. `useDeferredValue` is enough when the work is rendering; for network calls, use a timer."
           },
           {
             "id": "code",
-            "component": "Code",
-            "language": "ts",
-            "code": "const debounced = useDebounce(query, 300);\nuseEffect(() => {\n  if (debounced) search(debounced);\n}, [debounced]);"
+            "component": "CodeBlock",
+            "language": "tsx",
+            "filename": "useDebounced.ts",
+            "code": "export const useDebounced = <T,>(value: T, ms = 300) => {\n  const [debounced, setDebounced] = useState(value);\n  useEffect(() => {\n    const timer = setTimeout(() => setDebounced(value), ms);\n    return () => clearTimeout(timer);\n  }, [value, ms]);\n  return debounced;\n};"
           },
           {
-            "id": "more",
-            "component": "Collapse",
-            "title": "Why 300 ms?",
-            "child": "moreText"
-          },
-          {
-            "id": "moreText",
-            "component": "Text",
-            "text": "Long enough to skip intermediate keystrokes, short enough to feel instant. Tune it with real typing data."
+            "id": "keys",
+            "component": "Kbd",
+            "keys": ["Cmd", "K"],
+            "label": "Focus the search box"
           }
         ]
       }

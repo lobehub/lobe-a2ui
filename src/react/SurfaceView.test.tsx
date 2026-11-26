@@ -2,15 +2,17 @@
  * @vitest-environment happy-dom
  */
 import { ConfigProvider } from '@lobehub/ui';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { LUCIDE_NAMES } from '../icons';
 import { loadExamples } from '../prompt';
 import { validateSurface } from '../validate';
 import { A2uiIcon } from './components';
 import { A2uiHostProvider, resolveA2uiLocale } from './host';
+import { LUCIDE_ICONS } from './icons/lucide';
 import { SurfaceList, SurfaceView } from './SurfaceView';
 
 afterEach(cleanup);
@@ -29,8 +31,8 @@ const record = () => {
           { children: ['head', 'metrics', 'go'], component: 'Column', id: 'col' },
           { children: ['title', 'tag'], component: 'Row', id: 'head' },
           { component: 'Text', id: 'title', text: 'Offsite' },
-          { component: 'Tag', id: 'tag', text: 'Best match' },
-          { component: 'Metrics', id: 'metrics', items: { '@path': '/metrics' } },
+          { component: 'Badge', id: 'tag', label: 'Best match' },
+          { component: 'StatGroup', id: 'metrics', items: { '@path': '/metrics' } },
           {
             action: { event: { context: { people: { '@path': '/people' } }, name: 'book' } },
             child: 'goLabel',
@@ -65,12 +67,8 @@ describe('SurfaceView', () => {
     expect(await screen.findByText('Offsite')).toBeTruthy();
     expect(screen.getByText('Best match')).toBeTruthy();
     expect(screen.getByText('¥440')).toBeTruthy();
-    // Before it is measured the strip takes one row; metricLayout.test.ts covers the wrapping.
-    const grid = document.querySelector<HTMLElement>('.lobe-dashboard-metric-strip__grid');
-    expect(grid?.style.getPropertyValue('--metric-columns')).toBe('1');
-    expect(document.querySelector('.lobe-dashboard-metric-strip')?.getAttribute('data-size')).toBe(
-      'small',
-    );
+    // The surface stands on the official dot-grid floor.
+    expect(document.querySelector('[data-a2ui="floor"]')).toBeTruthy();
 
     fireEvent.click(screen.getByText('Book it'));
     await vi.waitFor(() =>
@@ -101,7 +99,7 @@ describe('every component', () => {
     if (!result.ok) throw new Error(result.errors.join());
     const { container } = render(<SurfaceView record={result.record} />, { wrapper });
     // Replayed, not the text fallback.
-    await vi.waitFor(() => expect(container.querySelector('.lobe-dashboard-surface')).toBeTruthy());
+    await vi.waitFor(() => expect(container.querySelector('[data-a2ui="floor"]')).toBeTruthy());
     expect(container.textContent?.length).toBeGreaterThan(0);
   });
 
@@ -111,12 +109,23 @@ describe('every component', () => {
       const result = validateSurface(messages);
       if (!result.ok) throw new Error(result.errors.join());
       const { container } = render(<SurfaceView record={result.record} />, { wrapper });
-      await vi.waitFor(() =>
-        expect(container.querySelector('.lobe-dashboard-surface')).toBeTruthy(),
-      );
+      await vi.waitFor(() => expect(container.querySelector('[data-a2ui="floor"]')).toBeTruthy());
       if (id === 'plan-comparison') {
         expect(await screen.findByText('Pro fits a 14-person team best')).toBeTruthy();
         expect(screen.getByText('$19')).toBeTruthy();
+      }
+      if (id === 'kpi-dashboard') {
+        // Heading, formatted table cells and a badge column.
+        expect(await screen.findByText('Revenue grew 11% on EMEA renewals')).toBeTruthy();
+        expect(screen.getByText('$12,400')).toBeTruthy();
+        expect(screen.getByText('-3.5%')).toBeTruthy();
+        expect(screen.getByText('Overdue')).toBeTruthy();
+      }
+      if (id === 'vendor-comparison') {
+        expect(await screen.findByText('Error tracking for a 14-person team')).toBeTruthy();
+        expect(screen.getByRole('link', { name: /Beacon pricing/ }).getAttribute('href')).toBe(
+          'https://example.com/pricing/beacon',
+        );
       }
       if (id === 'trip-day') {
         expect(await screen.findByText('teamLab Planets')).toBeTruthy();
@@ -125,25 +134,30 @@ describe('every component', () => {
     },
   );
 
-  it('draws icons from each set as SVG files on the CDN, bundling none', () => {
+  it('draws icons from the bundled Lucide set, with no network request', async () => {
     const { container } = render(
       <>
         <A2uiIcon name="home" />
         <A2uiIcon name="lucide:trending-up" />
+        <A2uiIcon name="lucide:TrendingUp" />
         <A2uiIcon name="simple:github" />
-        <A2uiIcon name="lobehub:OpenAI" />
+        <A2uiIcon name="lucide:no-such-icon" />
       </>,
       { wrapper },
     );
-    const masks = [...container.querySelectorAll<HTMLElement>('[role="img"]')].map(
-      (icon) => icon.style.mask || icon.style.webkitMask,
-    );
-    expect(masks[0]).toMatch(/lucide-static[@/][\d.]+\/(files\/)?icons\/house\.svg/);
-    expect(masks[1]).toMatch(/lucide-static[@/][\d.]+\/(files\/)?icons\/trending-up\.svg/);
-    expect(masks[2]).toMatch(/simple-icons[@/][\d.]+\/(files\/)?icons\/github\.svg/);
-    expect(container.querySelector('img')?.getAttribute('src')).toMatch(
-      /@lobehub\/icons-static-svg[@/][\d.]+\/(files\/)?icons\/openai-color\.svg/,
-    );
+    await waitFor(() => expect(container.querySelectorAll('svg[role="img"]')).toHaveLength(3));
+    const icons = [...container.querySelectorAll('svg[role="img"]')];
+    // Basic and lucide names draw inline SVG; brand and unknown names draw nothing at all.
+    expect(icons.map((icon) => icon.getAttribute('aria-label'))).toEqual([
+      'home',
+      'lucide:trending-up',
+      'lucide:TrendingUp',
+    ]);
+    expect(container.querySelector('img, [style*="mask"]')).toBeNull();
+  });
+
+  it('bundles every Lucide name the validator accepts', () => {
+    expect(Object.keys(LUCIDE_ICONS).sort()).toEqual(LUCIDE_NAMES.split(' ').sort());
   });
 });
 
@@ -172,6 +186,84 @@ describe('text safety', () => {
   });
 });
 
+describe('clicking through', () => {
+  const open = (url: string) => ({ functionCall: { args: { url }, call: 'openUrl' } });
+  const linked = () => {
+    const result = validateSurface([
+      {
+        updateComponents: {
+          components: [
+            { child: 'grid', component: 'Card', id: 'root' },
+            { children: ['pr', 'note'], component: 'Grid', id: 'grid' },
+            {
+              action: open('https://github.com/o/r/pull/1'),
+              child: 'prBody',
+              component: 'Card',
+              id: 'pr',
+            },
+            { children: ['prTitle', 'prLink'], component: 'Column', id: 'prBody' },
+            { component: 'Text', id: 'prTitle', text: 'PR #1' },
+            {
+              component: 'Text',
+              id: 'prLink',
+              text: 'on [the branch](https://github.com/o/r/tree/b) since `11-20`',
+              variant: 'caption',
+            },
+            { child: 'noteBody', component: 'Card', id: 'note' },
+            { component: 'Text', id: 'noteBody', text: 'Plain tile' },
+          ],
+          surfaceId: 'links',
+        },
+        version: '1.0',
+      },
+    ]);
+    if (!result.ok) throw new Error(result.errors.join());
+    return result.record;
+  };
+
+  it('opens a Card with an action from a click or the keyboard, and only that card', async () => {
+    const opened = vi.spyOn(globalThis, 'open').mockReturnValue(null);
+    render(<SurfaceView record={linked()} />, { wrapper });
+    const card = await screen.findByRole('button');
+    fireEvent.click(screen.getByText('PR #1'));
+    fireEvent.keyDown(card, { key: 'Enter' });
+    expect(opened.mock.calls.map(([url]) => url)).toEqual([
+      'https://github.com/o/r/pull/1',
+      'https://github.com/o/r/pull/1',
+    ]);
+    // A card without an action stays a plain tile.
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    opened.mockRestore();
+  });
+
+  it('draws https links in captions, which open on their own and not the card', async () => {
+    const opened = vi.spyOn(globalThis, 'open').mockReturnValue(null);
+    render(<SurfaceView record={linked()} />, { wrapper });
+    const link = await screen.findByRole('link', { name: 'the branch' });
+    expect(link.getAttribute('href')).toBe('https://github.com/o/r/tree/b');
+    expect(link.getAttribute('target')).toBe('_blank');
+    fireEvent.click(link);
+    expect(opened).not.toHaveBeenCalled();
+    opened.mockRestore();
+  });
+
+  it('rejects a Card action that opens a non-https url', () => {
+    const result = validateSurface([
+      {
+        updateComponents: {
+          components: [
+            { action: open('http://x.com'), child: 't', component: 'Card', id: 'root' },
+            { component: 'Text', id: 't', text: 'x' },
+          ],
+          surfaceId: 'bad',
+        },
+        version: '1.0',
+      },
+    ]);
+    expect(!result.ok && result.errors).toContain('Card root: openUrl needs an https url');
+  });
+});
+
 describe('host', () => {
   const form = () => {
     const result = validateSurface([
@@ -179,7 +271,7 @@ describe('host', () => {
         updateComponents: {
           components: [
             { children: ['table', 'pick', 'go'], component: 'Column', id: 'root' },
-            { columns: [{ key: 'a', label: 'A' }], component: 'Table', id: 'table', rows: [] },
+            { columns: [{ key: 'a', label: 'A' }], component: 'DataTable', id: 'table', rows: [] },
             {
               component: 'ChoicePicker',
               filterable: true,

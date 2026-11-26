@@ -1,0 +1,109 @@
+{
+  "name": "Cloud Costs",
+  "description": "Spend against a budget: a Heading, a Gauge of the budget used and a Treemap of spend by service.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "cloud-costs",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "cloud-costs",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "row"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "Cloud spend, November",
+            "eyebrow": "Finance",
+            "subtitle": "Compute is 61% of spend; storage grew fastest"
+          },
+          {
+            "id": "row",
+            "component": "Grid",
+            "columns": 2,
+            "children": ["budget", "map"]
+          },
+          {
+            "id": "budget",
+            "component": "Gauge",
+            "title": "Budget used",
+            "value": 72,
+            "min": 0,
+            "max": 100,
+            "label": "$36.1k of $50k",
+            "format": "percent"
+          },
+          {
+            "id": "map",
+            "component": "Treemap",
+            "title": "Spend by service",
+            "format": "currency",
+            "data": {
+              "@path": "/services"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "cloud-costs",
+        "path": "/",
+        "value": {
+          "services": [
+            {
+              "name": "VMs",
+              "value": 14200,
+              "group": "Compute"
+            },
+            {
+              "name": "Functions",
+              "value": 4100,
+              "group": "Compute"
+            },
+            {
+              "name": "Containers",
+              "value": 3700,
+              "group": "Compute"
+            },
+            {
+              "name": "Objects",
+              "value": 5200,
+              "group": "Storage"
+            },
+            {
+              "name": "Disks",
+              "value": 2100,
+              "group": "Storage"
+            },
+            {
+              "name": "SQL",
+              "value": 3900,
+              "group": "Database"
+            },
+            {
+              "name": "CDN",
+              "value": 1800,
+              "group": "Network"
+            },
+            {
+              "name": "Egress",
+              "value": 1100,
+              "group": "Network"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "name": "Trip Day",
-  "description": "A schedule: Steps carry the timeline, KeyValue the booking facts, Progress the budget; a brand logo from Simple Icons heads it.",
+  "description": "A plan for one day: a Heading, a Timeline of the stops with times, a KeyValueList of the bookings and a Progress bar of the budget.",
   "messages": [
     {
       "version": "1.0",
@@ -17,50 +17,43 @@
           {
             "id": "root",
             "component": "Column",
-            "children": ["header", "plan", "facts", "budget"]
+            "children": ["head", "plan", "facts", "budget"]
           },
           {
-            "id": "header",
-            "component": "Row",
-            "children": ["logo", "title"],
-            "align": "center"
-          },
-          {
-            "id": "logo",
-            "component": "Icon",
-            "name": "simple:japanairlines"
-          },
-          {
-            "id": "title",
-            "component": "Text",
-            "text": "#### Tokyo, day 1"
+            "id": "head",
+            "component": "Heading",
+            "text": "Tokyo, day 1",
+            "eyebrow": "Trip plan",
+            "subtitle": "Markets in the morning, digital art after lunch, dinner in Ebisu"
           },
           {
             "id": "plan",
-            "component": "Steps",
+            "component": "Timeline",
             "items": [
               {
-                "meta": "08:30",
                 "title": "Tsukiji outer market",
-                "detail": "Breakfast",
+                "time": "08:30",
+                "description": "Breakfast",
                 "status": "done"
               },
               {
-                "meta": "11:00",
                 "title": "teamLab Planets",
-                "detail": "Tickets booked",
+                "time": "11:00",
+                "description": "Tickets booked",
                 "status": "current"
               },
               {
-                "meta": "19:00",
                 "title": "Dinner in Ebisu",
-                "status": "todo"
+                "time": "19:00",
+                "description": "Table for two at Afuri",
+                "status": "upcoming"
               }
             ]
           },
           {
             "id": "facts",
-            "component": "KeyValue",
+            "component": "KeyValueList",
+            "columns": 2,
             "items": [
               {
                 "label": "Hotel",
@@ -76,32 +69,10 @@
             "id": "budget",
             "component": "Progress",
             "label": "Budget used",
-            "value": {
-              "@path": "/spent"
-            },
-            "max": 60000,
-            "caption": {
-              "@call": "formatCurrency",
-              "args": {
-                "value": {
-                  "@path": "/spent"
-                },
-                "currency": "JPY"
-              }
-            },
-            "tone": "success"
+            "value": 43,
+            "caption": "¥21,500 of ¥50,000"
           }
         ]
-      }
-    },
-    {
-      "version": "1.0",
-      "updateDataModel": {
-        "surfaceId": "trip-day",
-        "path": "/",
-        "value": {
-          "spent": 21500
-        }
       }
     }
   ]

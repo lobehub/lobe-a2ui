@@ -1,6 +1,6 @@
 {
   "name": "Plan Comparison",
-  "description": "Options compared across attributes: a Table carries the comparison, and a Grid of two Cards gives the reasoning with Lucide icons.",
+  "description": "Options compared: a Heading, a ComparisonTable with the recommended plan highlighted, and a Callout with the one thing to watch.",
   "messages": [
     {
       "version": "1.0",
@@ -16,132 +16,62 @@
         "components": [
           {
             "id": "root",
-            "component": "Card",
-            "child": "body"
-          },
-          {
-            "id": "body",
             "component": "Column",
-            "children": ["title", "table", "reasons"]
+            "children": ["head", "matrix", "watch"]
           },
           {
-            "id": "title",
-            "component": "Text",
-            "text": "#### Pro fits a 14-person team best"
+            "id": "head",
+            "component": "Heading",
+            "text": "Pro fits a 14-person team best",
+            "eyebrow": "Compare plans",
+            "subtitle": "All 14 seats and a year of storage headroom for $19 a seat"
           },
           {
-            "id": "table",
-            "component": "Table",
-            "columns": [
-              {
-                "key": "plan",
-                "label": "Plan"
-              },
-              {
-                "key": "seats",
-                "label": "Seats",
-                "align": "end"
-              },
-              {
-                "key": "storage",
-                "label": "Storage",
-                "align": "end"
-              },
-              {
-                "key": "price",
-                "label": "Price / mo",
-                "align": "end"
-              }
-            ],
+            "id": "matrix",
+            "component": "ComparisonTable",
+            "options": ["Basic", "Pro", "Team"],
+            "highlight": 1,
             "rows": [
               {
-                "plan": "Basic",
-                "seats": 3,
-                "storage": "50 GB",
-                "price": "$9"
+                "feature": "Price per seat",
+                "values": ["$9", "$19", "$79"]
               },
               {
-                "plan": "Pro",
-                "seats": 20,
-                "storage": "1 TB",
-                "price": "$19"
+                "feature": "Seats",
+                "values": [
+                  3,
+                  20,
+                  100
+                ]
               },
               {
-                "plan": "Team",
-                "seats": 100,
-                "storage": "5 TB",
-                "price": "$79"
+                "feature": "Storage",
+                "values": ["50 GB", "1 TB", "5 TB"]
+              },
+              {
+                "feature": "SSO and SAML",
+                "values": [
+                  false,
+                  false,
+                  true
+                ]
+              },
+              {
+                "feature": "Audit log",
+                "values": [
+                  false,
+                  true,
+                  true
+                ]
               }
-            ],
-            "caption": "Billed yearly"
+            ]
           },
           {
-            "id": "reasons",
-            "component": "Grid",
-            "columns": 2,
-            "children": ["pros", "cons"]
-          },
-          {
-            "id": "pros",
-            "component": "Card",
-            "child": "prosBody"
-          },
-          {
-            "id": "prosBody",
-            "component": "Column",
-            "children": ["prosHead", "prosText"]
-          },
-          {
-            "id": "prosHead",
-            "component": "Row",
-            "children": ["prosIcon", "prosTitle"],
-            "align": "center"
-          },
-          {
-            "id": "prosIcon",
-            "component": "Icon",
-            "name": "lucide:circle-check"
-          },
-          {
-            "id": "prosTitle",
-            "component": "Text",
-            "text": "**Why Pro**"
-          },
-          {
-            "id": "prosText",
-            "component": "Text",
-            "text": "- Fits all 14 seats\n- A year of storage headroom"
-          },
-          {
-            "id": "cons",
-            "component": "Card",
-            "child": "consBody"
-          },
-          {
-            "id": "consBody",
-            "component": "Column",
-            "children": ["consHead", "consText"]
-          },
-          {
-            "id": "consHead",
-            "component": "Row",
-            "children": ["consIcon", "consTitle"],
-            "align": "center"
-          },
-          {
-            "id": "consIcon",
-            "component": "Icon",
-            "name": "lucide:shield-alert"
-          },
-          {
-            "id": "consTitle",
-            "component": "Text",
-            "text": "**Watch out**"
-          },
-          {
-            "id": "consText",
-            "component": "Text",
-            "text": "SSO is only on Team. Revisit at 20 seats."
+            "id": "watch",
+            "component": "Callout",
+            "title": "Watch out",
+            "text": "SSO is only on Team. Revisit at 20 seats.",
+            "icon": "lucide:shield-alert"
           }
         ]
       }

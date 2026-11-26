@@ -1,22 +1,59 @@
-import { Accordion, Divider, Flexbox, Grid, Modal, Tabs, Text } from '@lobehub/ui';
-import { Surface } from '@lobehub/ui/dashboard';
+import { Accordion, cx, Divider, Flexbox, Modal, Tabs, Text } from '@lobehub/ui';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { useState } from 'react';
 
 import { A2UI_LIST_LIMITS } from '../../constants';
-import { ALIGN, childrenOf, define, JUSTIFY, styles } from './shared';
+import { a2ui } from './a2ui';
+import {
+  ALIGN,
+  CardDepthContext,
+  childrenOf,
+  define,
+  JUSTIFY,
+  styles,
+  useCardDepth,
+} from './shared';
+
+/** Controls inside a clickable card keep their own click: a link opens once, not twice. */
+const INNER_CONTROL = 'a, button, input, textarea, select, [role="button"]';
 
 /**
- * A Card is a @lobehub/ui Surface with a padded body. As the root it is the surface's card;
- * nested, it draws as an inner outlined card, as the basic catalog's guide suggests.
+ * A Card is the official boxed panel (`.a2-card`): surface, hairline, 14px corners, a soft shadow.
+ * With an action the whole card is one button: the border strengthens on hover, a focus ring shows
+ * from the keyboard, and a link or button inside still does its own thing.
  */
-export const CardView = define('Card', ({ props, buildChild }) => (
-  <Surface padded>{buildChild(props.child)}</Surface>
-));
+export const CardView = define('Card', ({ props, buildChild }) => {
+  const depth = useCardDepth();
+  const child = <CardDepthContext value={depth + 1}>{buildChild(props.child)}</CardDepthContext>;
+  const action = typeof props.action === 'function' ? (props.action as () => void) : undefined;
+  if (!action) return <div className={cx(a2ui.card, styles.cardBody)}>{child}</div>;
+  return (
+    <div
+      className={cx(a2ui.card, a2ui.pressable, styles.cardBody)}
+      role="button"
+      tabIndex={0}
+      onClick={(event: MouseEvent<HTMLDivElement>) => {
+        const hit = (event.target as HTMLElement).closest(INNER_CONTROL);
+        if (hit && hit !== event.currentTarget) return;
+        action();
+      }}
+      onKeyDown={(event: KeyboardEvent) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          action();
+        }
+      }}
+    >
+      {child}
+    </div>
+  );
+});
 
 export const ColumnView = define('Column', ({ props, buildChild }) => (
   <Flexbox
     align={ALIGN[(props.align ?? 'stretch') as keyof typeof ALIGN]}
-    gap={12}
+    gap={useCardDepth() > 1 ? 8 : 12}
     justify={JUSTIFY[(props.justify ?? 'start') as keyof typeof JUSTIFY]}
     style={{ minWidth: 0 }}
   >
@@ -102,12 +139,18 @@ export const DividerView = define('Divider', ({ props }) =>
   ),
 );
 
-export const GridView = define('Grid', ({ props, buildChild }) => (
-  // Equal columns while each stays at least 200px wide; fewer, then one, on narrow cards.
-  <Grid gap={12} maxItemWidth={200} rows={props.columns ?? 2}>
-    {childrenOf(props.children, buildChild).slice(0, A2UI_LIST_LIMITS.Grid.children)}
-  </Grid>
-));
+/**
+ * Equal columns that step down with the surface's width, as the official playground's do: 4 to 2
+ * under 520px, 3 to 2 under 400px, and to 1 under 260px.
+ */
+export const GridView = define('Grid', ({ props, buildChild }) => {
+  const columns = Math.max(1, Math.min(4, Number(props.columns ?? 2) || 2));
+  return (
+    <div className={styles.grid} data-columns={columns}>
+      {childrenOf(props.children, buildChild).slice(0, A2UI_LIST_LIMITS.Grid.children)}
+    </div>
+  );
+});
 
 /** A section that opens from its header (@lobehub/ui Accordion with one item). */
 export const CollapseView = define('Collapse', ({ props, buildChild }) => (

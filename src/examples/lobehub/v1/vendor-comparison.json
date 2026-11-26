@@ -1,0 +1,165 @@
+{
+  "name": "Vendor Comparison",
+  "description": "A pick with sources: a Heading, a Grid of clickable Cards each with a Rating and an AvatarGroup, and LinkCards for the pricing pages.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "vendor-comparison",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "vendor-comparison",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "picks", "sources"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "Error tracking for a 14-person team",
+            "eyebrow": "Compare",
+            "subtitle": "Beacon covers SSO and session replay for less"
+          },
+          {
+            "id": "picks",
+            "component": "Grid",
+            "columns": 2,
+            "children": ["b", "t"]
+          },
+          {
+            "id": "b",
+            "component": "Card",
+            "child": "bBody",
+            "action": {
+              "functionCall": {
+                "call": "openUrl",
+                "args": {
+                  "url": "https://example.com/trials/beacon"
+                }
+              }
+            }
+          },
+          {
+            "id": "bBody",
+            "component": "Column",
+            "children": ["bTitle", "bRating", "bPeople"]
+          },
+          {
+            "id": "bTitle",
+            "component": "Title",
+            "text": "Beacon"
+          },
+          {
+            "id": "bRating",
+            "component": "Rating",
+            "value": 4.6,
+            "count": 5,
+            "label": "Team trial"
+          },
+          {
+            "id": "bPeople",
+            "component": "AvatarGroup",
+            "max": 3,
+            "label": "5 reviewers",
+            "people": [
+              {
+                "name": "Ada Chen"
+              },
+              {
+                "name": "Ravi Patel"
+              },
+              {
+                "name": "Lin Mo"
+              },
+              {
+                "name": "Sam Ortiz"
+              },
+              {
+                "name": "Mia Berg"
+              }
+            ]
+          },
+          {
+            "id": "t",
+            "component": "Card",
+            "child": "tBody",
+            "action": {
+              "functionCall": {
+                "call": "openUrl",
+                "args": {
+                  "url": "https://example.com/trials/tracewell"
+                }
+              }
+            }
+          },
+          {
+            "id": "tBody",
+            "component": "Column",
+            "children": ["tTitle", "tRating", "tPeople"]
+          },
+          {
+            "id": "tTitle",
+            "component": "Title",
+            "text": "Tracewell"
+          },
+          {
+            "id": "tRating",
+            "component": "Rating",
+            "value": 4.1,
+            "count": 5,
+            "label": "Team trial"
+          },
+          {
+            "id": "tPeople",
+            "component": "AvatarGroup",
+            "max": 3,
+            "label": "5 reviewers",
+            "people": [
+              {
+                "name": "Ada Chen"
+              },
+              {
+                "name": "Ravi Patel"
+              },
+              {
+                "name": "Lin Mo"
+              },
+              {
+                "name": "Sam Ortiz"
+              },
+              {
+                "name": "Mia Berg"
+              }
+            ]
+          },
+          {
+            "id": "sources",
+            "component": "Grid",
+            "columns": 2,
+            "children": ["l1", "l2"]
+          },
+          {
+            "id": "l1",
+            "component": "LinkCard",
+            "href": "https://example.com/pricing/beacon",
+            "title": "Beacon pricing",
+            "description": "Team plan, billed yearly, SSO included"
+          },
+          {
+            "id": "l2",
+            "component": "LinkCard",
+            "href": "https://example.com/pricing/tracewell",
+            "title": "Tracewell pricing",
+            "description": "Business plan; SSO is an add-on"
+          }
+        ]
+      }
+    }
+  ]
+}

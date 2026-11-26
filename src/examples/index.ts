@@ -44,15 +44,19 @@ import basic_track_list from './basic/v1/track-list.json';
 import basic_user_profile from './basic/v1/user-profile.json';
 import basic_weather_current from './basic/v1/weather-current.json';
 import basic_workout_summary from './basic/v1/workout-summary.json';
+import lobehub_cloud_costs from './lobehub/v1/cloud-costs.json';
 import lobehub_code_answer from './lobehub/v1/code-answer.json';
 import lobehub_model_comparison from './lobehub/v1/model-comparison.json';
+import lobehub_offsite_agenda from './lobehub/v1/offsite-agenda.json';
 import lobehub_plan_comparison from './lobehub/v1/plan-comparison.json';
 import lobehub_release_pipeline from './lobehub/v1/release-pipeline.json';
 import lobehub_sales_dashboard from './lobehub/v1/sales-dashboard.json';
 import lobehub_service_health from './lobehub/v1/service-health.json';
 import lobehub_signup_funnel from './lobehub/v1/signup-funnel.json';
+import lobehub_stock_watch from './lobehub/v1/stock-watch.json';
 import lobehub_team_profile from './lobehub/v1/team-profile.json';
 import lobehub_trip_day from './lobehub/v1/trip-day.json';
+import lobehub_vendor_comparison from './lobehub/v1/vendor-comparison.json';
 import lobehub_weekly_trend from './lobehub/v1/weekly-trend.json';
 
 /** Every example surface, by catalog: the official basic examples and LobeHub's. */
@@ -103,15 +107,19 @@ export const A2UI_EXAMPLES = {
   { ...basic_workout_summary, catalog: 'basic', id: 'workout-summary' },
   ],
   lobehub: [
+  { ...lobehub_cloud_costs, catalog: 'lobehub', id: 'cloud-costs' },
   { ...lobehub_code_answer, catalog: 'lobehub', id: 'code-answer' },
   { ...lobehub_model_comparison, catalog: 'lobehub', id: 'model-comparison' },
+  { ...lobehub_offsite_agenda, catalog: 'lobehub', id: 'offsite-agenda' },
   { ...lobehub_plan_comparison, catalog: 'lobehub', id: 'plan-comparison' },
   { ...lobehub_release_pipeline, catalog: 'lobehub', id: 'release-pipeline' },
   { ...lobehub_sales_dashboard, catalog: 'lobehub', id: 'sales-dashboard' },
   { ...lobehub_service_health, catalog: 'lobehub', id: 'service-health' },
   { ...lobehub_signup_funnel, catalog: 'lobehub', id: 'signup-funnel' },
+  { ...lobehub_stock_watch, catalog: 'lobehub', id: 'stock-watch' },
   { ...lobehub_team_profile, catalog: 'lobehub', id: 'team-profile' },
   { ...lobehub_trip_day, catalog: 'lobehub', id: 'trip-day' },
+  { ...lobehub_vendor_comparison, catalog: 'lobehub', id: 'vendor-comparison' },
   { ...lobehub_weekly_trend, catalog: 'lobehub', id: 'weekly-trend' },
   ],
 } as Record<'basic' | 'lobehub', A2uiExample[]>;

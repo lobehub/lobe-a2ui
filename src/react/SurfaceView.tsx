@@ -2,13 +2,13 @@ import { A2uiSurface } from '@a2ui/react';
 import { MessageProcessor } from '@a2ui/web_core';
 import { Catalog } from '@a2ui/web_core/v1_0';
 import { createStaticStyles, cx, Flexbox, Text } from '@lobehub/ui';
-import { Surface } from '@lobehub/ui/dashboard';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import { A2UI_CATALOG_ID, A2UI_VERSION } from '../constants';
 import { upgradeLegacyOperations } from '../legacy';
 import type { A2uiActionPayload, A2uiSurfaceRecord, A2uiSurfaceState } from '../types';
 import { createLobeFunctions, LOBE_COMPONENTS } from './components';
+import { a2ui } from './components/a2ui';
 import { useA2uiHost } from './host';
 
 /** One rendering catalog per locale: formatNumber, formatDate and the rest read it. */
@@ -27,18 +27,6 @@ const getLobeCatalog = (locale: string | undefined) => {
       ) as Catalog<never>),
     );
   return catalog;
-};
-
-/** The root component's name: a Card root is the card itself; any other root gets one. */
-const rootComponentOf = (record: A2uiSurfaceRecord) => {
-  for (const operation of record.operations) {
-    const update = operation.updateComponents as { components?: unknown[] } | undefined;
-    const root = update?.components?.find(
-      (component) => (component as { id?: unknown })?.id === 'root',
-    ) as { component?: unknown } | undefined;
-    if (root) return root.component;
-  }
-  return undefined;
 };
 
 const styles = createStaticStyles(({ css }) => ({
@@ -94,13 +82,10 @@ export const SurfaceView = memo<SurfaceViewProps>(({ record, state, onAction }) 
       aria-disabled={submitted || undefined}
       className={cx(styles.root, submitted && styles.submitted)}
     >
-      {rootComponentOf(record) === 'Card' ? (
+      {/* The official playground's floor: a dot grid the surface's components stand on. */}
+      <div className={a2ui.floor} data-a2ui="floor">
         <A2uiSurface surface={surface as never} />
-      ) : (
-        <Surface padded>
-          <A2uiSurface surface={surface as never} />
-        </Surface>
-      )}
+      </div>
     </div>
   );
 });

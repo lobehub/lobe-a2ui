@@ -1,6 +1,6 @@
 {
   "name": "Signup Funnel",
-  "description": "A conversion story: a funnel Chart for drop-off, then a Row of small cards each pairing a figure with a sparkline (sparkLine, sparkArea, sparkBar).",
+  "description": "Flows between stages: a Heading, a Grid of Sparkline KPIs and a SankeyChart of where visitors went.",
   "messages": [
     {
       "version": "1.0",
@@ -17,121 +17,79 @@
           {
             "id": "root",
             "component": "Column",
-            "children": ["title", "funnel", "trends"]
+            "children": ["head", "kpis", "flow"]
           },
           {
-            "id": "title",
-            "component": "Text",
-            "text": "#### Signup funnel, last 7 days"
+            "id": "head",
+            "component": "Heading",
+            "text": "Signup funnel, last 7 days",
+            "subtitle": "Paid ads bring a third of visitors but few signups"
           },
           {
-            "id": "funnel",
-            "component": "Chart",
-            "type": "funnel",
-            "data": [
-              {
-                "stage": "Visit",
-                "users": 12400
-              },
-              {
-                "stage": "Signup",
-                "users": 3100
-              },
-              {
-                "stage": "Activated",
-                "users": 1480
-              },
-              {
-                "stage": "Paid",
-                "users": 310
-              }
-            ],
-            "index": "stage",
-            "categories": ["users"]
-          },
-          {
-            "id": "trends",
+            "id": "kpis",
             "component": "Grid",
             "columns": 3,
-            "children": ["t1", "t2", "t3"]
+            "children": ["v", "s", "p"]
           },
           {
-            "id": "t1",
-            "component": "Card",
-            "child": "t1b"
-          },
-          {
-            "id": "t1b",
-            "component": "Column",
-            "children": ["t1s", "t1c"]
-          },
-          {
-            "id": "t1s",
-            "component": "Statistic",
+            "id": "v",
+            "component": "Sparkline",
             "label": "Visits",
-            "value": "12.4k"
+            "value": "12.4k",
+            "delta": "+6%",
+            "tone": "positive",
+            "values": [
+              1500,
+              1620,
+              1700,
+              1810,
+              1760,
+              1900,
+              2110
+            ]
           },
           {
-            "id": "t1c",
-            "component": "Chart",
-            "type": "sparkLine",
-            "data": {
-              "@path": "/daily"
-            },
-            "index": "day",
-            "categories": ["visits"]
-          },
-          {
-            "id": "t2",
-            "component": "Card",
-            "child": "t2b"
-          },
-          {
-            "id": "t2b",
-            "component": "Column",
-            "children": ["t2s", "t2c"]
-          },
-          {
-            "id": "t2s",
-            "component": "Statistic",
+            "id": "s",
+            "component": "Sparkline",
             "label": "Signups",
-            "value": "3.1k"
+            "value": "3.1k",
+            "delta": "+2%",
+            "tone": "positive",
+            "values": [
+              420,
+              430,
+              440,
+              450,
+              445,
+              460,
+              455
+            ]
           },
           {
-            "id": "t2c",
-            "component": "Chart",
-            "type": "sparkArea",
-            "data": {
-              "@path": "/daily"
-            },
-            "index": "day",
-            "categories": ["signups"]
-          },
-          {
-            "id": "t3",
-            "component": "Card",
-            "child": "t3b"
-          },
-          {
-            "id": "t3b",
-            "component": "Column",
-            "children": ["t3s", "t3c"]
-          },
-          {
-            "id": "t3s",
-            "component": "Statistic",
+            "id": "p",
+            "component": "Sparkline",
             "label": "Paid",
-            "value": "310"
+            "value": "310",
+            "delta": "-4%",
+            "tone": "negative",
+            "values": [
+              52,
+              50,
+              47,
+              45,
+              44,
+              37,
+              35
+            ]
           },
           {
-            "id": "t3c",
-            "component": "Chart",
-            "type": "sparkBar",
-            "data": {
-              "@path": "/daily"
-            },
-            "index": "day",
-            "categories": ["paid"]
+            "id": "flow",
+            "component": "SankeyChart",
+            "title": "Where visitors went",
+            "format": "compact",
+            "links": {
+              "@path": "/links"
+            }
           }
         ]
       }
@@ -142,48 +100,36 @@
         "surfaceId": "signup-funnel",
         "path": "/",
         "value": {
-          "daily": [
+          "links": [
             {
-              "day": "Mon",
-              "visits": 1600,
-              "signups": 410,
-              "paid": 38
+              "source": "Organic",
+              "target": "Pricing page",
+              "value": 5200
             },
             {
-              "day": "Tue",
-              "visits": 1750,
-              "signups": 430,
-              "paid": 41
+              "source": "Paid ads",
+              "target": "Pricing page",
+              "value": 4100
             },
             {
-              "day": "Wed",
-              "visits": 1820,
-              "signups": 460,
-              "paid": 47
+              "source": "Referral",
+              "target": "Pricing page",
+              "value": 1700
             },
             {
-              "day": "Thu",
-              "visits": 1700,
-              "signups": 440,
-              "paid": 44
+              "source": "Pricing page",
+              "target": "Signed up",
+              "value": 3100
             },
             {
-              "day": "Fri",
-              "visits": 1900,
-              "signups": 470,
-              "paid": 52
+              "source": "Pricing page",
+              "target": "Bounced",
+              "value": 7900
             },
             {
-              "day": "Sat",
-              "visits": 1650,
-              "signups": 420,
-              "paid": 45
-            },
-            {
-              "day": "Sun",
-              "visits": 1980,
-              "signups": 470,
-              "paid": 43
+              "source": "Signed up",
+              "target": "Paid",
+              "value": 310
             }
           ]
         }

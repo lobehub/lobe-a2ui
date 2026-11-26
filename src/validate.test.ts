@@ -5,6 +5,7 @@ import {
   A2UI_CATALOG_DOCUMENT,
   A2UI_CATALOG_ID,
   A2UI_COMPONENT_NAMES,
+  A2UI_DEPRECATED_COMPONENTS,
   A2UI_FUNCTION_NAMES,
   BASIC_CATALOG_DOCUMENT,
 } from './catalog';
@@ -19,9 +20,9 @@ const report = [
       components: [
         { child: 'col', component: 'Card', id: 'root' },
         { children: ['h', 'm', 'p1', 'go'], component: 'Column', id: 'col' },
-        { component: 'Text', id: 'h', text: '#### DC daily check' },
-        { component: 'Metrics', id: 'm', items: { '@path': '/metrics' } },
-        { component: 'Callout', id: 'p1', level: 'error', title: 'P1 · balance exhausted' },
+        { component: 'Heading', id: 'h', text: 'DC daily check' },
+        { component: 'StatGroup', id: 'm', items: { '@path': '/metrics' } },
+        { component: 'Alert', id: 'p1', title: 'P1 · balance exhausted', tone: 'error' },
         {
           action: { event: { name: 'rotateKey' } },
           child: 'goL',
@@ -39,7 +40,7 @@ const report = [
     updateDataModel: {
       path: '/',
       surfaceId: 'dc',
-      value: { metrics: [{ delta: '+62%', label: 'error-log', tone: 'bad', value: '225' }] },
+      value: { metrics: [{ delta: '+62%', label: 'error-log', trend: 'up', value: '225' }] },
     },
     version: '1.0',
   },
@@ -133,22 +134,13 @@ describe('validateSurface', () => {
   });
 });
 
-describe('Chart', () => {
+describe('charts', () => {
   const chart = (data: unknown[]) =>
     validateSurface([
       {
         updateComponents: {
           components: [
-            { child: 'c', component: 'Card', id: 'root' },
-            {
-              categories: ['p95'],
-              component: 'Chart',
-              data,
-              id: 'c',
-              index: 'hour',
-              title: 'Hourly P95',
-              type: 'line',
-            },
+            { component: 'LineChart', data, id: 'root', title: 'Hourly P95', unit: 's' },
           ],
           surfaceId: 's',
         },
@@ -156,18 +148,52 @@ describe('Chart', () => {
       },
     ]);
 
-  it('accepts a chart and names it in the card text', () => {
+  it('accepts a chart in the official long format and names it in the card text', () => {
     const result = chart([
-      { hour: '00', p95: 0.9 },
-      { hour: '01', p95: 1.6 },
+      { x: '00', y: 0.9 },
+      { x: '01', y: 1.6 },
+      { x: '02', y: 1.2 },
     ]);
-    expect(result.ok).toBe(true);
+    expect(result.ok ? [] : result.errors).toEqual([]);
     expect(result.ok && surfaceToText(result.record)).toBe('Hourly P95');
   });
 
   it('refuses a chart with more rows than a picture can carry', () => {
-    const result = chart(Array.from({ length: 201 }, (_, hour) => ({ hour, p95: 1 })));
+    const result = chart(Array.from({ length: 201 }, (_, x) => ({ x, y: 1 })));
     expect(!result.ok && result.errors[0]).toMatch(/at most 200 rows/);
+  });
+});
+
+describe('retired 1.x components', () => {
+  it('turns new cards away from them, naming what replaces them', () => {
+    const result = validateSurface([
+      {
+        updateComponents: {
+          components: [{ component: 'Metrics', id: 'root', items: [{ label: 'a', value: '1' }] }],
+          surfaceId: 's',
+        },
+        version: '1.0',
+      },
+    ]);
+    expect(!result.ok && result.errors).toEqual(['Metrics (root) is retired: use StatGroup']);
+    for (const name of [
+      'Chart',
+      'Statistic',
+      'Table',
+      'KeyValue',
+      'Steps',
+      'Tag',
+      'Collapse',
+      'Code',
+    ])
+      expect(A2UI_DEPRECATED_COMPONENTS[name]).toBeTruthy();
+  });
+
+  it('leaves them out of what an Agent writes against', () => {
+    for (const name of Object.keys(A2UI_DEPRECATED_COMPONENTS)) {
+      expect(A2UI_COMPONENT_NAMES.has(name)).toBe(false);
+      expect(A2UI_CATALOG_DOCUMENT.components[name]).toBeTruthy();
+    }
   });
 });
 
@@ -219,52 +245,45 @@ describe('LobeHub extensions and safety', () => {
       ...(value ? [{ updateDataModel: { path: '/', surfaceId: 's', value }, version: '1.0' }] : []),
     ]);
 
-  it('accepts any root and reads extensions back as text', () => {
+  it('accepts any root and reads the official components back as text', () => {
     const result = surface([
-      { children: ['t', 'kv', 'steps', 'p'], component: 'Column', id: 'root' },
+      { children: ['h', 't', 'kv', 'steps', 'p'], component: 'Column', id: 'root' },
+      { component: 'Heading', eyebrow: 'Billing', id: 'h', subtitle: 'Pro fits', text: 'Plans' },
       {
         columns: [
           { key: 'plan', label: 'Plan' },
-          { align: 'end', key: 'price', label: 'Price' },
+          { align: 'right', format: 'currency', key: 'price', label: 'Price' },
         ],
-        component: 'Table',
+        component: 'DataTable',
         id: 't',
         rows: [{ plan: 'Pro', price: 19 }],
+        title: 'Prices',
       },
-      { component: 'KeyValue', id: 'kv', items: [{ label: 'Seats', value: '20' }] },
+      { component: 'KeyValueList', id: 'kv', items: [{ label: 'Seats', value: '20' }] },
       {
-        component: 'Steps',
+        component: 'Timeline',
         id: 'steps',
-        items: [{ meta: '09:00', status: 'done', title: 'Ship' }],
+        items: [{ status: 'done', time: '09:00', title: 'Ship' }],
       },
       { caption: '7 / 10 GB', component: 'Progress', id: 'p', label: 'Storage', value: 70 },
     ]);
     expect(result.ok ? [] : result.errors).toEqual([]);
     expect(result.ok && surfaceToText(result.record)).toBe(
-      'Pro, 19 · Seats: 20 · 09:00 Ship · Storage 7 / 10 GB',
+      'Plans · Billing · Pro fits · Prices · Seats: 20 · 09:00 Ship · Storage 7 / 10 GB',
     );
   });
 
-  it('checks extension props against the catalog schema', () => {
+  it('checks component props against the official schemas', () => {
     const bogus = surface([
-      { component: 'Metrics', id: 'root', items: [{ bogus: 1, label: 'a', value: '1' }] },
+      { component: 'StatGroup', id: 'root', items: [{ bogus: 1, label: 'a', value: '1' }] },
     ]);
-    expect(!bogus.ok && bogus.errors.join()).toMatch(/Unrecognized key\(s\) in object: 'bogus'/);
-    const wide = surface([
-      {
-        columns: Array.from({ length: 9 }, (_, i) => ({ key: `k${i}`, label: `K${i}` })),
-        component: 'Table',
-        id: 'root',
-        rows: [],
-      },
-    ]);
-    expect(wide.ok).toBe(false);
+    expect(bogus.ok).toBe(false);
     const grid = surface([{ children: ['a'], columns: 6, component: 'Grid', id: 'root' }]);
+    expect(grid.ok).toBe(false);
     const items = surface([{ component: 'Items', id: 'root', items: [], title: 'x' }]);
     expect(!items.ok && items.errors[0]).toMatch(/Unknown component "Items"/);
-    expect(grid.ok).toBe(false);
-    const chart = surface([{ component: 'Chart', data: [], id: 'root', index: 'x', type: 'pie' }]);
-    expect(chart.ok).toBe(false);
+    const pie = surface([{ component: 'PieChart', data: [{ label: 'a' }], id: 'root' }]);
+    expect(pie.ok).toBe(false);
   });
 
   it('caps bound lists like literal ones', () => {
@@ -272,14 +291,14 @@ describe('LobeHub extensions and safety', () => {
       [
         {
           columns: [{ key: 'n', label: 'N' }],
-          component: 'Table',
+          component: 'DataTable',
           id: 'root',
           rows: { '@path': '/rows' },
         },
       ],
-      { rows: Array.from({ length: 51 }, (_, n) => ({ n })) },
+      { rows: Array.from({ length: 201 }, (_, n) => ({ n })) },
     );
-    expect(!result.ok && result.errors).toContain('Table root: at most 50 rows');
+    expect(!result.ok && result.errors).toContain('DataTable root: at most 200 rows');
   });
 
   it('keeps media and links on https, bound data included', () => {
@@ -313,25 +332,27 @@ describe('LobeHub extensions and safety', () => {
     expect(!link.ok && link.errors).toContain('Button root: openUrl needs an https url');
   });
 
-  it('checks icon names in every set and suggests close ones', () => {
+  it('checks icon names against the bundled set and suggests close ones', () => {
     const ok = surface([
-      { children: ['a', 'b', 'c', 'd', 'e'], component: 'Row', id: 'root' },
+      { children: ['a', 'b', 'c'], component: 'Row', id: 'root' },
       { component: 'Icon', id: 'a', name: 'home' },
       { component: 'Icon', id: 'b', name: 'lucide:trending-up' },
       { component: 'Icon', id: 'c', name: 'lucide:TrendingUp' },
-      { component: 'Icon', id: 'd', name: 'simple:github' },
-      { component: 'Icon', id: 'e', name: 'lobehub:openai' },
     ]);
     expect(ok.ok ? [] : ok.errors).toEqual([]);
 
     const unknown = surface([{ component: 'Icon', id: 'root', name: 'lucide:trending-upp' }]);
     expect(!unknown.ok && unknown.errors[0]).toMatch(
-      /No lucide icon named "trending-upp"\. Did you mean: .*lucide:trending-up/,
+      /No lucide icon named "trending-upp" in the card set\. Did you mean: .*lucide:trending-up/,
     );
     const basic = surface([{ component: 'Icon', id: 'root', name: 'rocket' }]);
     expect(!basic.ok && basic.errors[0]).toMatch(/not a basic icon name/);
-    const brand = surface([{ component: 'Icon', id: 'root', name: 'simple:nosuchbrand' }]);
-    expect(brand.ok).toBe(false);
+    for (const name of ['simple:github', 'lobehub:openai']) {
+      const brand = surface([{ component: 'Icon', id: 'root', name }]);
+      expect(brand.ok).toBe(false);
+    }
+    const unbundled = surface([{ component: 'Icon', id: 'root', name: 'lucide:a-arrow-down' }]);
+    expect(!unbundled.ok && unbundled.errors[0]).toMatch(/in the card set/);
     const extra = surface([{ component: 'Icon', id: 'root', name: 'home', set: 'lucide' }]);
     expect(extra.ok).toBe(false);
     const svg = surface([

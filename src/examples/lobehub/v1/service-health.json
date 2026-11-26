@@ -1,6 +1,6 @@
 {
   "name": "Service Health",
-  "description": "A status report: the verdict in a heading row with a Tag, headline figures in Metrics, the trend as a line Chart, and the incident as a Callout. No buttons: the card is the answer.",
+  "description": "A status report: a Heading with a Badge, a StatGroup of the headline figures, a LineChart of the trend and an Alert for the incident.",
   "messages": [
     {
       "version": "1.0",
@@ -17,56 +17,67 @@
           {
             "id": "root",
             "component": "Column",
-            "children": ["header", "figures", "latency", "incident"]
+            "children": ["top", "figures", "latency", "incident"]
           },
           {
-            "id": "header",
+            "id": "top",
             "component": "Row",
-            "children": ["icon", "title", "status"],
-            "align": "center"
+            "align": "center",
+            "justify": "spaceBetween",
+            "children": ["head", "state"]
           },
           {
-            "id": "icon",
-            "component": "Icon",
-            "name": "lucide:activity"
+            "id": "head",
+            "component": "Heading",
+            "text": "API health",
+            "eyebrow": "Degraded since 14:00"
           },
           {
-            "id": "title",
-            "component": "Text",
-            "text": "#### API health: degraded since 14:00",
-            "weight": 1
-          },
-          {
-            "id": "status",
-            "component": "Tag",
-            "text": "Degraded",
+            "id": "state",
+            "component": "Badge",
+            "label": "Degraded",
             "color": "warning"
           },
           {
             "id": "figures",
-            "component": "Metrics",
-            "items": {
-              "@path": "/metrics"
-            }
+            "component": "StatGroup",
+            "items": [
+              {
+                "label": "Error rate",
+                "value": "2.4%",
+                "delta": "+1.6 pts",
+                "trend": "up"
+              },
+              {
+                "label": "P95 latency",
+                "value": "1.8s",
+                "delta": "+0.7s",
+                "trend": "up"
+              },
+              {
+                "label": "Requests",
+                "value": "3,214",
+                "delta": "+4%",
+                "trend": "flat"
+              }
+            ]
           },
           {
             "id": "latency",
-            "component": "Chart",
-            "type": "line",
+            "component": "LineChart",
             "title": "P95 latency by hour",
+            "subtitle": "Up 2.3x after the 14:00 deploy",
+            "unit": "s",
             "data": {
               "@path": "/latency"
-            },
-            "index": "hour",
-            "categories": ["p95"],
-            "unit": "s"
+            }
           },
           {
             "id": "incident",
-            "component": "Callout",
-            "level": "warning",
+            "component": "Alert",
+            "tone": "warning",
             "title": "Provider timeouts after the 14:00 deploy",
-            "body": "Rollback is staged; the error rate is still 3x the baseline."
+            "message": "Rollback is staged; the error rate is still 3x the baseline."
           }
         ]
       }
@@ -77,49 +88,30 @@
         "surfaceId": "service-health",
         "path": "/",
         "value": {
-          "metrics": [
-            {
-              "label": "Error rate",
-              "value": "2.4%",
-              "delta": "+1.6pt",
-              "direction": "up",
-              "tone": "bad"
-            },
-            {
-              "label": "P95",
-              "value": "1.8s",
-              "delta": "+0.7s",
-              "direction": "up",
-              "tone": "bad"
-            },
-            {
-              "label": "Requests",
-              "value": "3,214",
-              "delta": "+4%",
-              "direction": "up",
-              "tone": "neutral"
-            }
-          ],
           "latency": [
             {
-              "hour": "12:00",
-              "p95": 1.0
+              "x": "11:00",
+              "y": 1.0
             },
             {
-              "hour": "13:00",
-              "p95": 1.1
+              "x": "12:00",
+              "y": 1.0
             },
             {
-              "hour": "14:00",
-              "p95": 2.3
+              "x": "13:00",
+              "y": 1.1
             },
             {
-              "hour": "15:00",
-              "p95": 2.0
+              "x": "14:00",
+              "y": 2.3
             },
             {
-              "hour": "16:00",
-              "p95": 1.8
+              "x": "15:00",
+              "y": 2.0
+            },
+            {
+              "x": "16:00",
+              "y": 1.8
             }
           ]
         }

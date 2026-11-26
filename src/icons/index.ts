@@ -2,41 +2,29 @@ import {
   type A2uiIconSet,
   BASIC_ICON_TO_LUCIDE,
   normalizeLucideName,
-  normalizeSimpleName,
   parseIconName,
 } from './basic';
-import { LOBEHUB_NAMES, LUCIDE_NAMES, SIMPLE_NAMES } from './names';
+import { LUCIDE_NAMES } from './names';
 
 export { type A2uiIconSet, BASIC_ICON_TO_LUCIDE, ICON_SETS, parseIconName } from './basic';
+export { LUCIDE_NAMES } from './names';
 
-const sets: Record<A2uiIconSet, string> = {
-  lobehub: LOBEHUB_NAMES,
-  lucide: LUCIDE_NAMES,
-  simple: SIMPLE_NAMES,
-};
-const cache = new Map<A2uiIconSet, Set<string>>();
+let lucide: Set<string> | undefined;
 /** The names in one set, parsed on first use. */
-export const iconNames = (set: A2uiIconSet): ReadonlySet<string> => {
-  let names = cache.get(set);
-  if (!names) cache.set(set, (names = new Set(sets[set].split(' '))));
-  return names;
-};
+export const iconNames = (_set: A2uiIconSet = 'lucide'): ReadonlySet<string> =>
+  (lucide ??= new Set(LUCIDE_NAMES.split(' ')));
 
-/** The name as the set writes it: kebab-case for Lucide, lowercase slugs for Simple Icons. */
-export const normalizeIconName = (set: A2uiIconSet, name: string): string => {
-  if (set === 'lucide') return normalizeLucideName(name);
-  if (set === 'simple') return normalizeSimpleName(name);
-  const lower = name.trim().toLowerCase();
-  return [...iconNames('lobehub')].find((id) => id.toLowerCase() === lower) ?? name.trim();
-};
+/** The name as the set writes it: kebab-case for Lucide. */
+export const normalizeIconName = (_set: A2uiIconSet, name: string): string =>
+  normalizeLucideName(name);
 
 /** A few names close to `name`, for an error that helps the model pick a real one. */
-const suggest = (set: A2uiIconSet, name: string) => {
-  const needle = normalizeIconName(set, name).replaceAll('-', '');
+const suggest = (name: string) => {
+  const needle = normalizeLucideName(name).replaceAll('-', '');
   const head = needle.slice(0, 4);
-  return [...iconNames(set)]
+  return [...iconNames()]
     .filter((candidate) => {
-      const flat = candidate.toLowerCase().replaceAll('-', '');
+      const flat = candidate.replaceAll('-', '');
       return flat.includes(needle) || needle.includes(flat) || (head && flat.startsWith(head));
     })
     .slice(0, 5);
@@ -47,10 +35,12 @@ export const iconError = (value: string): string | undefined => {
   const parsed = parseIconName(value);
   if ('basic' in parsed) {
     if (parsed.basic in BASIC_ICON_TO_LUCIDE) return undefined;
-    return `"${value}" is not a basic icon name. Use a basic name, or "lucide:<name>", "simple:<brand>" or "lobehub:<provider>"`;
+    if (/^\w+:/.test(parsed.basic))
+      return `"${value}": brand icons are not available. Use a basic name or "lucide:<name>"`;
+    return `"${value}" is not a basic icon name. Use a basic name or "lucide:<name>"`;
   }
-  const { name, set } = parsed;
-  if (iconNames(set).has(normalizeIconName(set, name))) return undefined;
-  const close = suggest(set, name).map((candidate) => `${set}:${candidate}`);
-  return `No ${set} icon named "${name}"${close.length > 0 ? `. Did you mean: ${close.join(', ')}?` : ''}`;
+  const { name } = parsed;
+  if (iconNames().has(normalizeLucideName(name))) return undefined;
+  const close = suggest(name).map((candidate) => `lucide:${candidate}`);
+  return `No lucide icon named "${name}" in the card set${close.length > 0 ? `. Did you mean: ${close.join(', ')}?` : ''}`;
 };
