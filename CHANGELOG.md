@@ -2,6 +2,12 @@
 
 # Changelog
 
+# [1.3.0](https://github.com/lobehub/lobe-a2ui/compare/v1.2.1...v1.3.0) (2026-11-26)
+
+### ✨ Features
+
+- Cards in the official A2UI playground look, on its catalog, closes [#6](https://github.com/lobehub/lobe-a2ui/issues/6) ([4120c66](https://github.com/lobehub/lobe-a2ui/commit/4120c66))
+
 ## [1.2.1](https://github.com/lobehub/lobe-a2ui/compare/v1.2.0...v1.2.1) (2026-11-26)
 
 ### 🐛 Bug Fixes
