@@ -6,10 +6,15 @@ import {
   GaugeChart,
   HeatmapChart,
   LineChart,
+  LocationCard,
+  MapView,
+  PlaceList,
   RadarChart,
   SankeyChart,
+  RouteMap,
   ScatterChart,
   SparkAreaChart,
+  StockTicker,
   TreemapChart,
 } from '@lobehub/charts';
 
@@ -229,6 +234,111 @@ export const SparklineView = define('Sparkline', ({ props }) => {
       label={text(props.label)}
       tone={SPARK_TONE[props.tone as keyof typeof SPARK_TONE]}
       value={text(props.value) ?? (values.length > 0 ? values.at(-1)!.toLocaleString(locale) : '')}
+      variant="a2ui"
+    />
+  );
+});
+
+// --- Stock ticker and maps (MapLibre on OpenFreeMap tiles, no key; maplibre-gl loads lazily) ---
+
+const num2 = (value: unknown) =>
+  typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+const BASEMAPS = new Set(['liberty', 'bright', 'positron', 'dark', 'fiord']);
+/** The official schema names CARTO-era basemaps; ours are OpenFreeMap's, `auto` follows the theme. */
+const basemapOf = (value: unknown) =>
+  value === 'streets' ? 'liberty' : BASEMAPS.has(value as string) ? (value as never) : undefined;
+
+export const StockTickerView = define('StockTicker', ({ props }) => {
+  const locale = useA2uiHost()?.locale;
+  return (
+    <StockTicker
+      change={num2(props.change)}
+      changePct={num2(props.changePct)}
+      currency={text(props.currency)}
+      locale={locale}
+      name={text(props.name)}
+      price={num2(props.price) ?? 0}
+      sample={props.sample === true}
+      symbol={text(props.symbol) ?? ''}
+      variant="a2ui"
+      series={(Array.isArray(props.series) ? props.series : [])
+        .map(Number)
+        .filter(Number.isFinite)
+        .slice(-A2UI_LIST_LIMITS.StockTicker.series)}
+      stats={rowsOf<Row>(props.stats, 12).map((stat) => ({
+        label: String(stat.label ?? ''),
+        value: String(stat.value ?? ''),
+      }))}
+    />
+  );
+});
+
+const pointsOf = (value: unknown, max: number) =>
+  rowsOf<Row>(value, max)
+    .filter((point) => num2(point.lat) !== undefined && num2(point.lon) !== undefined)
+    .map((point) => ({
+      ...point,
+      lat: point.lat as number,
+      lon: point.lon as number,
+      name: String(point.name ?? ''),
+    }));
+
+export const MapViewView = define('MapView', ({ props }) => (
+  <MapView
+    height={num2(props.height)}
+    markers={pointsOf(props.markers, A2UI_LIST_LIMITS.MapView.markers) as never}
+    title={text(props.title)}
+    variant="a2ui"
+    zoom={num2(props.zoom)}
+  />
+));
+
+export const LocationCardView = define('LocationCard', ({ props }) => {
+  const lat = num2(props.lat);
+  const lon = num2(props.lon);
+  if (lat === undefined || lon === undefined) return null;
+  return (
+    <LocationCard
+      address={text(props.address)}
+      category={text(props.category)}
+      hours={text(props.hours)}
+      lat={lat}
+      lon={lon}
+      name={text(props.name) ?? ''}
+      rating={num2(props.rating)}
+      variant="a2ui"
+    />
+  );
+});
+
+export const PlaceListView = define('PlaceList', ({ props }) => (
+  <PlaceList
+    basemap={basemapOf(props.basemap)}
+    height={num2(props.height)}
+    places={pointsOf(props.places, A2UI_LIST_LIMITS.PlaceList.places) as never}
+    selected={num2(props.selected)}
+    source={text(props.source)}
+    title={text(props.title)}
+    variant="a2ui"
+  />
+));
+
+export const RouteMapView = define('RouteMap', ({ props }) => {
+  const coordinates = (Array.isArray(props.coordinates) ? props.coordinates : [])
+    .filter(
+      (point): point is [number, number] =>
+        Array.isArray(point) && num2(point[0]) !== undefined && num2(point[1]) !== undefined,
+    )
+    .slice(0, A2UI_LIST_LIMITS.RouteMap.coordinates);
+  return (
+    <RouteMap
+      coordinates={coordinates}
+      distance={text(props.distance)}
+      duration={text(props.duration)}
+      from={text(props.from) ?? ''}
+      height={num2(props.height)}
+      title={text(props.title)}
+      to={text(props.to) ?? ''}
       variant="a2ui"
     />
   );
