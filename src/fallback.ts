@@ -273,8 +273,53 @@ const strings = (component: Component, model: Record<string, unknown>): string[]
     case 'Chart': {
       return [...text(component.text), ...text(component.title)];
     }
+    case 'List': {
+      const items = resolve(component.items, model);
+      return Array.isArray(items)
+        ? items.map((item) =>
+            isRecord(item)
+              ? [...text(item.label), ...text(item.value)].join(': ')
+              : (text(item)[0] ?? ''),
+          )
+        : [];
+    }
+    case 'ListItem': {
+      return [[...text(component.label), ...text(component.value)].join(': ')];
+    }
+    case 'FollowUp': {
+      const items = resolve(component.items, model);
+      return Array.isArray(items)
+        ? items.flatMap((item) => (isRecord(item) ? text(item.label) : text(item)))
+        : [];
+    }
+    case 'MapView':
+    case 'PlaceList': {
+      const places = list(component.markers ?? component.places);
+      return [...text(component.title), places.flatMap((p) => text(p.name)).join(', ')].filter(
+        Boolean,
+      );
+    }
+    case 'RouteMap': {
+      return [[...text(component.from), ...text(component.to)].join(' → ')];
+    }
+    case 'WeatherCard': {
+      return [
+        [...text(component.location), ...text(component.temp), ...text(component.condition)].join(
+          ' ',
+        ),
+      ];
+    }
+    case 'StockTicker': {
+      return [[...text(component.symbol), ...text(component.price)].join(' ')];
+    }
     default: {
-      return [...text(component.label)];
+      // Components named by a title, a name or a label: entity, profile, event, recipe and
+      // receipt cards, form fields, citations.
+      for (const key of ['title', 'name', 'merchant', 'label', 'text'] as const) {
+        const found = text(component[key]);
+        if (found.length > 0) return [...found, ...text(component.subtitle)];
+      }
+      return [];
     }
   }
 };

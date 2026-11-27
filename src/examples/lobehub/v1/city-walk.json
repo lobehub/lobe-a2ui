@@ -1,0 +1,83 @@
+{
+  "name": "City Walk",
+  "description": "Places: a Heading, a MapView with numbered stops (named places with coordinates), a LocationCard for the lunch spot and a FollowUp.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "city-walk",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "city-walk",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "map", "lunch", "next"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "A morning in Lisbon",
+            "eyebrow": "Walk",
+            "subtitle": "Five stops, about 4 km, mostly downhill"
+          },
+          {
+            "id": "map",
+            "component": "MapView",
+            "title": "The route",
+            "markers": [
+              {
+                "name": "Miradouro da Graça",
+                "lat": 38.7163,
+                "lon": -9.1316,
+                "description": "Start with the view"
+              },
+              {
+                "name": "Castelo de São Jorge",
+                "lat": 38.7139,
+                "lon": -9.1335
+              },
+              {
+                "name": "Sé de Lisboa",
+                "lat": 38.7098,
+                "lon": -9.1335
+              },
+              {
+                "name": "Praça do Comércio",
+                "lat": 38.7076,
+                "lon": -9.1365
+              },
+              {
+                "name": "Time Out Market",
+                "lat": 38.707,
+                "lon": -9.1458,
+                "description": "Lunch"
+              }
+            ]
+          },
+          {
+            "id": "lunch",
+            "component": "LocationCard",
+            "name": "Time Out Market",
+            "address": "Av. 24 de Julho 49, Lisbon",
+            "lat": 38.707,
+            "lon": -9.1458,
+            "category": "Food hall",
+            "rating": 4.4,
+            "hours": "10:00-24:00"
+          },
+          {
+            "id": "next",
+            "component": "FollowUp",
+            "items": ["Make it shorter", "Add a coffee stop", "Plan the afternoon"]
+          }
+        ]
+      }
+    }
+  ]
+}

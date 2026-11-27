@@ -44,8 +44,11 @@ import basic_track_list from './basic/v1/track-list.json';
 import basic_user_profile from './basic/v1/user-profile.json';
 import basic_weather_current from './basic/v1/weather-current.json';
 import basic_workout_summary from './basic/v1/workout-summary.json';
+import lobehub_branch_check from './lobehub/v1/branch-check.json';
+import lobehub_city_walk from './lobehub/v1/city-walk.json';
 import lobehub_cloud_costs from './lobehub/v1/cloud-costs.json';
 import lobehub_code_answer from './lobehub/v1/code-answer.json';
+import lobehub_event_signup from './lobehub/v1/event-signup.json';
 import lobehub_model_comparison from './lobehub/v1/model-comparison.json';
 import lobehub_offsite_agenda from './lobehub/v1/offsite-agenda.json';
 import lobehub_plan_comparison from './lobehub/v1/plan-comparison.json';
@@ -107,8 +110,11 @@ export const A2UI_EXAMPLES = {
   { ...basic_workout_summary, catalog: 'basic', id: 'workout-summary' },
   ],
   lobehub: [
+  { ...lobehub_branch_check, catalog: 'lobehub', id: 'branch-check' },
+  { ...lobehub_city_walk, catalog: 'lobehub', id: 'city-walk' },
   { ...lobehub_cloud_costs, catalog: 'lobehub', id: 'cloud-costs' },
   { ...lobehub_code_answer, catalog: 'lobehub', id: 'code-answer' },
+  { ...lobehub_event_signup, catalog: 'lobehub', id: 'event-signup' },
   { ...lobehub_model_comparison, catalog: 'lobehub', id: 'model-comparison' },
   { ...lobehub_offsite_agenda, catalog: 'lobehub', id: 'offsite-agenda' },
   { ...lobehub_plan_comparison, catalog: 'lobehub', id: 'plan-comparison' },

@@ -10,7 +10,9 @@ export const a2ui = createStaticStyles(({ css, cssVar }) => ({
     --a2-foreground: ${cssVar.colorText};
     --a2-muted: ${cssVar.colorTextSecondary};
     --a2-surface: ${cssVar.colorBgContainer};
-    --a2-floor: ${cssVar.colorBgLayout};
+    /* The floor is the host's own background, a hair off it (official: page 0.135, floor 0.145 in
+       dark; 0.992 and 0.985 in light), so it never reads as a dark well under the chat. */
+    --a2-floor: color-mix(in srgb, ${cssVar.colorText} 2.5%, transparent);
     --a2-line: ${cssVar.colorBorderSecondary};
     --a2-line-strong: ${cssVar.colorBorder};
     --a2-radius: 14px;
