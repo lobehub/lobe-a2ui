@@ -9,10 +9,12 @@ export const a2ui = createStaticStyles(({ css, cssVar }) => ({
   floor: css`
     --a2-foreground: ${cssVar.colorText};
     --a2-muted: ${cssVar.colorTextSecondary};
-    --a2-surface: ${cssVar.colorBgContainer};
-    /* The floor is the host's own background, a hair off it (official: page 0.135, floor 0.145 in
-       dark; 0.992 and 0.985 in light), so it never reads as a dark well under the chat. */
-    --a2-floor: color-mix(in srgb, ${cssVar.colorText} 2.5%, transparent);
+    /* Floor and card are steps of the theme's backgrounds from @lobehub/ui (--lobe-a2ui-*), so a
+       card always reads a step above its floor whatever the host's background: light, a 2.5% tint
+       over the host under white cards; dark, the container colour tinted 2.5% under elevated cards
+       (official: floor 0.145, card 0.172 L). The fallbacks cover an older @lobehub/ui. */
+    --a2-surface: var(--lobe-a2ui-surface, ${cssVar.colorBgContainer});
+    --a2-floor: var(--lobe-a2ui-floor, color-mix(in srgb, ${cssVar.colorText} 2.5%, transparent));
     --a2-line: ${cssVar.colorBorderSecondary};
     --a2-line-strong: ${cssVar.colorBorder};
     --a2-radius: 14px;
