@@ -84,7 +84,7 @@
     "@commitlint/cli": "^19.8.1",
     "@lobehub/charts": "^6.3.0",
     "@lobehub/lint": "^2.1.6",
-    "@lobehub/ui": "6.25.0",
+    "@lobehub/ui": "^6.26.0",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -110,7 +110,7 @@
   },
   "peerDependencies": {
     "@lobehub/charts": "^6.3.0",
-    "@lobehub/ui": "^6.23.0",
+    "@lobehub/ui": "^6.26.0",
     "lucide-react": "^1.55.0",
     "maplibre-gl": "^5.0.0",
     "react": "^19.0.0",
