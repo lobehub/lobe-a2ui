@@ -2,6 +2,12 @@
 
 # Changelog
 
+## [1.4.1](https://github.com/lobehub/lobe-a2ui/compare/v1.4.0...v1.4.1) (2026-11-28)
+
+### 🐛 Bug Fixes
+
+- **react**: Dark floor below its cards, closes [#8](https://github.com/lobehub/lobe-a2ui/issues/8) ([8d2a77d](https://github.com/lobehub/lobe-a2ui/commit/8d2a77d))
+
 # [1.4.0](https://github.com/lobehub/lobe-a2ui/compare/v1.3.0...v1.4.0) (2026-11-28)
 
 ### ✨ Features
