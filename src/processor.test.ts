@@ -80,7 +80,7 @@ describe('createA2uiProcessor', () => {
   it('reports prompt sizes', () => {
     const sizes = {
       'basic, no examples': createA2uiProcessor({ catalogs: ['basic'], examples: false }),
-      'basic + lobehub, all 60 examples': createA2uiProcessor({ examples: 'all' }),
+      'basic + lobehub, all 62 examples': createA2uiProcessor({ examples: 'all' }),
       'basic + lobehub, default examples': createA2uiProcessor(),
       'basic + lobehub, no examples': createA2uiProcessor({ examples: false }),
       'basic only, default examples': createA2uiProcessor({ catalogs: ['basic'] }),

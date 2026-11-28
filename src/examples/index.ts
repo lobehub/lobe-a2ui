@@ -48,9 +48,11 @@ import lobehub_branch_check from './lobehub/v1/branch-check.json';
 import lobehub_city_walk from './lobehub/v1/city-walk.json';
 import lobehub_cloud_costs from './lobehub/v1/cloud-costs.json';
 import lobehub_code_answer from './lobehub/v1/code-answer.json';
+import lobehub_dinner_party from './lobehub/v1/dinner-party.json';
 import lobehub_event_signup from './lobehub/v1/event-signup.json';
 import lobehub_model_comparison from './lobehub/v1/model-comparison.json';
 import lobehub_offsite_agenda from './lobehub/v1/offsite-agenda.json';
+import lobehub_order_status from './lobehub/v1/order-status.json';
 import lobehub_plan_comparison from './lobehub/v1/plan-comparison.json';
 import lobehub_release_pipeline from './lobehub/v1/release-pipeline.json';
 import lobehub_sales_dashboard from './lobehub/v1/sales-dashboard.json';
@@ -114,9 +116,11 @@ export const A2UI_EXAMPLES = {
   { ...lobehub_city_walk, catalog: 'lobehub', id: 'city-walk' },
   { ...lobehub_cloud_costs, catalog: 'lobehub', id: 'cloud-costs' },
   { ...lobehub_code_answer, catalog: 'lobehub', id: 'code-answer' },
+  { ...lobehub_dinner_party, catalog: 'lobehub', id: 'dinner-party' },
   { ...lobehub_event_signup, catalog: 'lobehub', id: 'event-signup' },
   { ...lobehub_model_comparison, catalog: 'lobehub', id: 'model-comparison' },
   { ...lobehub_offsite_agenda, catalog: 'lobehub', id: 'offsite-agenda' },
+  { ...lobehub_order_status, catalog: 'lobehub', id: 'order-status' },
   { ...lobehub_plan_comparison, catalog: 'lobehub', id: 'plan-comparison' },
   { ...lobehub_release_pipeline, catalog: 'lobehub', id: 'release-pipeline' },
   { ...lobehub_sales_dashboard, catalog: 'lobehub', id: 'sales-dashboard' },

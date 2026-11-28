@@ -1,0 +1,90 @@
+{
+  "name": "Dinner Party",
+  "description": "Domain cards: a Heading, a WeatherCard for the evening, a RecipeCard with its checklist and steps, and a FollowUp.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "dinner-party",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "dinner-party",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "weather", "recipe", "next"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "Saturday dinner on the terrace",
+            "subtitle": "Clear until 22:00; pesto pasta for four takes 25 minutes"
+          },
+          {
+            "id": "weather",
+            "component": "WeatherCard",
+            "location": "Lisbon",
+            "temp": 21,
+            "condition": "Clear",
+            "icon": "sun",
+            "high": 24,
+            "low": 16,
+            "feels": 21,
+            "humidity": 55,
+            "wind": 12,
+            "unit": "C",
+            "hourly": [
+              {
+                "label": "18:00",
+                "temp": 22,
+                "icon": "sun"
+              },
+              {
+                "label": "19:00",
+                "temp": 21,
+                "icon": "sun"
+              },
+              {
+                "label": "20:00",
+                "temp": 19,
+                "icon": "cloud-sun"
+              },
+              {
+                "label": "21:00",
+                "temp": 18,
+                "icon": "cloud-sun"
+              },
+              {
+                "label": "22:00",
+                "temp": 17,
+                "icon": "cloud",
+                "precip": 10
+              }
+            ]
+          },
+          {
+            "id": "recipe",
+            "component": "RecipeCard",
+            "title": "Basil pesto farfalle with blistered tomatoes",
+            "time": "25 min",
+            "servings": 4,
+            "difficulty": "Easy",
+            "tags": ["Vegetarian"],
+            "ingredients": ["400 g farfalle", "3 cups fresh basil", "40 g pine nuts, toasted", "1 clove garlic", "60 g parmesan, grated", "120 ml olive oil", "300 g cherry tomatoes"],
+            "steps": ["Cook the farfalle in well salted water; save a cup of the water.", "Blend basil, pine nuts, garlic and parmesan, then stream in the oil.", "Blister the tomatoes in a hot pan, about 3 minutes.", "Toss pasta with pesto and a splash of pasta water; top with the tomatoes."]
+          },
+          {
+            "id": "next",
+            "component": "FollowUp",
+            "items": ["Make it vegan", "Add a dessert", "Scale it to eight people"]
+          }
+        ]
+      }
+    }
+  ]
+}

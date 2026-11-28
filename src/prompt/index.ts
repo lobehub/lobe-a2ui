@@ -38,7 +38,7 @@ export const loadExamples = (
 
 /**
  * The examples the prompt shows by default: a varied subset, since every example costs tokens
- * (`loadExamples()` returns all 60). Official basic surfaces first, then LobeHub's, which show
+ * (`loadExamples()` returns all 62). Official basic surfaces first, then LobeHub's, which show
  * the extension components in differently shaped cards.
  */
 export const A2UI_PROMPT_EXAMPLE_IDS = [
