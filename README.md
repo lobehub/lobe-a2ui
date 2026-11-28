@@ -61,14 +61,19 @@ All 43 official examples (`src/examples/basic/v1`, from `catalogs/basic/v1/examp
 
 `src/schema/lobehub_catalog.json` (catalog id `https://lobehub.com/a2ui/catalog/v1`) takes these components from the official playground catalog, with its schemas and descriptions, and draws them with the `a2ui` variant of `@lobehub/ui` (6.23+) and `@lobehub/charts` (6.2+): the official layout, type and spacing on LobeHub's own colour tokens, light and dark.
 
-| Group    | Components                                                                                                                                                                                               |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Text     | `Heading` (title, the context after it, a subtitle), `Section`, `Title`, `Caption`, `Markdown`, `Quote`, `Kbd`, `Link`, `LinkCard`                                                                       |
-| KPIs     | `Stat`, `StatGroup`, `Sparkline`                                                                                                                                                                         |
-| Data     | `DataTable` (formats, badges, search, pages), `KeyValueList`, `Timeline`, `Agenda`, `ComparisonTable`, `TagList`, `Badge`, `Avatar`, `AvatarGroup`, `Rating`, `Progress`, `RadialProgress`               |
-| Charts   | `LineChart`, `AreaChart`, `BarChart`, `PieChart`, `ScatterChart`, `RadarChart`, `Heatmap`, `Gauge`, `Treemap`, `SankeyChart`, `CandlestickChart` (data in the official long format, `[{x, y, series?}]`) |
-| Feedback | `Alert`, `Callout`, `EmptyState`, `CodeBlock`, `Accordion`                                                                                                                                               |
-| Layout   | `Grid` (2-4 columns that step down with the surface width), `Card` with an optional `action` (the whole card clickable), `Icon` (bundled Lucide)                                                         |
+| Group                 | Components                                                                                                                                                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Text                  | `Heading` (title, the context after it, a subtitle), `Section`, `Title`, `Caption`, `Markdown`, `Quote`, `Kbd`, `Link`, `LinkCard`, `Citation`, `Math`                                                                                                                    |
+| KPIs                  | `Stat`, `StatGroup`, `Sparkline`                                                                                                                                                                                                                                          |
+| Lists and data        | `List` / `ListItem` (rows with label, value, description, icon), `EntityCard`, `DataTable` (formats, badges, search, pages), `KeyValueList`, `Timeline`, `Agenda`, `ComparisonTable`, `TagList`, `Badge`, `Avatar`, `AvatarGroup`, `Rating`, `Progress`, `RadialProgress` |
+| Charts                | `LineChart`, `AreaChart`, `BarChart`, `PieChart`, `ScatterChart`, `RadarChart`, `Heatmap`, `Gauge`, `Treemap`, `SankeyChart`, `CandlestickChart` (data in the official long format, `[{x, y, series?}]`)                                                                  |
+| Domain cards          | `WeatherCard`, `ProfileCard`, `ReceiptCard`, `EventCard`, `RecipeCard`, `StockTicker`                                                                                                                                                                                     |
+| Maps                  | `MapView`, `LocationCard`, `PlaceList`, `RouteMap` (coordinates in, no geocoding or routing calls; MapLibre on OpenFreeMap tiles, no key)                                                                                                                                 |
+| Media                 | `ImageGallery`, `ImageGrid`, `VideoEmbed`, `Carousel` / `CarouselItem` / `CarouselMediaItem`                                                                                                                                                                              |
+| Inputs                | `Form`, `Label`, `Select`, `RadioGroup` / `Radio`, `SegmentedControl`, `TextArea`, `Switch`, `ChipSelect`, `DatePicker`, `Combobox`, `ButtonGroup`, and the basic `TextField`, `CheckBox`, `Slider`, `ChoicePicker`, `DateTimeInput` in the same look                     |
+| Conversation          | `FollowUp` (a click sends the pill as the person's next message, without closing the card)                                                                                                                                                                                |
+| Feedback and overlays | `Alert`, `Callout`, `EmptyState`, `Skeleton`, `CodeBlock`, `Accordion`, `Tooltip`, `Popover` / `PopoverTrigger` / `PopoverContent`                                                                                                                                        |
+| Layout                | `Grid` (2-4 columns that step down with the surface width), `Card` with an optional `action` (the whole card clickable), `Icon` (bundled Lucide)                                                                                                                          |
 
 The 1.x components (`Metrics`, `Chart`, `Statistic`, `Table`, `KeyValue`, `Steps`, `Tag`, `Collapse`, `Code`) stay in the catalog, marked `deprecated` with their replacement, so stored cards replay in the same look. New cards may not use them (`validateSurface` names the replacement), and the prompt leaves them out; `validateSurface(ops, { allowDeprecated: true })` accepts them for stored cards.
 
@@ -151,7 +156,7 @@ import { A2uiHostProvider, SurfaceList } from '@lobehub/a2ui/react';
 </A2uiHostProvider>;
 ```
 
-`@lobehub/ui`, `@lobehub/charts`, `lucide-react`, `react` and `react-dom` are peer dependencies.
+`@lobehub/ui`, `@lobehub/charts`, `lucide-react`, `react` and `react-dom` are peer dependencies. `maplibre-gl` (5.x) is an optional peer: install it to draw the map components; without it they show a short note in place of the map, and hosts that never draw a map load none of it.
 
 ## License
 
