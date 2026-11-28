@@ -2,6 +2,12 @@
 
 # Changelog
 
+# [1.4.0](https://github.com/lobehub/lobe-a2ui/compare/v1.3.0...v1.4.0) (2026-11-28)
+
+### ✨ Features
+
+- More of the official A2UI playground: lists, forms, follow-ups, domain cards, maps and media, closes [#7](https://github.com/lobehub/lobe-a2ui/issues/7) ([a0acffa](https://github.com/lobehub/lobe-a2ui/commit/a0acffa))
+
 # [1.3.0](https://github.com/lobehub/lobe-a2ui/compare/v1.2.1...v1.3.0) (2026-11-26)
 
 ### ✨ Features
