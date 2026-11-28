@@ -4,6 +4,16 @@
 
 ## [1.4.1](https://github.com/lobehub/lobe-a2ui/compare/v1.4.0...v1.4.1) (2026-11-28)
 
+### 🎫 Chores
+
+- **release**: V1.4.1 [skip ci], closes [#8](https://github.com/lobehub/lobe-a2ui/issues/8) ([95afbb0](https://github.com/lobehub/lobe-a2ui/commit/95afbb0))
+
+### 🐛 Bug Fixes
+
+- **react**: Dark floor below its cards, closes [#8](https://github.com/lobehub/lobe-a2ui/issues/8) ([8d2a77d](https://github.com/lobehub/lobe-a2ui/commit/8d2a77d))
+
+## [1.4.1](https://github.com/lobehub/lobe-a2ui/compare/v1.4.0...v1.4.1) (2026-11-28)
+
 ### 🐛 Bug Fixes
 
 - **react**: Dark floor below its cards, closes [#8](https://github.com/lobehub/lobe-a2ui/issues/8) ([8d2a77d](https://github.com/lobehub/lobe-a2ui/commit/8d2a77d))
