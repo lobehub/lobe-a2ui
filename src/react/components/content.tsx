@@ -167,7 +167,14 @@ export const AudioPlayerView = define('AudioPlayer', ({ props }) => {
 // --- Retired 1.x LobeHub components ----------------------------------------------------------
 // Kept so stored cards replay, drawn in the same a2ui look as their replacements.
 
-type MetricInput = { delta?: string; direction?: 'down' | 'flat' | 'up'; hint?: string; label: string; tone?: string; value: string };
+type MetricInput = {
+  delta?: string;
+  direction?: 'down' | 'flat' | 'up';
+  hint?: string;
+  label: string;
+  tone?: string;
+  value: string;
+};
 
 export const MetricsView = define('Metrics', ({ props }) => (
   <MetricStrip
@@ -217,9 +224,10 @@ export const KeyValueView = define('KeyValue', ({ props }) => (
     column={props.columns ?? 1}
     title={props.title ? String(props.title) : undefined}
     variant="a2ui"
-    items={rowsOf<{ label?: unknown; value?: unknown }>(props.items, A2UI_LIST_LIMITS.KeyValue.items).map(
-      (item, index) => ({ children: cell(item.value), key: index, label: cell(item.label) }),
-    )}
+    items={rowsOf<{ label?: unknown; value?: unknown }>(
+      props.items,
+      A2UI_LIST_LIMITS.KeyValue.items,
+    ).map((item, index) => ({ children: cell(item.value), key: index, label: cell(item.label) }))}
   />
 ));
 
@@ -260,8 +268,12 @@ export const TagView = define('Tag', ({ props }) => (
   <span style={{ display: 'inline-flex' }}>
     <Tag
       color={props.color === 'default' ? undefined : props.color}
-      icon={props.icon ? <A2uiIcon color="currentColor" name={String(props.icon)} size={12} /> : undefined}
       variant="a2ui"
+      icon={
+        props.icon ? (
+          <A2uiIcon color="currentColor" name={String(props.icon)} size={12} />
+        ) : undefined
+      }
     >
       {String(props.text ?? '')}
     </Tag>

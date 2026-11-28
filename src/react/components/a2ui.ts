@@ -77,6 +77,18 @@ export const a2ui = createStaticStyles(({ css, cssVar }) => ({
     font-weight: 500;
     color: var(--a2-muted);
   `,
+  // The official Form: fields stacked 16px apart, each label above its control.
+  form: css`
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  `,
+  fieldLabel: css`
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--a2-foreground);
+  `,
   muted: css`
     color: var(--a2-muted);
   `,

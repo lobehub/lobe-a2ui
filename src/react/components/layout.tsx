@@ -74,22 +74,6 @@ export const RowView = define('Row', ({ props, buildChild }) => (
   </Flexbox>
 ));
 
-/** A scrolling list; horizontal lists hide the scrollbar and keep each child narrow. */
-export const ListView = define('List', ({ props, buildChild }) => {
-  const horizontal = props.direction === 'horizontal';
-  return (
-    <Flexbox
-      align={ALIGN[(props.align ?? 'stretch') as keyof typeof ALIGN]}
-      className={horizontal ? styles.hList : undefined}
-      gap={horizontal ? 12 : 8}
-      horizontal={horizontal}
-      style={horizontal ? undefined : { maxHeight: 480, overflowY: 'auto' }}
-    >
-      {childrenOf(props.children, buildChild)}
-    </Flexbox>
-  );
-});
-
 type TabInput = { child: string; title?: unknown };
 
 export const TabsView = define('Tabs', ({ props, buildChild }) => {
