@@ -1,3 +1,11 @@
+import type {
+  EventCardProps,
+  ImageGridProps,
+  ProfileCardProps,
+  ReceiptCardProps,
+  RecipeCardProps,
+  WeatherCardProps,
+} from '@lobehub/ui';
 import {
   Accordion,
   Agenda,
@@ -7,12 +15,21 @@ import {
   ComparisonTable,
   Descriptions,
   Empty,
+  EventCard,
   Highlighter,
+  ImageGallery,
+  ImageGrid,
+  MathFormula,
+  ProfileCard,
   Progress,
   Rate,
+  ReceiptCard,
+  RecipeCard,
   Steps,
   Table,
   Tag,
+  VideoEmbed,
+  WeatherCard,
 } from '@lobehub/ui';
 import { MetricStrip, Section, StatCard } from '@lobehub/ui/dashboard';
 import type { ReactNode } from 'react';
@@ -21,7 +38,7 @@ import { A2UI_LIST_LIMITS } from '../../constants';
 import { useA2uiHost } from '../host';
 import { formatNumber, isNumberFormat } from './format';
 import { useLucideIcon } from './icon';
-import { cell, childrenOf, define, rowsOf } from './shared';
+import { cell, childrenOf, define, rowsOf, safeUrl } from './shared';
 
 /**
  * The official playground's data and feedback components, drawn with @lobehub/ui in its `a2ui`
@@ -29,7 +46,8 @@ import { cell, childrenOf, define, rowsOf } from './shared';
  */
 
 type Row = Record<string, unknown>;
-const text = (value: unknown) => (value === undefined || value === null ? undefined : String(value));
+const text = (value: unknown) =>
+  value === undefined || value === null ? undefined : String(value);
 const DIRECTIONS = new Set(['up', 'down', 'flat']);
 const directionOf = (value: unknown) =>
   DIRECTIONS.has(value as string) ? (value as 'up' | 'down' | 'flat') : undefined;
@@ -70,9 +88,18 @@ export const StatGroupView = define('StatGroup', ({ props }) => (
 
 /** A status word's tone, as the official DataTable reads badges: green for done, amber for waiting. */
 const STATUS_TONE: [RegExp, string][] = [
-  [/^(active|paid|done|complete|completed|approved|live|healthy|online|shipped|delivered|resolved|success|passed|on track)$/i, 'success'],
-  [/^(pending|trial|review|in review|in progress|waiting|draft|scheduled|queued|at risk|degraded|warning|paused)$/i, 'warning'],
-  [/^(overdue|failed|failing|blocked|cancelled|canceled|declined|error|offline|down|churned|rejected|critical|late)$/i, 'error'],
+  [
+    /^(active|paid|done|complete|completed|approved|live|healthy|online|shipped|delivered|resolved|success|passed|on track)$/i,
+    'success',
+  ],
+  [
+    /^(pending|trial|review|in review|in progress|waiting|draft|scheduled|queued|at risk|degraded|warning|paused)$/i,
+    'warning',
+  ],
+  [
+    /^(overdue|failed|failing|blocked|cancelled|canceled|declined|error|offline|down|churned|rejected|critical|late)$/i,
+    'error',
+  ],
   [/^(new|info|beta|open|planned)$/i, 'info'],
 ];
 const badgeTone = (value: string) =>
@@ -119,7 +146,8 @@ export const DataTableView = define('DataTable', ({ props }) => {
           dataIndex: column.key,
           key: column.key,
           render: (value: unknown): ReactNode => {
-            if (column.format === 'badge') return value === '' || value == null ? null : badge(cell(value));
+            if (column.format === 'badge')
+              return value === '' || value == null ? null : badge(cell(value));
             if (column.format === 'date') return dateText(value, locale);
             if (numeric && typeof value === 'number')
               return formatNumber(value, column.format as never, locale);
@@ -305,7 +333,9 @@ const TONE_COLOR: Record<string, string | undefined> = {
 };
 
 export const TagListView = define('TagList', ({ props }) => {
-  const tags = (Array.isArray(props.tags) ? props.tags : []).map(String).slice(0, A2UI_LIST_LIMITS.TagList.tags);
+  const tags = (Array.isArray(props.tags) ? props.tags : [])
+    .map(String)
+    .slice(0, A2UI_LIST_LIMITS.TagList.tags);
   const color = TONE_COLOR[props.tone as string];
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minWidth: 0 }}>
@@ -355,14 +385,17 @@ export const CalloutView = define('Callout', ({ props }) => {
         variant="a2ui"
       />
     );
-  const onAction = typeof props.onAction === 'function' ? (props.onAction as () => void) : undefined;
+  const onAction =
+    typeof props.onAction === 'function' ? (props.onAction as () => void) : undefined;
   return (
     <Alert
       description={text(props.text)}
       title={text(props.title)}
       variant="a2ui-callout"
       action={
-        props.actionLabel && onAction ? { label: String(props.actionLabel), onClick: onAction } : undefined
+        props.actionLabel && onAction
+          ? { label: String(props.actionLabel), onClick: onAction }
+          : undefined
       }
     />
   );
@@ -370,7 +403,8 @@ export const CalloutView = define('Callout', ({ props }) => {
 
 export const EmptyStateView = define('EmptyState', ({ props }) => {
   const icon = useLucideIcon(typeof props.icon === 'string' ? props.icon : undefined);
-  const onAction = typeof props.onAction === 'function' ? (props.onAction as () => void) : undefined;
+  const onAction =
+    typeof props.onAction === 'function' ? (props.onAction as () => void) : undefined;
   return (
     <Empty
       description={text(props.description)}
@@ -378,7 +412,9 @@ export const EmptyStateView = define('EmptyState', ({ props }) => {
       title={text(props.title)}
       variant="a2ui"
       action={
-        props.actionLabel && onAction ? { label: String(props.actionLabel), onClick: onAction } : undefined
+        props.actionLabel && onAction
+          ? { label: String(props.actionLabel), onClick: onAction }
+          : undefined
       }
     />
   );
@@ -419,7 +455,94 @@ export const AccordionView = define('Accordion', ({ props, buildChild }) => {
 });
 
 export const SectionView = define('Section', ({ props, buildChild }) => (
-  <Section desc={text(props.description)} eyebrow={text(props.eyebrow)} title={text(props.title)} variant="a2ui">
+  <Section
+    desc={text(props.description)}
+    eyebrow={text(props.eyebrow)}
+    title={text(props.title)}
+    variant="a2ui"
+  >
     {childrenOf(props.children, buildChild)}
   </Section>
+));
+
+// --- Domain cards and media (official props pass through; images must be https) -------------------
+
+const media = (value: unknown) => safeUrl(value);
+const mediaList = (value: unknown, max: number) =>
+  rowsOf<Row>(value, max)
+    .map((image) => ({ ...image, url: media(image.url) }))
+    .filter((image): image is Row & { url: string } => !!image.url);
+const actionOf = (value: unknown) =>
+  typeof value === 'function' ? (value as () => void) : undefined;
+
+/** Props a domain card gets as the Agent wrote them, without the A2UI envelope. */
+const passProps = <P,>(props: Record<string, unknown>) => {
+  // The A2UI runtime adds a setter per bound prop (`setTemp`) and other functions; the cards take
+  // data only, and their callbacks are wired by name below.
+  const rest = Object.fromEntries(
+    Object.entries(props).filter(
+      ([key, value]) => key !== 'component' && key !== 'weight' && typeof value !== 'function',
+    ),
+  );
+  return rest as P;
+};
+
+export const WeatherCardView = define('WeatherCard', ({ props }) => (
+  <WeatherCard {...passProps<WeatherCardProps>(props)} variant="a2ui" />
+));
+
+export const ProfileCardView = define('ProfileCard', ({ props }) => (
+  <ProfileCard
+    {...passProps<ProfileCardProps>(props)}
+    avatar={media(props.avatar)}
+    variant="a2ui"
+  />
+));
+
+export const ReceiptCardView = define('ReceiptCard', ({ props }) => {
+  const locale = useA2uiHost()?.locale;
+  return <ReceiptCard {...passProps<ReceiptCardProps>(props)} locale={locale} variant="a2ui" />;
+});
+
+export const EventCardView = define('EventCard', ({ props }) => {
+  const locale = useA2uiHost()?.locale;
+  return (
+    <EventCard
+      {...passProps<EventCardProps>(props)}
+      image={media(props.image)}
+      locale={locale}
+      variant="a2ui"
+      onAction={actionOf(props.onAction)}
+    />
+  );
+});
+
+export const RecipeCardView = define('RecipeCard', ({ props }) => (
+  <RecipeCard {...passProps<RecipeCardProps>(props)} image={media(props.image)} variant="a2ui" />
+));
+
+export const ImageGalleryView = define('ImageGallery', ({ props }) => (
+  <ImageGallery
+    columns={Number(props.columns) || undefined}
+    images={mediaList(props.images, A2UI_LIST_LIMITS.ImageGallery.images) as never}
+    variant="a2ui"
+  />
+));
+
+export const ImageGridView = define('ImageGrid', ({ props }) => (
+  <ImageGrid
+    {...passProps<ImageGridProps>(props)}
+    images={mediaList(props.images, A2UI_LIST_LIMITS.ImageGrid.images) as never}
+    variant="a2ui"
+  />
+));
+
+export const VideoEmbedView = define('VideoEmbed', ({ props }) => {
+  const url = media(props.url);
+  if (!url) return null;
+  return <VideoEmbed title={text(props.title)} url={url} variant="a2ui" />;
+});
+
+export const MathView = define('Math', ({ props }) => (
+  <MathFormula block={props.block !== false} value={String(props.value ?? '')} variant="a2ui" />
 ));

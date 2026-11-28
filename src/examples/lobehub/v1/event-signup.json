@@ -1,0 +1,169 @@
+{
+  "name": "Event Signup",
+  "description": "A form: a Heading and a Form of inputs bound to the data model (TextField, SegmentedControl, Select, ChipSelect, Switch, TextArea) with a primary Button that sends them.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "event-signup",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "event-signup",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "form"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "Sign up for the offsite",
+            "subtitle": "Lisbon, Oct 15-16. Takes a minute."
+          },
+          {
+            "id": "form",
+            "component": "Form",
+            "children": ["name", "days", "room", "diet", "shuttle", "notes", "send"]
+          },
+          {
+            "id": "name",
+            "component": "TextField",
+            "label": "Full name",
+            "value": {
+              "@path": "/form/name"
+            }
+          },
+          {
+            "id": "days",
+            "component": "SegmentedControl",
+            "label": "Days",
+            "options": [
+              {
+                "label": "Both days",
+                "value": "both"
+              },
+              {
+                "label": "Day 1",
+                "value": "d1"
+              },
+              {
+                "label": "Day 2",
+                "value": "d2"
+              }
+            ],
+            "value": {
+              "@path": "/form/days"
+            }
+          },
+          {
+            "id": "room",
+            "component": "Select",
+            "label": "Room",
+            "options": [
+              {
+                "label": "Single",
+                "value": "single"
+              },
+              {
+                "label": "Shared",
+                "value": "shared"
+              },
+              {
+                "label": "No hotel",
+                "value": "none"
+              }
+            ],
+            "value": {
+              "@path": "/form/room"
+            }
+          },
+          {
+            "id": "diet",
+            "component": "ChipSelect",
+            "label": "Dietary needs",
+            "options": [
+              {
+                "label": "Vegetarian",
+                "value": "veg"
+              },
+              {
+                "label": "Vegan",
+                "value": "vegan"
+              },
+              {
+                "label": "Gluten-free",
+                "value": "gf"
+              },
+              {
+                "label": "Halal",
+                "value": "halal"
+              }
+            ],
+            "value": {
+              "@path": "/form/diet"
+            }
+          },
+          {
+            "id": "shuttle",
+            "component": "Switch",
+            "label": "Airport shuttle",
+            "value": {
+              "@path": "/form/shuttle"
+            }
+          },
+          {
+            "id": "notes",
+            "component": "TextArea",
+            "label": "Anything else",
+            "value": {
+              "@path": "/form/notes"
+            }
+          },
+          {
+            "id": "send",
+            "component": "Button",
+            "child": "sendLabel",
+            "variant": "primary",
+            "action": {
+              "event": {
+                "name": "signup",
+                "context": {
+                  "form": {
+                    "@path": "/form"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sendLabel",
+            "component": "Text",
+            "text": "Sign me up"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0",
+      "updateDataModel": {
+        "surfaceId": "event-signup",
+        "path": "/",
+        "value": {
+          "form": {
+            "name": "",
+            "days": "both",
+            "room": "shared",
+            "diet": [],
+            "shuttle": true,
+            "notes": ""
+          }
+        }
+      }
+    }
+  ]
+}

@@ -50,8 +50,11 @@ const typeOf = (schema: Json | undefined): string => {
     const name = schema.$ref.split('/').at(-1)!;
     return REF_TYPES[name] ?? name;
   }
-  if (Array.isArray(schema.enum))
-    return schema.enum.map((value) => JSON.stringify(value)).join('|');
+  if (Array.isArray(schema.enum)) {
+    // Long enums (the 59 basic icon names) show their first values; the docs list them all.
+    const values = schema.enum.map((value) => JSON.stringify(value));
+    return values.length > 10 ? `${values.slice(0, 6).join('|')}|…` : values.join('|');
+  }
   if ('const' in schema) return JSON.stringify(schema.const);
   if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
     const options = (schema.oneOf ?? schema.anyOf) as Json[];
@@ -89,17 +92,85 @@ const firstSentence = (text: unknown) => {
   if (typeof text !== 'string') return '';
   // A sentence ends at a stop before a capital letter or the end, so "e.g." does not cut it.
   const sentence = /^(.+?[.!?])(?=\s+[A-Z]|\s*$)/.exec(text.trim())?.[1] ?? text.trim();
-  return sentence.length > 200 ? `${sentence.slice(0, 197)}...` : sentence;
+  return sentence.length > 140 ? `${sentence.slice(0, 137)}...` : sentence;
 };
+
+/**
+ * Styling and box props the official containers carry (padding, borders, sizes, text styling…).
+ * They make index lines long without telling an Agent what a component is for, so the index leaves
+ * them out unless required and marks the line with `…`; `readCardDocs` shows them all.
+ */
+const PRESENTATION_PROPS = new Set([
+  'actionOverlay',
+  'align',
+  'aspectRatio',
+  'background',
+  'border',
+  'borderColor',
+  'clip',
+  'columnGap',
+  'disableAutoSpacing',
+  'fallback',
+  'flex',
+  'flush',
+  'fontSize',
+  'fontWeight',
+  'frame',
+  'gap',
+  'height',
+  'hideOnFailure',
+  'hoverZoom',
+  'imageAspectRatio',
+  'inline',
+  'italic',
+  'justify',
+  'lightbox',
+  'lineHeight',
+  'lineThrough',
+  'maxHeight',
+  'maxLines',
+  'maxSize',
+  'maxWidth',
+  'minHeight',
+  'minLines',
+  'minSize',
+  'minWidth',
+  'onOverlayClick',
+  'onVisible',
+  'padding',
+  'position',
+  'preserveWhitespace',
+  'radius',
+  'role',
+  'rowGap',
+  'scrollable',
+  'shadow',
+  'shadowStyle',
+  'strong',
+  'tabularNums',
+  'textAlign',
+  'truncate',
+  'underline',
+  'weight',
+  'width',
+  'wrap',
+]);
 
 /** `Name(prop: type, prop?: type) — what it is`, from the component's schema. */
 export const componentSignature = (name: string, schema: Json): string => {
   const { checkable, properties, required } = shapeOf(schema);
+  let skipped = false;
   const props = Object.entries(properties)
+    .filter(([prop]) => {
+      const keep = required.has(prop) || !PRESENTATION_PROPS.has(prop);
+      if (!keep) skipped = true;
+      return keep;
+    })
     // Props kept only so stored cards replay are left out of what an Agent reads.
     .filter(([prop, value]) => prop !== 'component' && (value as Json).deprecated !== true)
     .map(([prop, value]) => `${prop}${required.has(prop) ? '' : '?'}: ${typeOf(value)}`);
   if (checkable) props.push('checks?: check[]');
+  if (skipped) props.push('…');
   const summary = firstSentence(schema.description);
   return `${name}(${props.join(', ')})${summary ? ` — ${summary}` : ''}`;
 };

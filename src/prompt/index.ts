@@ -38,7 +38,7 @@ export const loadExamples = (
 
 /**
  * The examples the prompt shows by default: a varied subset, since every example costs tokens
- * (`loadExamples()` returns all 57). Official basic surfaces first, then LobeHub's, which show
+ * (`loadExamples()` returns all 62). Official basic surfaces first, then LobeHub's, which show
  * the extension components in differently shaped cards.
  */
 export const A2UI_PROMPT_EXAMPLE_IDS = [
@@ -58,6 +58,8 @@ export const A2UI_PROMPT_EXAMPLE_IDS = [
   'signup-funnel',
   'vendor-comparison',
   'cloud-costs',
+  'branch-check',
+  'event-signup',
 ] as const;
 
 export const A2UI_PROMPT_EXAMPLES: A2uiExample[] = loadExamples(undefined, A2UI_PROMPT_EXAMPLE_IDS);
@@ -270,6 +272,9 @@ export const a2uiProductRules = (delivery: A2uiDelivery = A2UI_DEFAULT_DELIVERY)
 ### Design rules
 - Fully answer the request. Lead with a Heading, then the component built for the job: comparisons -> ComparisonTable, schedules -> Agenda or Timeline, code -> CodeBlock, people -> Avatar or AvatarGroup, statuses -> Badge, ratings -> Rating, a single ratio or score -> RadialProgress or Gauge. Pick the richest component that fits: charts for numbers over time or comparisons, DataTable for many rows, Timeline for sequences.
 - Lay out with Column, Row and Grid. Use Card only for an interactive panel (a form, controls) or for one thing with its own page (give it an openUrl action), and Section to group with a title. Short text is Text, Title or Caption; prose is Markdown.
+- Lists of things (branches, tickets, files, people, places, steps to take) are a List of ListItem rows (label, value, description, icon), an EntityCard per thing, or a DataTable, never Markdown bullets; Markdown lists are only for prose.
+- Questions and settings are a Form of inputs (Select, RadioGroup, SegmentedControl, ChipSelect, Switch, TextField, TextArea, DatePicker). End with a FollowUp of two to four short next prompts when there is a natural next step. Put a Citation right after the sentence a source supports.
+- Places are MapView (at most 8 markers, each a specific named place with lat/lon), LocationCard for one place, PlaceList for a ranked list, RouteMap for a route; never use the city itself as a marker.
 - One chart per question unless asked for more; never two charts, or a chart and a table, of the same numbers; never a chart whose series is flat or has under 3 points (use a Stat).
 - Put KPIs in a Grid of Stat (a Sparkline when the trend matters). Aim for 8 to 18 components, never more than 20: show each fact once, prefer one rich component over many small ones, and use small ones (Badge, Avatar, Divider) where they carry meaning.
 - Multi-series charts share one axis: combine only series of similar size. Percent values are 0-100 (12.4 means 12.4%) with format "percent", never fractions. Stat values are short numbers; put takeaways in KeyValueList, Callout or Markdown.

@@ -35,6 +35,15 @@ const lucideKey = (name: string) => {
   return iconNames().has(key) ? key : undefined;
 };
 
+/** Looks up many icon names at once (a list's rows), once the bundled set has loaded. */
+export const useLucideResolver = () => {
+  const loaded = useIcons();
+  return (name: unknown) => {
+    const key = typeof name === 'string' ? lucideKey(name) : undefined;
+    return key ? loaded?.[key] : undefined;
+  };
+};
+
 /** The Lucide component an Icon name stands for, once the bundled set has loaded. */
 export const useLucideIcon = (name: string | undefined) => {
   const loaded = useIcons();

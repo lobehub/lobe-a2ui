@@ -10,6 +10,7 @@ import type { A2uiActionPayload, A2uiSurfaceRecord, A2uiSurfaceState } from '../
 import { createLobeFunctions, LOBE_COMPONENTS } from './components';
 import { a2ui } from './components/a2ui';
 import { useA2uiHost } from './host';
+import { A2uiRecordContext } from './record';
 
 /** One rendering catalog per locale: formatNumber, formatDate and the rest read it. */
 const lobeCatalogs = new Map<string, Catalog<never>>();
@@ -84,7 +85,9 @@ export const SurfaceView = memo<SurfaceViewProps>(({ record, state, onAction }) 
     >
       {/* The official playground's floor: a dot grid the surface's components stand on. */}
       <div className={a2ui.floor} data-a2ui="floor">
-        <A2uiSurface surface={surface as never} />
+        <A2uiRecordContext value={record}>
+          <A2uiSurface surface={surface as never} />
+        </A2uiRecordContext>
       </div>
     </div>
   );

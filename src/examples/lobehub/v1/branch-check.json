@@ -1,0 +1,117 @@
+{
+  "name": "Branch Check",
+  "description": "A status report: a Heading, a StatGroup of the counts, then one Section per group whose things are ListItem rows or EntityCards (never Markdown bullets), and a FollowUp.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "branch-check",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "branch-check",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "counts", "todo", "decide", "next"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "Branch check, Friday",
+            "eyebrow": "lobot",
+            "subtitle": "Three branches have work with no PR; one needs a decision"
+          },
+          {
+            "id": "counts",
+            "component": "StatGroup",
+            "items": [
+              {
+                "label": "No PR yet",
+                "value": "3"
+              },
+              {
+                "label": "Needs a decision",
+                "value": "1"
+              },
+              {
+                "label": "In progress",
+                "value": "1"
+              },
+              {
+                "label": "Safe to delete",
+                "value": "0"
+              }
+            ]
+          },
+          {
+            "id": "todo",
+            "component": "Section",
+            "title": "Done, no PR",
+            "description": "Commits main does not have, and no open PR",
+            "children": ["todoList"]
+          },
+          {
+            "id": "todoList",
+            "component": "List",
+            "marker": "rich",
+            "children": ["b1", "b2", "b3"]
+          },
+          {
+            "id": "b1",
+            "component": "ListItem",
+            "icon": "lucide:git-branch",
+            "label": "feat/harmonyos-runtime",
+            "value": "1 commit",
+            "description": "279 behind main, last commit Nov 19. Rebase and open a PR if it is still wanted."
+          },
+          {
+            "id": "b2",
+            "component": "ListItem",
+            "icon": "lucide:git-branch",
+            "label": "style/failure-popover-calm",
+            "value": "3 commits",
+            "description": "212 behind main, last commit Nov 20. Waiting on Justin before a PR or a delete."
+          },
+          {
+            "id": "b3",
+            "component": "ListItem",
+            "icon": "lucide:git-branch",
+            "label": "style/modal-fill-buttons",
+            "value": "4 commits",
+            "description": "132 behind main, last commit Nov 22. Open a PR or delete the branch."
+          },
+          {
+            "id": "decide",
+            "component": "Section",
+            "title": "Needs a decision",
+            "children": ["pr262"]
+          },
+          {
+            "id": "pr262",
+            "component": "EntityCard",
+            "layout": "horizontal",
+            "title": "feat/unify-agent-runtime-device-display",
+            "subtitle": "PR #262 closed, not merged",
+            "description": "One commit left, 24 behind main. Delete it if #263 replaced it, otherwise reopen.",
+            "meta": "Last commit Nov 25",
+            "badge": {
+              "label": "Decide",
+              "color": "warning"
+            },
+            "href": "https://github.com/lobehub-biz/lobot/pull/262"
+          },
+          {
+            "id": "next",
+            "component": "FollowUp",
+            "items": ["Delete the merged branches", "Rebase feat/harmonyos-runtime", "Show only my branches"]
+          }
+        ]
+      }
+    }
+  ]
+}

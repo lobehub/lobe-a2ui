@@ -99,10 +99,23 @@ const surfaceIdsOf = (operations: A2uiOperation[]) =>
 
 const MEDIA_PROPS: Record<string, string[]> = {
   AudioPlayer: ['url'],
-  Avatar: ['src'],
+  Avatar: ['src', 'image'],
+  CarouselMediaItem: ['url', 'href'],
+  Citation: ['url'],
+  EntityCard: ['image', 'href'],
+  EventCard: ['image'],
   Image: ['url'],
-  LinkCard: ['href'],
+  LinkCard: ['href', 'image'],
+  ProfileCard: ['avatar'],
+  RecipeCard: ['image'],
   Video: ['url', 'posterUrl'],
+  VideoEmbed: ['url'],
+};
+/** Lists whose items carry media: component → [list prop, url key]. */
+const MEDIA_LISTS: Record<string, [string, string][]> = {
+  EntityCard: [['actions', 'href']],
+  ImageGallery: [['images', 'url']],
+  ImageGrid: [['images', 'url']],
 };
 /** SVG path data: commands, numbers and separators, nothing that could carry markup. */
 const SVG_PATH = /^[\d\s+,.ACEHLMQSTVZ-]*$/i;
@@ -134,6 +147,16 @@ const safetyErrors = (component: Record<string, unknown>, model: Record<string, 
     const value = resolve(component[key], model);
     // A value bound to data that isn't there yet renders nothing; only a present one is checked.
     if (value !== undefined && !isHttpsUrl(value)) errors.push(`${label}: ${key} must be https`);
+  }
+
+  for (const [list, key] of MEDIA_LISTS[name] ?? []) {
+    const items = resolve(component[list], model);
+    if (!Array.isArray(items)) continue;
+    items.forEach((item, index) => {
+      const value = isRecord(item) ? item[key] : undefined;
+      if (value !== undefined && !isHttpsUrl(value))
+        errors.push(`${label}: ${list}[${index}].${key} must be https`);
+    });
   }
 
   for (const call of openUrlCalls(component)) {

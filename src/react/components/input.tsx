@@ -1,12 +1,23 @@
-import { Button, Checkbox, Flexbox, Input, RadioGroup, Slider, Text, TextArea } from '@lobehub/ui';
-import type { ReactNode } from 'react';
-import { useState } from 'react';
+import {
+  Button,
+  ButtonGroup,
+  Checkbox,
+  ChipSelect,
+  DatePicker,
+  Flexbox,
+  Input,
+  RadioGroup,
+  Slider,
+  Text,
+  TextArea,
+} from '@lobehub/ui';
+import { createContext, use, useState } from 'react';
 
 import { useA2uiLabels } from '../host';
-import { define, styles } from './shared';
+import { define } from './shared';
 
-const Label = ({ children }: { children: ReactNode }) =>
-  children ? <Text weight={500}>{children}</Text> : null;
+/** Set by a Form: its buttons sit at the end of the form, as the official submit row does. */
+export const InFormContext = createContext(false);
 
 /** A check's messages under the field it checks. */
 const Errors = ({ errors }: { errors?: unknown }) =>
@@ -22,9 +33,12 @@ const Errors = ({ errors }: { errors?: unknown }) =>
 
 export const ButtonView = define('Button', ({ props, buildChild }) => {
   const primary = props.variant === 'primary';
+  const inForm = use(InFormContext);
   return (
     <Button
       disabled={props.isValid === false}
+      shape="round"
+      style={{ alignSelf: inForm ? 'flex-end' : 'flex-start' }}
       // Secondary actions sit back as fill buttons, so the one primary action leads.
       type={primary ? 'primary' : props.variant === 'borderless' ? 'text' : 'fill'}
       onClick={() => (props.action as (() => void) | undefined)?.()}
@@ -34,25 +48,30 @@ export const ButtonView = define('Button', ({ props, buildChild }) => {
   );
 });
 
+const labelOf = (value: unknown) => (value ? String(value) : undefined);
+
 export const TextFieldView = define('TextField', ({ props }) => {
   const value = props.value === undefined || props.value === null ? '' : String(props.value);
   const onChange = (next: string) => props.setValue?.(next);
   const placeholder = props.placeholder ? String(props.placeholder) : undefined;
   return (
     <Flexbox gap={6} style={{ minWidth: 0 }}>
-      <Label>{props.label ? String(props.label) : null}</Label>
       {props.variant === 'longText' ? (
         <TextArea
           autoSize={{ maxRows: 6, minRows: 2 }}
+          label={labelOf(props.label)}
           placeholder={placeholder}
           value={value}
+          variant="a2ui"
           onChange={(event) => onChange(event.target.value)}
         />
       ) : (
         <Input
           inputMode={props.variant === 'number' ? 'decimal' : undefined}
+          label={labelOf(props.label)}
           placeholder={placeholder}
           value={value}
+          variant="a2ui"
           type={
             props.variant === 'obscured'
               ? 'password'
@@ -70,7 +89,11 @@ export const TextFieldView = define('TextField', ({ props }) => {
 
 export const CheckBoxView = define('CheckBox', ({ props }) => (
   <Flexbox gap={4}>
-    <Checkbox checked={!!props.value} onChange={(checked) => props.setValue?.(!!checked)}>
+    <Checkbox
+      checked={!!props.value}
+      variant="a2ui"
+      onChange={(checked) => props.setValue?.(!!checked)}
+    >
       {String(props.label ?? '')}
     </Checkbox>
     <Errors errors={props.validationErrors} />
@@ -80,83 +103,83 @@ export const CheckBoxView = define('CheckBox', ({ props }) => (
 type Option = { label: unknown; value: string };
 
 /**
- * Checkboxes or radios by default, chips when asked; `filterable` adds a search box that narrows
- * the options by label, case-insensitively.
+ * One choice or several, drawn as the official playground draws them: chips (ChipSelect, or a
+ * ButtonGroup for one), a radio list, or a checkbox list. `filterable` adds a search box that
+ * narrows the options by label, case-insensitively.
  */
 export const ChoicePickerView = define('ChoicePicker', ({ props }) => {
   const [query, setQuery] = useState('');
   const labels = useA2uiLabels();
   const selected = Array.isArray(props.value) ? (props.value as string[]) : [];
   const single = (props.variant ?? 'mutuallyExclusive') === 'mutuallyExclusive';
-  const options = ((Array.isArray(props.options) ? props.options : []) as Option[]).filter(
-    (option) => !query || String(option.label).toLowerCase().includes(query.toLowerCase()),
-  );
-  const toggle = (value: string) =>
-    props.setValue?.(
-      single
-        ? [value]
-        : selected.includes(value)
-          ? selected.filter((item) => item !== value)
-          : [...selected, value],
-    );
+  const options = ((Array.isArray(props.options) ? props.options : []) as Option[])
+    .filter((option) => !query || String(option.label).toLowerCase().includes(query.toLowerCase()))
+    .map((option) => ({ label: String(option.label), value: option.value }));
+  const label = labelOf(props.label);
+  const chips = props.displayStyle === 'chips';
 
-  let choices: ReactNode;
-  if (props.displayStyle === 'chips')
-    choices = (
-      <Flexbox horizontal gap={8} wrap="wrap">
-        {options.map((option) => {
-          const on = selected.includes(option.value);
-          return (
-            <Button
-              aria-pressed={on}
-              key={option.value}
-              shape="round"
-              size="small"
-              type={on ? 'primary' : 'fill'}
-              onClick={() => toggle(option.value)}
-            >
-              {String(option.label)}
-            </Button>
-          );
-        })}
-      </Flexbox>
-    );
-  else if (single)
-    choices = (
-      <RadioGroup
-        gap={8}
-        horizontal={false}
-        options={options.map((option) => ({ label: String(option.label), value: option.value }))}
-        value={selected[0] ?? null}
-        onChange={(value) => toggle(value)}
+  const choices = single ? (
+    chips ? (
+      <ButtonGroup
+        label={label}
+        options={options}
+        value={selected[0]}
+        variant="a2ui"
+        onChange={(value: string) => props.setValue?.([value])}
       />
-    );
-  else
-    choices = (
-      <Flexbox gap={8}>
-        {options.map((option) => (
-          <Checkbox
-            checked={selected.includes(option.value)}
-            key={option.value}
-            onChange={() => toggle(option.value)}
-          >
-            {String(option.label)}
-          </Checkbox>
-        ))}
-      </Flexbox>
-    );
+    ) : (
+      <RadioGroup
+        label={label}
+        options={options}
+        value={selected[0]}
+        variant="a2ui"
+        onChange={(value: unknown) => props.setValue?.([String(value)])}
+      />
+    )
+  ) : chips ? (
+    <ChipSelect
+      label={label}
+      options={options}
+      value={selected}
+      variant="a2ui"
+      onChange={(value: string[]) => props.setValue?.(value)}
+    />
+  ) : (
+    <Flexbox gap={8}>
+      {options.map((option) => (
+        <Checkbox
+          checked={selected.includes(option.value)}
+          key={option.value}
+          variant="a2ui"
+          onChange={() =>
+            props.setValue?.(
+              selected.includes(option.value)
+                ? selected.filter((item) => item !== option.value)
+                : [...selected, option.value],
+            )
+          }
+        >
+          {option.label}
+        </Checkbox>
+      ))}
+    </Flexbox>
+  );
 
   return (
     <Flexbox gap={8} style={{ minWidth: 0 }}>
-      <Label>{props.label ? String(props.label) : null}</Label>
       {props.filterable ? (
         <Input
           allowClear
           placeholder={labels.filter}
-          size="small"
           value={query}
+          variant="a2ui"
           onChange={(event) => setQuery(event.target.value)}
         />
+      ) : null}
+      {!single && !chips && label ? (
+        <Text fontSize={13} weight={500}>
+          {label}
+        </Text>
       ) : null}
       {choices}
       <Errors errors={props.validationErrors} />
@@ -171,17 +194,14 @@ export const SliderView = define('Slider', ({ props }) => {
   const step = props.steps ? (max - min) / Number(props.steps) : (max - min) / 100;
   return (
     <Flexbox gap={4} style={{ minWidth: 0, width: '100%' }}>
-      <Flexbox horizontal justify="space-between">
-        <Label>{props.label ? String(props.label) : null}</Label>
-        <Text className={styles.figure} type="secondary">
-          {Number(props.value ?? min).toLocaleString()}
-        </Text>
-      </Flexbox>
       <Slider
+        label={labelOf(props.label)}
         max={max}
         min={min}
         step={step}
+        unit={props.unit ? String(props.unit) : undefined}
         value={Number(props.value ?? min)}
+        variant="a2ui"
         onChange={(value) => props.setValue?.(Number(value))}
       />
       <Errors errors={props.validationErrors} />
@@ -212,14 +232,30 @@ const fromInput = (value: string, type: 'date' | 'datetime-local' | 'time') => {
 export const DateTimeInputView = define('DateTimeInput', ({ props }) => {
   const enableDate = props.enableDate ?? !props.enableTime;
   const type = enableDate && props.enableTime ? 'datetime-local' : enableDate ? 'date' : 'time';
+  // A date alone opens the official calendar; times keep the native field in the same look.
+  if (type === 'date')
+    return (
+      <Flexbox gap={6} style={{ minWidth: 0 }}>
+        <DatePicker
+          label={labelOf(props.label)}
+          value={toInput(String(props.value ?? ''), 'date') as never}
+          variant="a2ui"
+          onChange={(_: unknown, iso: unknown) =>
+            props.setValue?.(typeof iso === 'string' ? iso : '')
+          }
+        />
+        <Errors errors={props.validationErrors} />
+      </Flexbox>
+    );
   return (
     <Flexbox gap={6} style={{ minWidth: 0 }}>
-      <Label>{props.label ? String(props.label) : null}</Label>
       <Input
+        label={labelOf(props.label)}
         max={props.max ? toInput(String(props.max), type) : undefined}
         min={props.min ? toInput(String(props.min), type) : undefined}
         type={type}
         value={toInput(String(props.value ?? ''), type)}
+        variant="a2ui"
         onChange={(event) => props.setValue?.(fromInput(event.target.value, type))}
       />
       <Errors errors={props.validationErrors} />

@@ -1,0 +1,89 @@
+{
+  "name": "Order Status",
+  "description": "Domain cards: a Heading, a ReceiptCard of what was bought and a Timeline of the delivery.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "order-status",
+        "catalogId": "https://lobehub.com/a2ui/catalog/v1"
+      }
+    },
+    {
+      "version": "1.0",
+      "updateComponents": {
+        "surfaceId": "order-status",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": ["head", "receipt", "track"]
+          },
+          {
+            "id": "head",
+            "component": "Heading",
+            "text": "Your Fieldnote order",
+            "eyebrow": "Out for delivery",
+            "subtitle": "Arrives today between 14:00 and 16:00"
+          },
+          {
+            "id": "receipt",
+            "component": "ReceiptCard",
+            "merchant": "Fieldnote Supply Co.",
+            "orderId": "FN-48213",
+            "date": "Nov 24, 2026",
+            "status": "Paid",
+            "currency": "USD",
+            "items": [
+              {
+                "name": "Dot grid notebook, A5",
+                "qty": 2,
+                "price": 36
+              },
+              {
+                "name": "Brass fountain pen",
+                "qty": 1,
+                "price": 64,
+                "note": "Fine nib, engraved"
+              },
+              {
+                "name": "Ink cartridges, blue black",
+                "qty": 3,
+                "price": 19.5
+              }
+            ],
+            "shipping": 0,
+            "discount": 10,
+            "tax": 9.62,
+            "payment": "Visa ending 4242"
+          },
+          {
+            "id": "track",
+            "component": "Timeline",
+            "items": [
+              {
+                "title": "Order placed",
+                "time": "Mon 09:12",
+                "status": "done"
+              },
+              {
+                "title": "Packed",
+                "time": "Tue 14:40",
+                "status": "done"
+              },
+              {
+                "title": "Out for delivery",
+                "time": "Today 08:05",
+                "status": "current"
+              },
+              {
+                "title": "Delivered",
+                "status": "upcoming"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
